@@ -1,0 +1,39 @@
+---
+import PageTitle from "@/components/common/PageTitle.astro";
+import CategoryRose from "@/components/widget/CategoryRose.astro";
+import TagGraph from "@/components/widget/TagGraph.astro";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { getCategoryList, getTagGraphData } from "@/utils/content-utils";
+
+// 数据获取
+const [categories, tagGraph] = await Promise.all([
+	getCategoryList(),
+	getTagGraphData(),
+]);
+---
+
+<MainGridLayout
+	title={i18n(I18nKey.categoriesPageTitle)}
+	description={i18n(I18nKey.allCategories)}
+>
+	<div class="categories-page card-base">
+		<div class="categories-page__header">
+			<PageTitle
+				title={i18n(I18nKey.categoriesPageTitle)}
+				eyebrow={i18n(I18nKey.taxonomy)}
+				variant="stacked"
+			/>
+		</div>
+
+		<CategoryRose categories={categories} />
+
+		{categories.length > 0 && tagGraph.nodes.length > 0 && (
+			<Fragment>
+				<hr class="categories-page__divider" />
+				<TagGraph data={tagGraph} />
+			</Fragment>
+		)}
+	</div>
+</MainGridLayout>

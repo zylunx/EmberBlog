@@ -1,0 +1,18 @@
+---
+import ArchivePanel from "@components/controls/ArchivePanel.svelte";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getSortedPostsList } from "@/utils/content-utils";
+
+const sortedPostsList = await getSortedPostsList();
+const title = i18n(I18nKey.archive);
+---
+
+<MainGridLayout title={title}>
+  <div class="w-full py-4 md:py-6 relative">
+    <!-- 页面标题区域（由 MainGridLayout 的 Banner 自动渲染，此处为 fallback 标题） -->
+    <h1 class="sr-only">{title}</h1>
+    <ArchivePanel sortedPosts={sortedPostsList} client:load />
+  </div>
+</MainGridLayout>
