@@ -86,12 +86,9 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 			titleSize: "3.8rem",
 			// 主页横幅副标题
 			subtitle: [
-				"In Reddened Chrysalis, I Once Rest",
-				"From Shattered Sky, I Free Fall",
-				"Amidst Silenced Stars, I Deep Sleep",
-				"Upon Lighted Fyrefly, I Soon Gaze",
-				"From Undreamt Night, I Thence Shine",
-				"In Finalized Morrow, I Full Bloom",
+				"A quiet ember in the vast web.",
+				"Store all warm thoughts as ember.",
+				"Ember: light for wandering minds.",
 			],
 			// 主页横幅副标题字体大小
 			subtitleSize: "1.5rem",

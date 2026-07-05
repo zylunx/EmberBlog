@@ -46,7 +46,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置
 			position: "top",
 			// 是否在文章详情页显示
-			showOnPostPage: true,
+			showOnPostPage: false,
 		},
 		{
 			// 组件类型：公告组件
@@ -56,7 +56,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件位置
 			position: "top",
 			// 是否在文章详情页显示
-			showOnPostPage: true,
+			showOnPostPage: false,
 		},
 		{
 			// 组件类型：音乐播放器
@@ -98,10 +98,70 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 				collapseThreshold: 10,
 			},
 		},
+		{
+			// 组件类型：站点统计组件
+			type: "stats",
+			// 是否启用该组件
+			enable: false,
+			// 组件位置
+			position: "sticky",
+			// 是否在文章详情页显示
+			showOnPostPage: true,
+		},
 	],
 
 	// 右侧边栏组件配置列表
 	rightComponents: [
+		{
+			// 组件类型：用户资料组件
+			type: "profile",
+			// 是否启用该组件
+			enable: false,
+			// 组件位置
+			position: "top",
+			// 是否在文章详情页显示
+			showOnPostPage: false,
+		},
+		{
+			// 组件类型：公告组件
+			type: "announcement",
+			// 是否启用该组件
+			enable: false,
+			// 组件位置
+			position: "top",
+			// 是否在文章详情页显示
+			showOnPostPage: false,
+		},
+		{
+			// 组件类型：分类组件
+			type: "categories",
+			// 是否启用该组件
+			enable: false,
+			// 组件位置
+			position: "sticky",
+			// 是否在文章详情页显示
+			showOnPostPage: true,
+			// 组件专属配置
+			specificConfig: {
+				// 折叠阈值：当分类数量超过>5个时自动折叠
+				collapseThreshold: 5,
+			},
+		},
+		{
+			// 组件类型：标签组件
+			type: "tags",
+			// 是否启用该组件
+			enable: false,
+			// 组件位置
+			position: "sticky",
+			// 是否在文章详情页显示
+			showOnPostPage: true,
+			// 组件专属配置
+			specificConfig: {
+				// 折叠阈值：当标签数量超过>10个时自动折叠
+				collapseThreshold: 10,
+			},
+		},
 		{
 			// 组件类型：站点统计组件
 			type: "stats",
@@ -111,6 +171,18 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			position: "top",
 			// 是否在文章详情页显示
 			showOnPostPage: true,
+		},
+				{
+			// 组件类型：侧边栏目录组件（只在文章详情页显示）
+			type: "sidebarToc",
+			// 是否启用该组件
+			enable: true,
+			// 组件位置
+			position: "sticky",
+			// 是否在文章详情页显示
+			showOnPostPage: true,
+			// 是否在非文章详情页隐藏
+			hideOnNonPostPage: true,
 		},
 		{
 			// 组件类型：站点信息组件
@@ -147,18 +219,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 					showHeatmap: true,
 				},
 			},
-		},
-		{
-			// 组件类型：侧边栏目录组件（只在文章详情页显示）
-			type: "sidebarToc",
-			// 是否启用该组件
-			enable: true,
-			// 组件位置
-			position: "sticky",
-			// 是否在文章详情页显示
-			showOnPostPage: true,
-			// 是否在非文章详情页隐藏
-			hideOnNonPostPage: true,
 		},
 		{
 			// 组件类型：广告栏组件 1
@@ -225,9 +285,9 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：用户资料组件
 			type: "profile",
 			// 是否启用该组件
-			enable: true,
+			enable: false,
 			// 是否在文章详情页显示
-			showOnPostPage: true,
+			showOnPostPage: false,
 		},
 		{
 			// 组件类型：公告组件
@@ -243,7 +303,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 是否启用该组件
 			enable: false,
 			// 是否在文章详情页显示
-			showOnPostPage: true,
+			showOnPostPage: false,
 		},
 		{
 			// 组件类型：分类组件
@@ -275,7 +335,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：站点统计组件
 			type: "stats",
 			// 是否启用该组件
-			enable: true,
+			enable: false,
 			// 是否在文章详情页显示
 			showOnPostPage: true,
 		},
@@ -283,7 +343,7 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			// 组件类型：站点信息组件
 			type: "siteInfo",
 			// 是否启用该组件
-			enable: true,
+			enable: false,
 			// 是否在文章详情页显示
 			showOnPostPage: true,
 			// 组件专属配置

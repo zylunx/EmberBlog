@@ -1,8 +1,37 @@
-<footer>
-	<a href="https://icp.gov.moe/?keyword=20230413" target="_blank" rel="noopener noreferrer">
-		<img src="https://icp.gov.moe/images/ico64.png" alt="萌ICP备案" width="32" height="32">
-    </a>
-    <a href="https://icp.gov.moe/?keyword=20230413" target="_blank" rel="noopener noreferrer">
-        萌ICP备20230413号
-    </a>
-</footer>
+<footer style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.6rem 1rem;
+        width: 100%;
+        font-size: 0.875rem;
+        line-height: 1.25;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    ">
+        <!-- 徽章链接：图标高度与文字行高一致 -->
+        <a href="https://icp.gov.moe/?keyword=20230413" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           style="display: inline-flex; align-items: center; line-height: 0; text-decoration: none;">
+            <img src="https://icp.gov.moe/images/ico64.png" 
+                 alt="萌ICP备案" 
+                 width="20" 
+                 height="20" 
+                 style="display: block; border: none; border-radius: 4px;">
+        </a>
+
+        <!-- 备案文字链接 -->
+        <a href="https://icp.gov.moe/?keyword=20230413" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+               text-decoration: none;
+               padding: 0.1rem 0.2rem;
+               border-radius: 4px;
+               transition: background 0.2s;
+           "
+           onmouseover="this.style.background='rgba(0,0,0,0.05)'"
+           onmouseout="this.style.background='transparent'">
+           萌ICP备20230413号
+        </a>
+    </footer>

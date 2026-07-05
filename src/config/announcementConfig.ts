@@ -12,11 +12,11 @@ export const announcementConfig: AnnouncementConfig = {
 
 	link: {
 		// 启用链接
-		enable: true,
+		enable: false,
 		// 链接文本
 		text: "了解更多",
 		// 链接 URL
-		url: "/about/",
+		url: "/",
 		// 内部链接
 		external: false,
 	},
