@@ -11,33 +11,297 @@ const { summary } = Astro.props;
 ---
 
 <div class="ai-summary-card mb-6 onload-animation">
-	<div class="flex items-center gap-3 mb-3">
-		<div
-			class="transition h-8 w-8 rounded-lg bg-(--primary)/10 text-(--primary) flex items-center justify-center"
-		>
-			<Icon is:inline name="material-symbols:psychology-outline-rounded" class="text-xl" />
+	<div class="ai-summary-card-glow"></div>
+
+	<div class="flex items-center justify-between mb-3 relative">
+		<div class="flex items-center gap-3">
+			<div
+				class="transition h-8 w-8 rounded-lg bg-(--primary)/10 text-(--primary) flex items-center justify-center ai-icon-wrap"
+			>
+				<Icon is:inline name="material-symbols:psychology-outline-rounded" class="text-xl" />
+			</div>
+			<h3 class="text-base font-semibold text-(--primary)">
+				{i18n(I18nKey.aiSummary)}
+			</h3>
 		</div>
-		<h3 class="text-base font-semibold text-(--primary)">
-			{i18n(I18nKey.aiSummary)}
-		</h3>
+		<span class="ai-model-badge">
+			<span class="ai-model-dot"></span>
+			EmberAI
+		</span>
 	</div>
 
-	<div class="pl-4 border-l-3 border-(--primary)/30">
-		<p class="text-sm leading-relaxed text-black/75 dark:text-white/75">
-			{summary}
+	<div class="pl-4 border-l-3 border-(--primary)/30 relative">
+		<p
+			class="text-sm leading-relaxed text-black/75 dark:text-white/75 ai-summary-text"
+			data-summary={JSON.stringify(summary)}
+			aria-label={summary}
+		>
+			<span class="ai-typewriter"></span><span class="ai-cursor" aria-hidden="true"></span>
+		</p>
+		<p class="text-xs text-black/40 dark:text-white/40 mt-2 ai-disclaimer">
+			总结由AI生成，仅供阅览
 		</p>
 	</div>
 </div>
 
+<script>
+  class AiSummaryTypewriter {
+    private element: HTMLElement;
+    private fullText: string;
+    private segments: string[] = [];
+    private currentIndex: number = 0;
+    private speed: number = 28;
+    private timeoutId: number | null = null;
+    private started: boolean = false;
+
+    constructor(element: HTMLElement) {
+      this.element = element;
+      const raw = element.dataset.summary || '""';
+      try {
+        this.fullText = JSON.parse(raw);
+      } catch {
+        this.fullText = "";
+      }
+      if (!this.fullText) {
+        this.element.textContent = "";
+        return;
+      }
+      const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+      this.segments = Array.from(segmenter.segment(this.fullText), (s) => s.segment);
+    }
+
+    start() {
+      if (this.started || this.segments.length === 0) return;
+      this.started = true;
+      this.type();
+    }
+
+    // 直接展示完整文本（用于 prefers-reduced-motion）
+    showAll() {
+      if (this.segments.length === 0) return;
+      this.started = true;
+      this.currentIndex = this.segments.length;
+      this.element.textContent = this.fullText;
+      const card = this.element.closest(".ai-summary-card");
+      card?.classList.add("ai-typing-done");
+    }
+
+    private type() {
+      if (this.currentIndex < this.segments.length) {
+        this.currentIndex++;
+        this.element.textContent = this.segments.slice(0, this.currentIndex).join("");
+        // 动态调速：标点符号后稍微停顿
+        const last = this.segments[this.currentIndex - 1];
+        const delay = /[。，、；：！？.,!?;:]/.test(last) ? this.speed * 4 : this.speed;
+        this.timeoutId = window.setTimeout(() => this.type(), delay);
+      } else {
+        const card = this.element.closest(".ai-summary-card");
+        card?.classList.add("ai-typing-done");
+      }
+    }
+
+    destroy() {
+      if (this.timeoutId) clearTimeout(this.timeoutId);
+    }
+  }
+
+  function prefersReducedMotion(): boolean {
+    return (
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
+  function initAiSummaryTypewriters() {
+    const elements = document.querySelectorAll<HTMLElement>(".ai-typewriter");
+    elements.forEach((el) => {
+      const host = el.parentElement as HTMLElement | null;
+      if (!host) return;
+      const existing = (host as any).__aiTypewriter as AiSummaryTypewriter | undefined;
+      if (existing) existing.destroy();
+      el.textContent = "";
+      const card = host.closest(".ai-summary-card");
+      card?.classList.remove("ai-typing-done");
+      const instance = new AiSummaryTypewriter(host);
+      (host as any).__aiTypewriter = instance;
+
+      // 尊重用户的减少动效偏好：直接显示完整文本
+      if (prefersReducedMotion()) {
+        instance.showAll();
+        return;
+      }
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                instance.start();
+                observer.disconnect();
+              }
+            });
+          },
+          { threshold: 0.15 }
+        );
+        observer.observe(host);
+      } else {
+        instance.start();
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAiSummaryTypewriters);
+  } else {
+    initAiSummaryTypewriters();
+  }
+
+  // 支持 swup 页面切换时重新初始化
+  document.addEventListener("swup:contentReplaced", initAiSummaryTypewriters);
+  document.addEventListener("swup:content:replace", initAiSummaryTypewriters);
+  document.addEventListener("swup:page:view", initAiSummaryTypewriters);
+
+  if (typeof window !== "undefined" && (window as any).swup?.hooks) {
+    (window as any).swup.hooks.on("content:replace", initAiSummaryTypewriters);
+    (window as any).swup.hooks.on("page:view", initAiSummaryTypewriters);
+  }
+
+  // 加密文章解密后重新初始化（AiSummary 在加密内容中，需等待解密注入 DOM）
+  document.addEventListener("password:decrypted", initAiSummaryTypewriters);
+</script>
+
 <style>
 	.ai-summary-card {
+		position: relative;
+		overflow: hidden;
 		background: color-mix(in srgb, var(--primary) 5%, transparent);
+		border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
 		border-radius: var(--radius-large);
 		padding: 1rem 1.25rem;
 		transition: all 0.2s ease;
 	}
 
+	.ai-summary-card-glow {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(
+				120% 80% at 0% 0%,
+				color-mix(in srgb, var(--primary) 10%, transparent) 0%,
+				transparent 55%
+			),
+			radial-gradient(
+				100% 60% at 100% 0%,
+				color-mix(in srgb, var(--primary) 8%, transparent) 0%,
+				transparent 60%
+			);
+		pointer-events: none;
+		opacity: 0.9;
+	}
+
 	:global(.dark) .ai-summary-card {
 		background: color-mix(in srgb, var(--primary) 8%, transparent);
+		border-color: color-mix(in srgb, var(--primary) 18%, transparent);
+	}
+
+	.ai-summary-card > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	.ai-icon-wrap {
+		box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 40%, transparent);
+		animation: ai-icon-pulse 2.4s ease-in-out infinite;
+	}
+
+	@keyframes ai-icon-pulse {
+		0%, 100% {
+			box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 35%, transparent);
+		}
+		50% {
+			box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 0%, transparent);
+		}
+	}
+
+	.ai-model-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		padding: 0.125rem 0.625rem;
+		border-radius: 9999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: var(--primary);
+		background: color-mix(in srgb, var(--primary) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent);
+		backdrop-filter: blur(4px);
+	}
+
+	.ai-model-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 9999px;
+		background: var(--primary);
+		box-shadow: 0 0 6px color-mix(in srgb, var(--primary) 70%, transparent);
+		animation: ai-dot-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes ai-dot-pulse {
+		0%, 100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+		50% {
+			opacity: 0.45;
+			transform: scale(0.7);
+		}
+	}
+
+	.ai-typewriter {
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	.ai-cursor {
+		display: inline-block;
+		width: 2px;
+		height: 1.1em;
+		margin-left: 2px;
+		background: var(--primary);
+		vertical-align: text-bottom;
+		border-radius: 1px;
+		animation: ai-cursor-blink 1s step-end infinite;
+	}
+
+	.ai-summary-card.ai-typing-done .ai-cursor {
+		animation: none;
+		opacity: 0;
+	}
+
+	@keyframes ai-cursor-blink {
+		0%, 50% {
+			opacity: 1;
+		}
+		51%, 100% {
+			opacity: 0;
+		}
+	}
+
+	.ai-disclaimer {
+		font-style: italic;
+		opacity: 0.75;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ai-cursor,
+		.ai-model-dot,
+		.ai-icon-wrap {
+			animation: none !important;
+		}
+		.ai-cursor {
+			opacity: 0;
+		}
 	}
 </style>

@@ -27,6 +27,7 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
 	// 语言徽章插件配置
 	pluginLanguageBadge: {
 		// 是否启用语言徽章插件
+		//当前版本不支持，等上游更新，开启会导致代码无高亮显示
 		enable: false,
 	},
 };

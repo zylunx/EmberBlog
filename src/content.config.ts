@@ -22,7 +22,8 @@ const postsCollection = defineCollection({
 		comment: z.boolean().optional().default(true),
 		password: z.string().optional().default(""),
 		passwordHint: z.string().optional().default(""),
-		ai: z.string().optional().default(""),
+		// ai 字段支持 string（总结文本）或 boolean（false 表示禁用 AI 总结）
+		ai: z.union([z.string(), z.boolean()]).default(""),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),

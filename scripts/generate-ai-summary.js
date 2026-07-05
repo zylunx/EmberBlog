@@ -192,8 +192,15 @@ async function processFile(filePath) {
 		const rawContent = fs.readFileSync(filePath, "utf-8");
 		const parsed = matter(rawContent);
 
-		// 检查是否已有 ai 字段
-		if (!FORCE && parsed.data[CONFIG.aiField]) {
+		// ai: false 表示明确禁用 AI 总结，跳过
+		if (parsed.data[CONFIG.aiField] === false) {
+			log.skip(`${relativePath} 已禁用 AI 总结（ai: false），跳过`);
+			return { file: relativePath, status: "skipped" };
+		}
+
+		// 检查是否已有 AI 总结（仅非空字符串才视为已有总结）
+		const existingSummary = parsed.data[CONFIG.aiField];
+		if (!FORCE && typeof existingSummary === "string" && existingSummary) {
 			log.skip(`${relativePath} 已有 AI 总结，跳过`);
 			return { file: relativePath, status: "skipped" };
 		}

@@ -18,16 +18,18 @@ import {
 import { Icon } from "astro-icon/components";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import CoverImage from "@/components/common/CoverImage.astro";
 import AiSummary from "@/components/features/AiSummary.astro";
 import PostMetadata from "@/components/layout/PostMeta.astro";
 import RecommendedPost from "@/components/misc/RecommendedPost.astro";
 import SharePoster from "@/components/misc/SharePoster.svelte";
+import { coverImageConfig } from "@/config/coverImageConfig";
 import { licenseConfig } from "@/config/licenseConfig";
 import { profileConfig } from "@/config/profileConfig";
 import { siteConfig } from "@/config/siteConfig";
 import { sponsorConfig } from "@/config/sponsorConfig";
 import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-import { processCoverImageSync } from "@/utils/image-utils";
+import { getApiUrlList, processCoverImageSync } from "@/utils/image-utils";
 import { url } from "@/utils/url-utils";
 
 export async function getStaticPaths() {
@@ -57,6 +59,7 @@ const bannerPostMeta = {
 
 // 处理随机图：如果image为"api"，则从配置的API获取随机图
 const processedImage = processCoverImageSync(entry.data.image, entry.id);
+const apiUrls = getApiUrlList(entry.data.image, entry.id);
 
 let posterCoverUrl = processedImage;
 if (processedImage) {
@@ -234,17 +237,41 @@ const relatedPosts = await getRelatedPosts(entry, 5);
           category={entry.data.category || undefined}
           id={entry.id}
         />
-        <div class="border-(--line-divider) border-dashed border-b mt-3 mb-5" />
+        {
+          !processedImage && (
+            <div class="border-(--line-divider) border-dashed border-b mt-3 mb-5" />
+          )
+        }
       </div>
 
+      <!-- always show cover as long as it has one -->
+
       {
-        entry.data.ai && (
+        processedImage && coverImageConfig.enableInPost && (
+          <div style="margin-top:1rem;">
+            <CoverImage
+              id="post-cover"
+              src={processedImage}
+              basePath={getFileDirFromPath(entry.filePath || '')}
+              class="mb-8 rounded-xl banner-container onload-animation"
+              preview={false}
+              apiUrls={apiUrls}
+            />
+          </div>
+        )
+      }
+
+      {
+        typeof entry.data.ai === "string" && entry.data.ai && !entry.data.password && (
           <AiSummary summary={entry.data.ai} />
         )
       }
 
       {entry.data.password ? (
         <EncryptedPost password={entry.data.password} slug={entry.id} hint={entry.data.passwordHint}>
+          {typeof entry.data.ai === "string" && entry.data.ai && (
+            <AiSummary summary={entry.data.ai} />
+          )}
           <Markdown class="mb-6 markdown-content onload-animation">
             <Content />
           </Markdown>

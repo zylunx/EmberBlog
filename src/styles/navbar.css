@@ -35,9 +35,15 @@
 #navbar>div {
     background-color: var(--card-bg);
     border: 1px solid transparent;
-    border-radius: 0 0 0.75rem 0.75rem;
+    border-radius: 1.5rem;
     backdrop-filter: blur(0);
     @apply navbar-surface-transition;
+}
+
+/* 悬浮导航栏：与顶部/底部保持间距，营造悬浮感（仅在非固定导航栏模式下生效） */
+body:not(.sticky-navbar) #navbar>div {
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
 }
 
 
@@ -68,7 +74,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
     body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"]>div {
         backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
         background: rgba(255, 255, 255, var(--opacity-55)) !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: var(--shadow-navbar) !important;
     }
 
@@ -88,7 +94,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
         backdrop-filter: blur(0) !important;
         background: transparent !important;
         border: none !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: none !important;
     }
 
@@ -97,7 +103,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
     body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"].scrolled>div {
         backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
         background: rgba(255, 255, 255, var(--opacity-55)) !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: var(--shadow-navbar) !important;
     }
 }
@@ -113,7 +119,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
     body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"]>div {
         backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
         background: rgba(255, 255, 255, var(--opacity-55)) !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: var(--shadow-navbar) !important;
     }
 
@@ -133,7 +139,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
         backdrop-filter: blur(0) !important;
         background: transparent !important;
         border: none !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: none !important;
     }
 
@@ -142,7 +148,7 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
     body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div {
         backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
         background: rgba(255, 255, 255, var(--opacity-55)) !important;
-        border-radius: 0 0 0.75rem 0.75rem !important;
+        border-radius: 1.5rem !important;
         box-shadow: var(--shadow-navbar) !important;
     }
 }
@@ -220,21 +226,16 @@ body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scro
 }
 
 /* ============================================
- * 移动端去掉底部圆角
+ * 移动端悬浮导航栏：保留圆角并增加左右边距
  * ============================================ */
 @media (max-width: 767px) {
-    #navbar>div {
-        border-radius: 0 !important;
+    body:not(.sticky-navbar) #navbar>div {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.5rem !important;
     }
-
-    /* 覆盖 banner 模式 semi / semifull 下的圆角 */
-    #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
-    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
-    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
-    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
-    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div,
-    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div {
-        border-radius: 0 !important;
+    #navbar>div {
+        margin-left: 0.75rem !important;
+        margin-right: 0.75rem !important;
     }
 }
 
