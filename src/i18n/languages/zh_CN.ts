@@ -383,6 +383,14 @@ export const zh_CN: Translation = {
 	[Key.galleryNoAlbums]: "暂无相册",
 	[Key.galleryBackToAlbums]: "返回相册列表",
 	[Key.searchAlbums]: "搜索相簿...",
+	[Key.galleryLocalAlbum]: "本地相册",
+	[Key.galleryNetworkAlbum]: "网络相册",
+	[Key.galleryCategory]: "分类",
+	[Key.galleryQuantity]: "数量",
+	[Key.galleryRandomFetch]: "随机获取",
+	[Key.galleryFetching]: "获取中...",
+	[Key.galleryFetchError]: "获取失败，请稍后重试",
+	[Key.galleryNoImages]: "暂无图片，点击上方按钮随机获取",
 
 	// 密码保护
 	[Key.passwordProtected]: "密码保护",

@@ -394,6 +394,16 @@ export const ru: Translation = {
 	[Key.galleryNoAlbums]: "Пока нет альбомов",
 	[Key.galleryBackToAlbums]: "Вернуться к альбомам",
 	[Key.searchAlbums]: "Поиск альбомов...",
+	[Key.galleryLocalAlbum]: "Локальные альбомы",
+	[Key.galleryNetworkAlbum]: "Сетевой альбом",
+	[Key.galleryCategory]: "Категория",
+	[Key.galleryQuantity]: "Количество",
+	[Key.galleryRandomFetch]: "Случайная загрузка",
+	[Key.galleryFetching]: "Загрузка...",
+	[Key.galleryFetchError]:
+		"Не удалось загрузить изображения. Попробуйте снова.",
+	[Key.galleryNoImages]:
+		"Пока нет изображений. Нажмите кнопку выше для случайной загрузки.",
 
 	// Защита паролем
 	[Key.passwordProtected]: "Защищено паролем",

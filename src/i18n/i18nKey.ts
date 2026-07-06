@@ -379,6 +379,14 @@ enum I18nKey {
 	galleryNoAlbums = "galleryNoAlbums",
 	galleryBackToAlbums = "galleryBackToAlbums",
 	searchAlbums = "searchAlbums",
+	galleryLocalAlbum = "galleryLocalAlbum",
+	galleryNetworkAlbum = "galleryNetworkAlbum",
+	galleryCategory = "galleryCategory",
+	galleryQuantity = "galleryQuantity",
+	galleryRandomFetch = "galleryRandomFetch",
+	galleryFetching = "galleryFetching",
+	galleryFetchError = "galleryFetchError",
+	galleryNoImages = "galleryNoImages",
 
 	// 密码保护
 	passwordProtected = "passwordProtected",

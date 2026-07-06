@@ -168,12 +168,12 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
           "rounded-(--radius-large) md:rounded-xl overflow-hidden",
         ]}
       >
-        <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
+        <div class="post-card-image-overlay absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
         <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
           <Icon
             is:inline
             name="material-symbols:chevron-right-rounded"
-            class="transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
+            class="post-card-image-icon transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
           />
         </div>
         <CoverImage
@@ -212,6 +212,42 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
 </div>
 
 <style define:vars={{ coverWidth, descriptionClampLines }}>
+  .post-card-wrapper {
+    border: 1px solid transparent;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .post-card-wrapper:hover {
+    border-color: var(--primary);
+  }
+
+  :global(.enable-card-border) .post-card-wrapper:not(:hover) {
+    border-color: var(--line-divider);
+  }
+
+  .post-card-wrapper:hover .post-card-image :global(.cover-image-container) {
+    transform: scale(1.1);
+  }
+
+  .post-card-wrapper:active .post-card-image :global(.cover-image-container) {
+    transform: scale(1.15);
+  }
+
+  .post-card-wrapper:hover .post-card-image-overlay {
+    background-color: rgb(0 0 0 / 0.3);
+  }
+
+  .post-card-wrapper:active .post-card-image-overlay {
+    background-color: rgb(0 0 0 / 0.5);
+  }
+
+  .post-card-wrapper:hover .post-card-image-icon {
+    opacity: 1;
+    transform: scale(1);
+  }
+
   .description-clamped {
     display: -webkit-box;
     -webkit-box-orient: vertical;

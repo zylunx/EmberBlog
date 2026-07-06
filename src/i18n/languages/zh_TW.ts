@@ -385,6 +385,14 @@ export const zh_TW: Translation = {
 	[Key.galleryNoAlbums]: "暫無相簿",
 	[Key.galleryBackToAlbums]: "返回相簿列表",
 	[Key.searchAlbums]: "搜尋相簿...",
+	[Key.galleryLocalAlbum]: "本地相簿",
+	[Key.galleryNetworkAlbum]: "網路相簿",
+	[Key.galleryCategory]: "分類",
+	[Key.galleryQuantity]: "數量",
+	[Key.galleryRandomFetch]: "隨機取得",
+	[Key.galleryFetching]: "取得中...",
+	[Key.galleryFetchError]: "取得失敗，請稍後再試",
+	[Key.galleryNoImages]: "暫無圖片，點擊上方按鈕隨機取得",
 
 	// 密碼保護
 	[Key.passwordProtected]: "密碼保護",

@@ -35,6 +35,7 @@ interface PostMetaTag {
 export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: Post[] = [];
+export let foldArticle = true;
 
 // ===== 状态 =====
 let yearGroups: YearGroup[] = [];
@@ -46,6 +47,7 @@ let categoryColors: Map<string, string> = new Map();
 let hoveredPostId: string | null = null;
 let highlightedYear: number | null = null;
 let highlightedMonth: string | null = null;
+let expandedYears: Set<number> = new Set();
 
 // ===== 高亮 SVG path 状态 =====
 // 用一条 SVG path 绘制从年节点 → 月节点 → 文章节点的整条高亮线
@@ -150,6 +152,22 @@ function groupByYearMonth(posts: Post[]): YearGroup[] {
 				totalCount: months.reduce((s, m) => s + m.posts.length, 0),
 			};
 		});
+}
+
+function initializeExpandedYears(groups: YearGroup[]): void {
+	if (!foldArticle) {
+		expandedYears = new Set(groups.map((group) => group.year));
+		return;
+	}
+
+	const currentYear = new Date().getFullYear();
+	expandedYears = new Set(
+		groups.some((group) => group.year === currentYear) ? [currentYear] : [],
+	);
+}
+
+function isYearExpanded(year: number): boolean {
+	return expandedYears.has(year);
 }
 
 function formatFilterValues(f: ActiveFilter): string {
@@ -278,6 +296,23 @@ function onPostLeave() {
 // ===== Svelte use: 指令（注册 DOM 引用） =====
 function registerYearBlock(node: HTMLElement, year: number) {
 	yearBlockRefs.set(year, node);
+	if (node instanceof HTMLDetailsElement) {
+		node.open = isYearExpanded(year);
+		const handleToggle = () => {
+			const next = new Set(expandedYears);
+			if (node.open) next.add(year);
+			else next.delete(year);
+			expandedYears = next;
+			onPostLeave();
+		};
+		node.addEventListener("toggle", handleToggle);
+		return {
+			destroy() {
+				node.removeEventListener("toggle", handleToggle);
+				yearBlockRefs.delete(year);
+			},
+		};
+	}
 	return {
 		destroy() {
 			yearBlockRefs.delete(year);
@@ -346,6 +381,7 @@ onMount(() => {
 	filteredPostCount = filtered.length;
 	initializeCategoryColors(filtered);
 	yearGroups = groupByYearMonth(filtered);
+	initializeExpandedYears(yearGroups);
 });
 </script>
 
@@ -374,12 +410,15 @@ onMount(() => {
 
 	<!-- 年份列表 -->
 	{#each yearGroups as yearGroup (yearGroup.year)}
-		<div
+		<details
 			class="ap-year-block"
 			use:registerYearBlock={yearGroup.year}
 		>
 			<!-- 年份标题行 -->
-			<div class="ap-year-header">
+			<summary
+				class="ap-year-header ap-year-toggle"
+				aria-label={`${yearGroup.year}${i18n(I18nKey.year)}`}
+			>
 				<div class="ap-col">
 					<div
 						class="ap-node ap-year-node"
@@ -392,7 +431,8 @@ onMount(() => {
 						共 {yearGroup.totalCount} {i18n(yearGroup.totalCount === 1 ? I18nKey.postCount : I18nKey.postsCount)}
 					</span>
 				</div>
-			</div>
+				<span class="ap-fold-indicator" aria-hidden="true"></span>
+			</summary>
 
 			<!-- 月份区域 -->
 			<div class="ap-months-area">
@@ -479,7 +519,7 @@ onMount(() => {
 					</div>
 				{/each}
 			</div>
-		</div>
+		</details>
 	{/each}
 
 	<!-- 高亮 SVG 线：一条连续 path 覆盖虚线，拐角带圆弧 -->
@@ -518,6 +558,15 @@ onMount(() => {
 }
 
 /* 年竖线：从年节点中心延伸到最后一个月的横线连接处 */
+.ap-year-block:not([open]) {
+	margin-bottom: 0.75rem;
+}
+.ap-year-block:not([open])::before {
+	content: none;
+}
+.ap-year-block:not([open]):last-child {
+	margin-bottom: 0;
+}
 .ap-year-block::before {
 	content: "";
 	position: absolute;
@@ -668,6 +717,46 @@ onMount(() => {
 /* ── 标题行 ── */
 .ap-year-header, .ap-month-header {
 	display: flex; align-items: center; min-height: calc(var(--tw) + 0.5rem);
+}
+.ap-year-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+	flex: 1;
+	min-width: 0;
+	padding: 0.35rem 0.65rem 0.35rem 0;
+	border-radius: 0.5rem;
+	text-align: left;
+	transition: background-color 0.15s ease;
+	cursor: pointer;
+	list-style: none;
+}
+.ap-year-toggle::-webkit-details-marker {
+	display: none;
+}
+.ap-year-toggle:hover {
+	background: var(--btn-plain-bg-hover);
+}
+.ap-year-toggle:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+.ap-fold-indicator {
+	width: 0.5rem;
+	height: 0.5rem;
+	margin-right: 0.25rem;
+	border-right: 2px solid var(--content-meta);
+	border-bottom: 2px solid var(--content-meta);
+	transform: rotate(45deg);
+	transition: transform 0.15s ease, border-color 0.15s ease;
+	flex-shrink: 0;
+}
+.ap-year-block:not([open]) .ap-fold-indicator {
+	transform: rotate(-45deg);
+}
+.ap-year-toggle:hover .ap-fold-indicator {
+	border-color: var(--primary);
 }
 .ap-year-label, .ap-month-label {
 	display: flex; align-items: baseline; gap: 0.75rem; padding-left: 0.75rem; flex: 1;

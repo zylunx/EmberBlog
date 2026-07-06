@@ -14,6 +14,7 @@ type PostEntry = CollectionEntry<"posts">;
 
 const masonryEnabled = siteConfig.postListLayout.grid.masonry;
 const columnWidth = siteConfig.postListLayout.grid.columnWidth || 280;
+const gridColumns = siteConfig.postListLayout.grid.columns || "auto-fill";
 
 // 根据配置设置初始布局模式，避免闪烁
 const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
@@ -32,7 +33,7 @@ const initialLayoutClass =
   data-mobile-default-layout={mobileDefaultLayout}
   data-masonry-enabled={masonryEnabled}
   data-column-width={columnWidth}
-  style={`--post-card-min-width: ${columnWidth}px;`}
+  style={`--post-card-min-width: ${columnWidth}px; --post-grid-columns: ${gridColumns};`}
 >
   {
     page.data.map((entry: PostEntry, index: number) => (
@@ -325,8 +326,14 @@ const initialLayoutClass =
 <style is:global>
   .post-grid-auto {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--post-card-min-width, 320px), 1fr));
+    grid-template-columns: repeat(var(--post-grid-columns, auto-fill), minmax(min(100%, var(--post-card-min-width, 320px)), 1fr));
     gap: 1rem;
+  }
+
+  @media (max-width: 767px) {
+    .post-grid-auto {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   /* 移动端列表模式下缩小元数据 */
@@ -385,7 +392,7 @@ const initialLayoutClass =
 
   #post-list-container.grid-mode :global(.post-card-content) {
     width: 100% !important;
-    padding: 1rem !important;
+    padding: 1.35rem 1.25rem 1.45rem !important;
   }
 
   #post-list-container.grid-mode :global(.no-cover .post-card-content) {
@@ -395,7 +402,7 @@ const initialLayoutClass =
   #post-list-container.grid-mode :global(.post-card-title) {
     font-size: 1.35rem !important;
     line-height: 1.75rem !important;
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
   }
 
   #post-list-container.grid-mode :global(.post-card-title::before) {
@@ -403,8 +410,12 @@ const initialLayoutClass =
   }
 
   #post-list-container.grid-mode :global(.post-meta) {
-    margin-bottom: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
     gap: 0.5rem !important;
+  }
+
+  #post-list-container.grid-mode :global(.description) {
+    margin-bottom: 0.75rem !important;
   }
 
   #post-list-container.grid-mode :global(.post-meta .text-xl) {

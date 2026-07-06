@@ -391,6 +391,14 @@ export const ja: Translation = {
 	[Key.galleryNoAlbums]: "アルバムがありません",
 	[Key.galleryBackToAlbums]: "アルバム一覧に戻る",
 	[Key.searchAlbums]: "アルバムを検索...",
+	[Key.galleryLocalAlbum]: "ローカルアルバム",
+	[Key.galleryNetworkAlbum]: "ネットワークアルバム",
+	[Key.galleryCategory]: "カテゴリー",
+	[Key.galleryQuantity]: "数量",
+	[Key.galleryRandomFetch]: "ランダム取得",
+	[Key.galleryFetching]: "取得中...",
+	[Key.galleryFetchError]: "画像の取得に失敗しました。もう一度お試しください。",
+	[Key.galleryNoImages]: "画像がありません。上のボタンでランダム取得できます。",
 
 	// パスワード保護
 	[Key.passwordProtected]: "パスワード保護",

@@ -392,6 +392,15 @@ export const en: Translation = {
 	[Key.galleryNoAlbums]: "No albums yet",
 	[Key.galleryBackToAlbums]: "Back to albums",
 	[Key.searchAlbums]: "Search albums...",
+	[Key.galleryLocalAlbum]: "Local albums",
+	[Key.galleryNetworkAlbum]: "Network album",
+	[Key.galleryCategory]: "Category",
+	[Key.galleryQuantity]: "Quantity",
+	[Key.galleryRandomFetch]: "Random fetch",
+	[Key.galleryFetching]: "Fetching...",
+	[Key.galleryFetchError]: "Failed to fetch images. Please try again.",
+	[Key.galleryNoImages]:
+		"No images yet. Use the button above to fetch random images.",
 
 	// Password Protection
 	[Key.passwordProtected]: "Password Protected",

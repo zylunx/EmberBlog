@@ -191,6 +191,7 @@ import "@/styles/fancybox-custom.css";
   // Swup 生命周期整合
   document.addEventListener("swup:content:replace", setup);
   document.addEventListener("swup:visit:start", cleanupFancybox);
+  document.addEventListener("gallery:network-loaded", setup);
 
   // 加密文章解密后重新绑定灯箱
   document.addEventListener("password:decrypted", () => {

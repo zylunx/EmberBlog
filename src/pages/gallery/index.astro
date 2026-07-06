@@ -1,95 +1,96 @@
 ---
 import { Icon } from "astro-icon/components";
 import AlbumCard from "@/components/pages/gallery/AlbumCard.astro";
+import NetworkAlbum from "@/components/pages/gallery/NetworkAlbum.svelte";
 import { galleryConfig, siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getAlbumCover, scanAlbumPhotos } from "@/utils/gallery-utils";
 
-// 检查页面是否启用
 if (!siteConfig.pages.gallery) {
 	return Astro.redirect("/404/");
 }
 
 const title = i18n(I18nKey.gallery);
 const description = i18n(I18nKey.galleryDescription);
+const networkConfig = galleryConfig.networkAlbum || {};
 
-// 构建相册数据（扫描照片、获取封面）
 const albums = galleryConfig.albums.map((album) => {
 	const photos = scanAlbumPhotos(album.id);
 	const cover = getAlbumCover(album, photos);
 	return { ...album, cover, photoCount: photos.length };
 });
 
-// 收集所有标签用于筛选
-const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
+const allTags = [
+	...new Set(albums.flatMap((album) => album.tags || [])),
+].sort();
+const networkLabels = {
+	category: i18n(I18nKey.galleryCategory),
+	quantity: i18n(I18nKey.galleryQuantity),
+	randomFetch: i18n(I18nKey.galleryRandomFetch),
+	fetching: i18n(I18nKey.galleryFetching),
+	fetchError: i18n(I18nKey.galleryFetchError),
+	noImages: i18n(I18nKey.galleryNoImages),
+};
 ---
 
 <MainGridLayout title={title} description={description}>
-  <div
-    class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32"
-  >
-    <div class="card-base z-10 px-9 py-6 relative w-full">
-      <!-- 页面标题和描述 -->
-      <div class="mb-4">
-        <div class="flex items-center gap-3 mb-3">
-          <div
-            class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70"
-          >
-            <Icon is:inline name="material-symbols:photo-library" class="text-[1.5rem]" />
-          </div>
-          <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            {title}
-          </div>
-        </div>
-        {description && (
-          <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
-            {description}
-          </p>
-        )}
+  <section class="gallery-page card-base">
+    <div class="gallery-page-header">
+      <div class="gallery-title-icon">
+        <Icon is:inline name="material-symbols:photo-library" class="text-[1.5rem]" />
       </div>
+      <div>
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </div>
+    </div>
 
-      <!-- 搜索框 + 标签筛选 -->
+    <div class="gallery-tabs" data-gallery-tabs>
+      <span class="gallery-tabs-indicator" data-gallery-indicator></span>
+      <button type="button" class="is-active" data-gallery-tab="local">
+        <Icon is:inline name="material-symbols:folder-open" class="text-lg" />
+        <span>{i18n(I18nKey.galleryLocalAlbum)}</span>
+      </button>
+      <button type="button" data-gallery-tab="network">
+        <Icon is:inline name="material-symbols:cloud" class="text-lg" />
+        <span>{i18n(I18nKey.galleryNetworkAlbum)}</span>
+      </button>
+    </div>
+
+    <div class="gallery-section is-active" data-gallery-section="local">
       {albums.length > 0 && (
-        <gallery-filter class="mb-6">
-          <div class="relative mb-3">
+        <gallery-filter class="gallery-filter">
+          <div class="gallery-search">
             <Icon is:inline
               name="material-symbols:search"
-              class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 text-lg pointer-events-none"
+              class="gallery-search-icon"
             />
             <input
               type="text"
               data-search
               placeholder={i18n(I18nKey.searchAlbums)}
-              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-(--line-divider) bg-transparent text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-(--primary) focus:ring-1 focus:ring-(--primary) outline-none transition-all duration-200 text-sm"
             />
           </div>
+
           {allTags.length > 0 && (
-            <div class="flex flex-wrap gap-2">
-              <button
-                data-tag="all"
-                class="btn-regular px-3 py-1.5 rounded-lg bg-(--primary) text-white hover:bg-(--primary) transition-colors duration-200 text-sm font-medium"
-              >
+            <div class="gallery-tag-filter" data-gallery-filter>
+              <span class="gallery-filter-indicator" data-gallery-filter-indicator></span>
+              <button type="button" class="is-active" data-tag="all">
                 {i18n(I18nKey.all)}
               </button>
               {allTags.map((tag) => (
-                <button
-                  data-tag={tag}
-                  class="btn-regular px-3 py-1.5 rounded-lg bg-(--btn-regular-bg) text-(--btn-content) hover:bg-(--btn-regular-bg-hover) transition-colors duration-200 text-sm font-medium"
-                >
-                  {tag}
-                </button>
+                <button type="button" data-tag={tag}>{tag}</button>
               ))}
             </div>
           )}
         </gallery-filter>
       )}
 
-      <!-- 相册卡片网格 -->
       {albums.length > 0 ? (
         <>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-4">
+          <div class="gallery-album-grid">
             {albums.map((album) => (
               <AlbumCard
                 id={album.id}
@@ -104,112 +105,151 @@ const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
               />
             ))}
           </div>
-          {/* 搜索无结果提示 */}
-          <div class="albums-empty hidden flex-col items-center justify-center py-12 text-neutral-400 dark:text-neutral-500">
-            <Icon is:inline name="material-symbols:search-off-rounded" class="text-4xl mb-3" />
-            <div class="text-sm">{i18n(I18nKey.searchNoResults)}</div>
+          <div class="gallery-empty albums-empty hidden">
+            <Icon is:inline name="material-symbols:search-off-rounded" class="text-4xl" />
+            <p>{i18n(I18nKey.searchNoResults)}</p>
           </div>
         </>
       ) : (
-        <div class="flex flex-col items-center justify-center py-16 text-neutral-400 dark:text-neutral-500">
-          <Icon is:inline name="material-symbols:photo-library" class="text-6xl mb-4 opacity-50" />
-          <p class="text-lg">{i18n(I18nKey.galleryNoAlbums)}</p>
+        <div class="gallery-empty">
+          <Icon is:inline name="material-symbols:photo-library" class="text-6xl" />
+          <p>{i18n(I18nKey.galleryNoAlbums)}</p>
         </div>
       )}
     </div>
-  </div>
 
-  <script slot="head" is:inline>
-    if (!customElements.get("gallery-filter")) {
-      class GalleryFilter extends HTMLElement {
-        selectedTag = "all";
+    <div class="gallery-section" data-gallery-section="network">
+      <NetworkAlbum
+        client:visible
+        apiUrl={networkConfig.apiUrl}
+        categories={networkConfig.categories}
+        defaultCategory={networkConfig.defaultCategory}
+        maxQuantity={networkConfig.maxQuantity ?? 10}
+        defaultQuantity={networkConfig.defaultQuantity ?? 6}
+        cooldownSeconds={networkConfig.cooldownSeconds ?? 5}
+        labels={networkLabels}
+      />
+    </div>
+  </section>
 
-        constructor() {
-          super();
-        }
+  <script is:inline>
+    (() => {
+      function updateIndicator(container, activeButton, selector) {
+        const indicator = container?.querySelector(selector);
+        if (!indicator || !activeButton) return;
+        indicator.style.left = `${activeButton.offsetLeft}px`;
+        indicator.style.top = `${activeButton.offsetTop}px`;
+        indicator.style.width = `${activeButton.offsetWidth}px`;
+        indicator.style.height = `${activeButton.offsetHeight}px`;
+      }
 
-        connectedCallback() {
-          this.addEventListener("click", this.handleClick);
-          const input = this.querySelector("[data-search]");
-          if (input) {
-            input.addEventListener("input", () => this.applyFilters());
-          }
-        }
+      function activateTab(name, updateHash = true) {
+        const tabRoot = document.querySelector("[data-gallery-tabs]");
+        if (!tabRoot) return;
 
-        disconnectedCallback() {
-          this.removeEventListener("click", this.handleClick);
-        }
+        const tabs = [...document.querySelectorAll("[data-gallery-tab]")];
+        const sections = [...document.querySelectorAll("[data-gallery-section]")];
+        const activeTab = tabs.find((tab) => tab.dataset.galleryTab === name) || tabs[0];
+        const activeName = activeTab?.dataset.galleryTab;
 
-        handleClick(e) {
-          const target = e.target;
-          const button = target.closest("button");
-          if (!button) return;
+        tabs.forEach((tab) => tab.classList.toggle("is-active", tab === activeTab));
+        sections.forEach((section) => {
+          section.classList.toggle("is-active", section.dataset.gallerySection === activeName);
+        });
+        updateIndicator(tabRoot, activeTab, "[data-gallery-indicator]");
 
-          this.selectedTag = button.dataset.tag;
-          const filters = this.querySelectorAll("button");
-
-          filters.forEach((f) => {
-            f.classList.remove("bg-(--primary)", "text-white");
-            f.classList.remove("hover:bg-(--primary)");
-            f.classList.add("bg-(--btn-regular-bg)", "text-(--btn-content)");
-            f.classList.add("hover:bg-(--btn-regular-bg-hover)");
-
-            if (f === button) {
-              f.classList.remove("bg-(--btn-regular-bg)", "text-(--btn-content)");
-              f.classList.remove("hover:bg-(--btn-regular-bg-hover)");
-              f.classList.add("bg-(--primary)", "text-white");
-              f.classList.add("hover:bg-(--primary)");
-            }
-          });
-
-          this.applyFilters();
-        }
-
-        applyFilters() {
-          const container = this.closest(".card-base");
-          if (!container) return;
-
-          const input = this.querySelector("[data-search]");
-          const query = (input?.value || "").toLowerCase().trim();
-          const cards = container.querySelectorAll(".album-card");
-
-          let hasVisible = false;
-
-          cards.forEach((card) => {
-            const cardEl = card;
-            const tags = (cardEl.dataset.tags || "").split(",");
-            const name = (cardEl.querySelector("h3")?.textContent || "").toLowerCase();
-            const desc = (cardEl.querySelector("p")?.textContent || "").toLowerCase();
-            const location = (cardEl.querySelector(".inline-flex")?.textContent || "").toLowerCase();
-
-            const tagMatch =
-              this.selectedTag === "all" ||
-              (this.selectedTag && tags.includes(this.selectedTag));
-            const searchMatch =
-              !query ||
-              name.includes(query) ||
-              desc.includes(query) ||
-              location.includes(query) ||
-              tags.some((t) => t.toLowerCase().includes(query));
-
-            if (tagMatch && searchMatch) {
-              cardEl.style.display = "";
-              cardEl.classList.add("animate-fade-in-up");
-              hasVisible = true;
-            } else {
-              cardEl.style.display = "none";
-              cardEl.classList.remove("animate-fade-in-up");
-            }
-          });
-
-          const emptyEl = container.querySelector(".albums-empty");
-          if (emptyEl) {
-            emptyEl.classList.toggle("hidden", hasVisible);
-            emptyEl.classList.toggle("flex", !hasVisible);
-          }
+        if (updateHash && activeName) {
+          history.replaceState(
+            null,
+            "",
+            activeName === "network"
+              ? "#gallery-network"
+              : `${location.pathname}${location.search}`,
+          );
         }
       }
-      customElements.define("gallery-filter", GalleryFilter);
-    }
+
+      function applyFilters(filterRoot) {
+        const container = filterRoot.closest(".gallery-page");
+        if (!container) return;
+
+        const input = filterRoot.querySelector("[data-search]");
+        const activeTag = filterRoot.querySelector("[data-tag].is-active")?.dataset.tag || "all";
+        const query = (input?.value || "").toLowerCase().trim();
+        const cards = [...container.querySelectorAll(".album-card")];
+        let hasVisible = false;
+
+        cards.forEach((card) => {
+          const tags = (card.dataset.tags || "").split(",").filter(Boolean);
+          const searchableText = [
+            card.dataset.name,
+            card.dataset.description,
+            card.dataset.location,
+            card.dataset.tags,
+          ].join(" ").toLowerCase();
+          const tagMatch = activeTag === "all" || tags.includes(activeTag);
+          const searchMatch = !query || searchableText.includes(query);
+          const visible = tagMatch && searchMatch;
+
+          card.toggleAttribute("hidden", !visible);
+          card.classList.toggle("gallery-card-fade-in", visible);
+          hasVisible ||= visible;
+        });
+
+        const empty = container.querySelector(".albums-empty");
+        if (empty) empty.classList.toggle("hidden", hasVisible);
+      }
+
+      function initGallery() {
+        const tabRoot = document.querySelector("[data-gallery-tabs]");
+        if (tabRoot) {
+          activateTab(location.hash === "#gallery-network" ? "network" : "local", false);
+        }
+
+        document.querySelectorAll("[data-gallery-filter]").forEach((filter) => {
+          const active = filter.querySelector("[data-tag].is-active") || filter.querySelector("[data-tag]");
+          updateIndicator(filter, active, "[data-gallery-filter-indicator]");
+        });
+      }
+
+      if (!window.__emberGalleryReady) {
+        window.__emberGalleryReady = true;
+
+        document.addEventListener("click", (event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+
+          const tab = target.closest("[data-gallery-tab]");
+          if (tab) {
+            activateTab(tab.dataset.galleryTab);
+            return;
+          }
+
+          const tag = target.closest("[data-gallery-filter] [data-tag]");
+          if (!tag) return;
+          const filter = tag.closest("[data-gallery-filter]");
+          filter.querySelectorAll("[data-tag]").forEach((item) => {
+            item.classList.toggle("is-active", item === tag);
+          });
+          updateIndicator(filter, tag, "[data-gallery-filter-indicator]");
+          applyFilters(filter.closest("gallery-filter"));
+        });
+
+        document.addEventListener("input", (event) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          const input = target.closest("gallery-filter [data-search]");
+          if (input) applyFilters(input.closest("gallery-filter"));
+        });
+
+        window.addEventListener("hashchange", () => {
+          activateTab(location.hash === "#gallery-network" ? "network" : "local", false);
+        });
+        window.addEventListener("resize", initGallery);
+        document.addEventListener("astro:page-load", initGallery);
+      }
+
+      initGallery();
+    })();
   </script>
 </MainGridLayout>
