@@ -49,6 +49,8 @@ export type SiteConfig = {
 		border: boolean;
 		// 是否让卡片风格跟随主题色相
 		followTheme?: boolean;
+		// 是否在主页文章卡片上显示文章简介
+		showDescriptionOnHome: boolean;
 	};
 
 	// 站点开始日期，用于计算运行天数

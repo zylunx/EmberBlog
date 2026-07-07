@@ -52,6 +52,11 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Keep the default accent monochrome, then reveal the configured hue on interaction. */
+:where(a, button, summary, label, [role="button"], .group, .link, .btn-regular, .btn-card, .btn-plain, .dropdown-item, .post-card):hover {
+    --primary: var(--theme-hue-primary);
+}
+
 /* 页面顶部渐变高光效果 */
 .top-gradient-highlight {
     position: fixed;
@@ -437,6 +442,9 @@ html {
         @apply w-8 h-8 transition-colors duration-150 rounded-md flex items-center justify-center bg-(--btn-regular-bg)
         text-(--btn-content) mr-2
     }
+    .home-meta-icon {
+        @apply bg-transparent
+    }
     .with-divider {
         @apply before:content-['/'] before:ml-1.5 before:mr-1.5 before:text-(--meta-divider) before:text-sm
         before:font-medium before:first-of-type:hidden before:transition-colors before:duration-150
@@ -586,4 +594,3 @@ html {
 .pagination-info {
   @apply text-sm text-(--text-secondary) text-center mb-2;
 }
-

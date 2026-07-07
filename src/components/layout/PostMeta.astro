@@ -11,6 +11,7 @@ export interface Props {
 	updated?: Date;
 	category?: string;
 	tags?: string[];
+	hidePublishDate?: boolean;
 	hideUpdateDate?: boolean;
 	hideTagsForMobile?: boolean;
 	isHome?: boolean;
@@ -29,6 +30,7 @@ const {
 	updated,
 	category,
 	tags,
+	hidePublishDate,
 	hideUpdateDate,
 	hideTagsForMobile,
 	isHome,
@@ -40,6 +42,17 @@ const {
 } = Astro.props;
 
 const path = customPath || (id ? `/posts/${id}` : "");
+
+const metaIconClass = ["meta-icon", isHome ? "home-meta-icon" : ""]
+  .filter(Boolean)
+  .join(" ");
+
+const pinnedClass = [
+  "pinned-btn flex items-center gap-1 text-(--btn-content) rounded-md px-2 py-1.5 font-bold",
+  isHome ? "" : "bg-(--btn-regular-bg)",
+]
+  .filter(Boolean)
+  .join(" ");
 ---
 
 <div
@@ -48,34 +61,28 @@ const path = customPath || (id ? `/posts/${id}` : "");
     className,
   ]}
 >
-  <!-- pinned -->
+  <!-- publish date -->
   {
-    pinned && (
-      <div class="pinned-btn flex items-center gap-1 bg-(--btn-regular-bg) text-(--btn-content) rounded-md px-2 py-1.5 font-bold">
-        <Icon is:inline name="material-symbols:pinboard" class="text-xl" />
-        <span class="text-sm">{i18n(I18nKey.pinned)}</span>
+    !hidePublishDate && (
+      <div class="flex items-center">
+        <div class={metaIconClass}>
+          <Icon is:inline
+            name="material-symbols:calendar-today-outline-rounded"
+            class="text-xl"
+          />
+        </div>
+        <span class="text-50 text-sm font-medium"
+          >{formatDateToYYYYMMDD(published)}</span
+        >
       </div>
     )
   }
-
-  <!-- publish date -->
-  <div class="flex items-center">
-    <div class="meta-icon">
-      <Icon is:inline
-        name="material-symbols:calendar-today-outline-rounded"
-        class="text-xl"
-      />
-    </div>
-    <span class="text-50 text-sm font-medium"
-      >{formatDateToYYYYMMDD(published)}</span
-    >
-  </div>
 
   <!-- update date -->
   {
     !hideUpdateDate && updated && updated.getTime() !== published.getTime() && (
       <div class="flex items-center">
-        <div class="meta-icon">
+        <div class={metaIconClass}>
           <Icon is:inline
             name="material-symbols:edit-calendar-outline-rounded"
             class="text-xl"
@@ -90,9 +97,11 @@ const path = customPath || (id ? `/posts/${id}` : "");
 
   <!-- categories -->
   <div class="flex items-center">
-    <div class="meta-icon">
-      <Icon is:inline name="material-symbols:book-2-outline-rounded" class="text-xl" />
-    </div>
+    {!isHome && (
+      <div class={metaIconClass}>
+        <Icon is:inline name="material-symbols:book-2-outline-rounded" class="text-xl" />
+      </div>
+    )}
     <div class="flex flex-row flex-nowrap items-center">
       <a
         href={getCategoryUrl(category || "")}
@@ -105,11 +114,21 @@ const path = customPath || (id ? `/posts/${id}` : "");
     </div>
   </div>
 
+  <!-- pinned -->
+  {
+    pinned && (
+      <div class={pinnedClass}>
+        <Icon is:inline name="material-symbols:pinboard" class="text-xl" />
+        {!isHome && <span class="text-sm">{i18n(I18nKey.pinned)}</span>}
+      </div>
+    )
+  }
+
    <!-- tags -->
    {
      showTags && (
        <div class:list={["items-center", {"flex": !hideTagsForMobile, "hidden md:flex": hideTagsForMobile}]}>
-         <div class="meta-icon">
+         <div class={metaIconClass}>
            <Icon is:inline name="material-symbols:tag-rounded" class="text-xl" />
          </div>
          <div class="flex flex-row flex-nowrap items-center">

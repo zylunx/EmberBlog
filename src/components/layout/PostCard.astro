@@ -32,6 +32,7 @@ const {
 	title,
 	url,
 	published,
+	updated,
 	tags,
 	category,
 	image,
@@ -54,6 +55,7 @@ const hasCover =
 const coverWidth = "30%";
 
 const showTags = siteConfig.postListLayout.showTags;
+const showDescriptionOnHome = siteConfig.card.showDescriptionOnHome;
 const descriptionLines = Math.max(
 	0,
 	Math.trunc(siteConfig.postListLayout.descriptionLines ?? 2),
@@ -63,6 +65,27 @@ const shouldClampDescription = descriptionLines > 0;
 
 const { remarkPluginFrontmatter } = await render(entry);
 const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
+const cardDate = updated ?? published;
+
+function formatCardDate(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  if (diffMs >= 0 && diffMs < dayMs) {
+    return "刚刚";
+  }
+
+  if (diffMs >= 0 && diffMs < 7 * dayMs) {
+    return `${Math.floor(diffMs / dayMs)}天前`;
+  }
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
+
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+}
 ---
 
 <div
@@ -75,6 +98,7 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   ]}
   style={style}
 >
+  <a class="post-card-link-overlay" href={url} aria-label={title}></a>
   <!-- pinned icon -->
   <div
     class:list={[
@@ -86,6 +110,20 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
       },
     ]}
   >
+    <!-- metadata -->
+    <PostMetadata
+      published={published}
+      tags={tags}
+      hidePublishDate={true}
+      hideUpdateDate={true}
+      showTags={false}
+      category={category || undefined}
+      pinned={pinned}
+      password={password}
+      isHome={true}
+      className="mb-4 post-meta"
+    />
+
     <a
       href={url}
       class="post-card-title transition group w-full block font-bold mb-3 text-3xl text-90
@@ -107,52 +145,51 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
       }
     </a>
 
-    <!-- metadata -->
-    <PostMetadata
-      published={published}
-      tags={tags}
-      showTags={false}
-      category={category || undefined}
-      pinned={pinned}
-      password={password}
-      className="mb-4 post-meta"
-    />
-
-    <!-- description -->
-    <div
-      class:list={[
-        "transition text-75 md:pr-4 description grow",
-        { "description-clamped": shouldClampDescription },
-      ]}
-      title={descriptionText}
-    >
-      {descriptionText}
-    </div>
-
-    <!-- tags -->
     {
-      showTags && (
-        <div class="text-sm text-black/30 dark:text-white/30 flex flex-wrap gap-2 transition stats pt-3">
-          {tags &&
-            tags.length > 0 &&
-            tags.map((tag, _i) => (
-              <a
-                href={getTagUrl(tag)}
-                aria-label={`View all posts with the ${tag.trim()} tag`}
-                class="btn-regular h-6 text-xs px-2 py-1 rounded-md
-                         transition-all duration-200 hover:scale-105 active:scale-95"
-              >
-                #{tag.trim()}
-              </a>
-            ))}
-          {!(tags && tags.length > 0) && (
-            <span class="text-(--content-meta) text-xs">
-              #{i18n(I18nKey.noTags)}
-            </span>
-          )}
+      showDescriptionOnHome && (
+        <div
+          class:list={[
+            "transition text-75 md:pr-4 description grow",
+            { "description-clamped": shouldClampDescription },
+          ]}
+          title={descriptionText}
+        >
+          {descriptionText}
         </div>
       )
     }
+
+    <div class="post-card-footer mt-auto pt-5 flex items-end justify-between gap-3">
+      <!-- tags -->
+      {
+        showTags && (
+          <div class="text-sm text-black/30 dark:text-white/30 flex flex-wrap gap-2 transition stats min-w-0">
+            {tags &&
+              tags.length > 0 &&
+              tags.map((tag, _i) => (
+                <a
+                  href={getTagUrl(tag)}
+                  aria-label={`View all posts with the ${tag.trim()} tag`}
+                  class="group h-6 inline-flex items-baseline gap-1 pl-0 pr-2 py-1 rounded-md
+                           transition-all duration-200 hover:text-(--primary) hover:scale-105 active:scale-95"
+                >
+                  <span class="text-[0.7rem] text-neutral-300 dark:text-neutral-500">#</span>
+                  <span class="text-[0.8rem] text-black/80 dark:text-white/80 group-hover:text-(--primary)">{tag.trim()}</span>
+                </a>
+              ))}
+            {!(tags && tags.length > 0) && (
+              <span class="text-(--content-meta) text-xs">
+                #{i18n(I18nKey.noTags)}
+              </span>
+            )}
+          </div>
+        )
+      }
+
+      <div class="post-card-date ml-auto shrink-0 text-xs font-medium text-(--content-meta)">
+        {formatCardDate(cardDate)}
+      </div>
+    </div>
   </div>
   {
     hasCover && (
@@ -168,19 +205,11 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
           "rounded-(--radius-large) md:rounded-xl overflow-hidden",
         ]}
       >
-        <div class="post-card-image-overlay absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition" />
-        <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center ">
-          <Icon
-            is:inline
-            name="material-symbols:chevron-right-rounded"
-            class="post-card-image-icon transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl"
-          />
-        </div>
         <CoverImage
           src={processedImage}
           basePath={getFileDirFromPath(entry.filePath || "")}
           alt="Cover Image of the Post"
-          class="w-full h-full transition-transform duration-300 group-hover:scale-110 group-active:scale-115"
+          class="w-full h-full transition-transform duration-300 group-hover:scale-[1.015] group-active:scale-[1.02]"
           preview={true}
           loading={loading}
           apiUrls={apiUrls}
@@ -219,8 +248,29 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
       border-color 0.15s ease;
   }
 
+  .post-card-link-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .post-card-content {
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .post-card-content :global(a),
+  .post-card-content :global(button) {
+    pointer-events: auto;
+  }
+
   .post-card-wrapper:hover {
     border-color: var(--primary);
+  }
+
+  .post-card-wrapper:hover .post-card-title,
+  .post-card-wrapper .post-card-title:hover {
+    color: var(--theme-hue-primary) !important;
   }
 
   :global(.enable-card-border) .post-card-wrapper:not(:hover) {
@@ -228,24 +278,11 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   }
 
   .post-card-wrapper:hover .post-card-image :global(.cover-image-container) {
-    transform: scale(1.1);
+    transform: scale(1.015);
   }
 
   .post-card-wrapper:active .post-card-image :global(.cover-image-container) {
-    transform: scale(1.15);
-  }
-
-  .post-card-wrapper:hover .post-card-image-overlay {
-    background-color: rgb(0 0 0 / 0.3);
-  }
-
-  .post-card-wrapper:active .post-card-image-overlay {
-    background-color: rgb(0 0 0 / 0.5);
-  }
-
-  .post-card-wrapper:hover .post-card-image-icon {
-    opacity: 1;
-    transform: scale(1);
+    transform: scale(1.02);
   }
 
   .description-clamped {
@@ -360,8 +397,12 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   /* 网格模式：封面在顶部（移动端和桌面端一致） */
   :global(.grid-mode) .post-card-wrapper {
     flex-direction: column-reverse !important;
-    height: 100% !important;
+    height: auto !important;
     justify-content: flex-end !important;
+  }
+
+  :global(.grid-mode) .post-card-wrapper.has-cover {
+    aspect-ratio: 100 / 73;
   }
 
   :global(.grid-mode) .post-card-content {
@@ -391,7 +432,15 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
   }
 
   :global(.grid-mode) .has-cover .post-card-content {
+    flex: 0 0 45% !important;
+    height: 45% !important;
     padding-top: 0.8rem !important;
+  }
+
+  :global(.grid-mode) .has-cover .post-card-image {
+    flex: 0 0 55% !important;
+    height: 55% !important;
+    aspect-ratio: auto !important;
   }
   :global(.grid-mode) .has-cover .post-card-title::before {
     top: 1.3rem !important;

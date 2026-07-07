@@ -16,7 +16,7 @@ Use **pnpm** — `preinstall` runs `only-allow pnpm` and will reject npm/yarn.
 - `pnpm build` — full pipeline (see below). Run this for UI/config/plugin/script changes.
 - `pnpm preview` — serve the production build.
 - `pnpm new-post -- <filename>` — scaffold a post in `src/content/posts/` (nested paths allowed; `.md` appended if no extension).
-- Regenerate build artifacts individually: `pnpm icons`, `pnpm lqips`, `pnpm ai-summary` (add `-- --force` to regenerate all, `-- --dry-run` to preview).
+- Regenerate build artifacts individually: `pnpm icons`, `pnpm lqips`, `pnpm ai-summary`. Add `-- --force` to regenerate all (overwrite existing), `-- --dry-run` to preview without writing.
 
 There is **no unit test suite**. The validation path is `pnpm check` → `pnpm type-check` → `pnpm lint` → `pnpm build`, plus visual inspection via `pnpm dev`/`pnpm preview`.
 
@@ -33,31 +33,39 @@ Page visibility is gated by `siteConfig.pages.*` flags, which are also honored b
 ### Content collections
 Defined in `src/content.config.ts`: `posts` (glob of `src/content/posts/**/*.{md,mdx}`, richly typed frontmatter) and `spec` (special pages, schema-less). The post schema includes non-standard fields worth knowing:
 - `ai`: `string | boolean` — AI summary text, or `false` to disable summarization.
-- `password` / `passwordHint` — post-level password protection.
+- `password` / `passwordHint` — post-level password protection (both optional; if `password` is set, the post requires a PIN on the frontend).
 - `pinned` — sorts above unpinned posts.
 - `prevTitle`/`prevSlug`/`nextTitle`/`nextSlug` — **internal only**, populated at runtime by `getSortedPosts()`, not authored in frontmatter.
 
 ### Data access layer
-`src/utils/content-utils.ts` is the canonical way to read posts — `getSortedPosts()` (pins-first, then date; also wires prev/next navigation), `getSortedPostsList()` (metadata only, drops body), `getTagList()`, category helpers, and tag-graph data. Prefer these over calling `getCollection` directly so sorting and draft-filtering stay consistent.
+`src/utils/content-utils.ts` is the canonical way to read posts — `getSortedPosts()` (pins-first, then date; also wires prev/next navigation), `getSortedPostsList()` (metadata only, drops body), `getTagList()`, category helpers, and tag-graph data. Prefer these over calling `getCollection` directly so sorting, draft-filtering, and password-protection logic stay consistent.
 
 ### Markdown/MDX processing
-`astro.config.mjs` configures a custom `unified` processor with a large remark→rehype chain. Custom plugins live in `src/plugins/` and cover Mermaid, PlantUML, image grids, GitHub cards, email obfuscation, excerpts, reading time, external-link handling, and figures. Code blocks use Expressive Code (dual light/dark themes, collapsible sections, line numbers, language badges), configured from `expressiveCodeConfig`.
+`astro.config.mjs` configures a custom `unified` processor with a large remark→rehype chain. Custom plugins live in `src/plugins/` and cover Mermaid, PlantUML, image grids, GitHub cards, email obfuscation, excerpts, reading time, external-link handling, figures, and math (KaTeX with mhchem). Code blocks use Expressive Code (dual light/dark themes, collapsible sections, line numbers, language badges), configured from `expressiveCodeConfig`.
 
 ### Deployment targets & adapter switching
 The Astro adapter is chosen at config time by env: `CF_WORKERS` set → `@astrojs/cloudflare` adapter (`wrangler.jsonc`); otherwise no adapter (static, e.g. Vercel via `vercel.json`). `src/utils/build-platform.ts` auto-detects the CI/host (Cloudflare, Vercel, EdgeOne, ESA…) and can be overridden with the `EMBER_BUILD_PLATFORM` env var.
 
+### Component organization
+Components in `src/components/` are organized semantically by purpose: `analytics/` (tracking), `comment/` (comment systems), `common/` (reusable UI primitives), `controls/` (interactive controls), `features/` (feature-specific), `layout/` (structural shells), `misc/` (miscellaneous), `pages/` (page-specific), and `widget/` (embeddable widgets). Add new components to the appropriate subdirectory.
+
 ### Path aliases
 `@components/*`, `@assets/*`, `@constants/*`, `@utils/*`, `@i18n/*`, `@layouts/*`, and `@/*` → `src/*` (see `tsconfig.json`). Config uses `@/config`.
+
+### Styling & type definitions
+Styling uses Tailwind CSS 4 (configured with `@tailwindcss/typography` and `@tailwindcss/vite`), Stylus for legacy/complex styles, and PostCSS nesting. Global types are defined in `src/global.d.ts` (type utilities, Astro locals) and `src/env.d.ts` (Astro auto-imports). Check these when adding new global types or introspecting Astro's types.
 
 ### i18n
 `src/i18n/` holds `i18nKey.ts` (enum of keys), `translation.ts` (the `i18n()` lookup), and per-language tables in `languages/` (`zh_CN`, `zh_TW`, `en`, `ja`, `ru`). Site language is set via `SITE_LANG` in `siteConfig.ts`. UI strings referenced in components go through `i18n(I18nKey.x)`.
 
-### Search & navigation
-Pagefind indexes `dist` at the end of the build (`pagefind.yml` excludes KaTeX and `[data-pagefind-ignore]` nodes). Page transitions use Swup with a fixed set of persisted containers listed in `astro.config.mjs` — new persistent layout regions must be added to that `containers` array.
+### Search & page transitions
+Pagefind indexes `dist` at the end of the build (`pagefind.yml` excludes KaTeX and `[data-pagefind-ignore]` nodes). Page transitions use Swup (configured in integrations) with a fixed set of persisted containers listed in `astro.config.mjs` under `swup.containers` — new persistent layout regions must be added there to survive transitions without re-initializing. Swup also requires `transition-swup-*` CSS classes for animation hooks (note: not `transition-*` to avoid Tailwind `transition-all` timing issues).
 
 ## Conventions
 
-- Biome is the source of truth for style: **tab indentation**, **double quotes**. `.astro`/`.svelte`/`.vue` files relax some correctness/style rules (see `biome.json` overrides). Generated files (`src/constants/icons.ts`, `src/constants/lqips.json`) are Biome-ignored and script-managed — never hand-edit them.
-- Naming: PascalCase components (`PostCard.astro`), camelCase util exports, kebab-case route/style filenames.
-- Commits follow Conventional Commits; Chinese summaries are common and acceptable. Per `.trae/rules/git-commit-message.md`, prose in commit messages should be grammatical Chinese, split into one item per line.
-- Never commit secrets from `.env` (AI summary keys). Document new variables in `.env.example`.
+- **Framework**: Svelte 5 (not 4) — check Svelte 5 docs when in doubt about component syntax.
+- **Biome**: Source of truth for style: **tab indentation**, **double quotes**. `.astro`/`.svelte`/`.vue` files relax some correctness/style rules (see `biome.json` overrides). Generated files (`src/constants/icons.ts`, `src/constants/lqips.json`) are Biome-ignored and script-managed — never hand-edit them.
+- **Naming**: PascalCase components (`PostCard.astro`), camelCase util exports, kebab-case route/style filenames.
+- **Commits**: Follow Conventional Commits; Chinese summaries are common and acceptable. Per `.trae/rules/git-commit-message.md`, prose in commit messages should be grammatical Chinese, split into one item per line.
+- **Secrets**: Never commit from `.env` (AI summary keys, API tokens). Document new variables in `.env.example`.
+- **Related docs**: See `AGENTS.md` for more detailed repository conventions.
