@@ -44,15 +44,15 @@ const {
 const path = customPath || (id ? `/posts/${id}` : "");
 
 const metaIconClass = ["meta-icon", isHome ? "home-meta-icon" : ""]
-  .filter(Boolean)
-  .join(" ");
+	.filter(Boolean)
+	.join(" ");
 
 const pinnedClass = [
-  "pinned-btn flex items-center gap-1 text-(--btn-content) rounded-md px-2 py-1.5 font-bold",
-  isHome ? "" : "bg-(--btn-regular-bg)",
+	"pinned-btn flex items-center gap-1 text-(--btn-content) rounded-md px-2 py-1.5 font-bold",
+	isHome ? "" : "bg-(--btn-regular-bg)",
 ]
-  .filter(Boolean)
-  .join(" ");
+	.filter(Boolean)
+	.join(" ");
 ---
 
 <div

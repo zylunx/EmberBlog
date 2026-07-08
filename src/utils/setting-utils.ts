@@ -16,6 +16,7 @@ import {
 	sakuraConfig,
 	siteConfig,
 } from "../config";
+import { getEffectiveWallpaperMode } from "./banner-layout-utils";
 import { isHomePage as checkIsHomePage } from "./layout-utils";
 
 // Declare global functions
@@ -276,11 +277,19 @@ export function initThemeListener() {
 	}
 }
 
+function isCurrentPostPage(): boolean {
+	if (typeof document === "undefined") return false;
+	return (
+		document.getElementById("swup-container")?.dataset.isPostPage === "true"
+	);
+}
+
 // Wallpaper mode functions
 export function applyWallpaperModeToDocument(
 	mode: WALLPAPER_MODE,
 	animate = true,
 ) {
+	const effectiveMode = getEffectiveWallpaperMode(mode, isCurrentPostPage());
 	// 获取当前的壁纸模式
 	const currentMode =
 		(document.documentElement.getAttribute(
@@ -291,17 +300,17 @@ export function applyWallpaperModeToDocument(
 	const isSwitchable = backgroundWallpaper.switchable ?? true;
 	if (!isSwitchable) {
 		// 不允许切换时，仍需初始化当前模式的UI状态（添加 wallpaper-initialized 等）
-		if (currentMode === mode) {
-			adjustMainContentPosition(mode, false);
-			ensureWallpaperState(mode);
+		if (currentMode === effectiveMode) {
+			adjustMainContentPosition(effectiveMode, false);
+			ensureWallpaperState(effectiveMode);
 		}
 		return;
 	}
 
 	// 如果模式没有变化，直接返回
-	if (currentMode === mode) {
+	if (currentMode === effectiveMode) {
 		// 即使是相同模式，也要确保UI状态正确
-		ensureWallpaperState(mode);
+		ensureWallpaperState(effectiveMode);
 		return;
 	}
 
@@ -309,7 +318,7 @@ export function applyWallpaperModeToDocument(
 	document.documentElement.classList.add("is-wallpaper-transitioning");
 
 	// 更新数据属性
-	document.documentElement.setAttribute("data-wallpaper-mode", mode);
+	document.documentElement.setAttribute("data-wallpaper-mode", effectiveMode);
 
 	// 使用 requestAnimationFrame 确保在下一帧执行，避免闪屏
 	requestAnimationFrame(() => {
@@ -323,7 +332,7 @@ export function applyWallpaperModeToDocument(
 		);
 
 		// 根据模式添加相应的CSS类
-		switch (mode) {
+		switch (effectiveMode) {
 			case WALLPAPER_BANNER:
 				body.classList.add("enable-banner");
 				showBannerMode(true);
@@ -348,7 +357,7 @@ export function applyWallpaperModeToDocument(
 		}
 
 		// 更新导航栏透明模式
-		updateNavbarTransparency(mode);
+		updateNavbarTransparency(effectiveMode);
 
 		// 在下一帧移除过渡保护类
 		requestAnimationFrame(() => {
@@ -406,10 +415,11 @@ function showBannerMode(animate = false) {
 
 		// 检查当前是否为首页
 		const isHomePage = checkIsHomePage(window.location.pathname);
+		const isPostPage = isCurrentPostPage();
 		const isMobile = window.innerWidth < 1024;
 
 		// 移动端非首页时，不显示banner；桌面端始终显示
-		if (isMobile && !isHomePage) {
+		if (isMobile && !isHomePage && !isPostPage) {
 			wallpaperWrapper.style.display = "none";
 			wallpaperWrapper.classList.add("mobile-hide-banner");
 		} else {
@@ -456,9 +466,10 @@ function showBannerMode(animate = false) {
 	);
 	if (mainContentWrapper) {
 		const isHomePage = checkIsHomePage(window.location.pathname);
+		const isPostPage = isCurrentPostPage();
 		const isMobile = window.innerWidth < 1024;
 		// 只在移动端非首页时调整主内容位置
-		if (isMobile && !isHomePage) {
+		if (isMobile && !isHomePage && !isPostPage) {
 			mainContentWrapper.classList.add("mobile-main-no-banner");
 		} else {
 			mainContentWrapper.classList.remove("mobile-main-no-banner");
@@ -491,13 +502,14 @@ function showFullscreenMode(animate = false) {
 	const wallpaperWrapper = document.getElementById("wallpaper-wrapper");
 	const isMobile = window.innerWidth < 1024;
 	const isHomePage = checkIsHomePage(window.location.pathname);
+	const isPostPage = isCurrentPostPage();
 	if (wallpaperWrapper) {
 		// 移除 overlay 模式类
 		wallpaperWrapper.classList.remove("wallpaper-overlay");
 		// 添加全屏壁纸模式类
 		wallpaperWrapper.classList.add("wallpaper-fullscreen");
 
-		if (isMobile && !isHomePage) {
+		if (isMobile && !isHomePage && !isPostPage) {
 			// 移动端非首页时隐藏壁纸
 			wallpaperWrapper.style.display = "none";
 			wallpaperWrapper.classList.add("mobile-hide-banner");
@@ -704,6 +716,7 @@ function adjustMainContentPosition(
 		case "banner": {
 			// Banner模式：主内容在banner下方
 			const isHome = checkIsHomePage(window.location.pathname);
+			const isPostPage = isCurrentPostPage();
 			const bannerTargetTop = "calc(var(--banner-height) - 3.5rem)";
 
 			// 禁用 CSS transition，防止整个定位过程中的值变化触发过渡动画
@@ -714,7 +727,7 @@ function adjustMainContentPosition(
 			mainContent.style.top = "";
 			mainContent.style.setProperty("margin-top", "");
 
-			if (!isHome) {
+			if (!isHome && !isPostPage) {
 				mainContent.classList.add("mobile-main-no-banner");
 				if (window.innerWidth < 1024) {
 					mainContent.style.setProperty("top", "5.5rem", "important");
@@ -738,7 +751,8 @@ function adjustMainContentPosition(
 			// 全屏壁纸模式：壁纸已在文档流中占100vh，主内容紧跟其后
 			const isFullscreenMobile = window.innerWidth < 1024;
 			const isFullscreenHome = checkIsHomePage(window.location.pathname);
-			if (isFullscreenMobile && !isFullscreenHome) {
+			const isFullscreenPostPage = isCurrentPostPage();
+			if (isFullscreenMobile && !isFullscreenHome && !isFullscreenPostPage) {
 				// 移动端非首页：壁纸已隐藏，主内容从导航栏下方开始
 				mainContent.classList.add("mobile-main-no-banner");
 				mainContent.classList.add("no-banner-layout");

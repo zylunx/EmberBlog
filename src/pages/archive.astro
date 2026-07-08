@@ -11,9 +11,9 @@ const title = i18n(I18nKey.archive);
 ---
 
 <MainGridLayout title={title}>
-  <div class="w-full py-4 md:py-6 relative">
+  <div class="w-full py-2 md:py-0 relative">
     <!-- 页面标题区域（由 MainGridLayout 的 Banner 自动渲染，此处为 fallback 标题） -->
     <h1 class="sr-only">{title}</h1>
-    <ArchivePanel sortedPosts={sortedPostsList} foldArticle={siteConfig.foldArticle} client:load />
+    <ArchivePanel sortedPosts={sortedPostsList} foldArticle={siteConfig.foldArticle} compact client:load />
   </div>
 </MainGridLayout>

@@ -6,15 +6,12 @@ import Footer from "@components/layout/Footer.astro";
 import Navbar from "@components/layout/Navbar.astro";
 import SideBar from "@components/layout/SideBar.astro";
 import type { MarkdownHeading } from "astro";
-import { Icon } from "astro-icon/components";
-import ImageWrapper from "@/components/common/ImageWrapper.astro";
+import Banner from "@/components/layout/Banner.astro";
 import FloatingControls from "@/components/controls/FloatingControls.astro";
-import ScrollDownIndicator from "@/components/controls/ScrollDownIndicator.astro";
-import BackgroundPlayer from "@/components/features/BackgroundPlayer.astro";
-import TypewriterText from "@/components/features/TypewriterText.astro";
 import CategoryBar from "@/components/layout/CategoryBar.astro";
 import {
 	backgroundWallpaper,
+	getPageBannerConfig,
 	live2dWidgetConfig,
 	sidebarLayoutConfig,
 	siteConfig,
@@ -24,11 +21,9 @@ import {
 	BANNER_HEIGHT_EXTEND,
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "@/constants/constants";
-import I18nKey from "@/i18n/i18nKey";
-import { i18n } from "@/i18n/translation";
-import { formatDateToYYYYMMDD } from "@/utils/date-utils";
-import { getImageQuality } from "@/utils/image-utils";
-import { getBackgroundImages, isHomePage } from "@/utils/layout-utils";
+import type { BannerConfig } from "@/types/bannerConfig";
+import { getBannerLayoutState } from "@/utils/banner-layout-utils";
+import { isHomePage } from "@/utils/layout-utils";
 import {
 	generateGridClasses,
 	generateMainContentClasses,
@@ -62,9 +57,8 @@ interface Props {
 	postImage?: string;
 	// 文章图片的基础路径，用于解析本地相对路径图片
 	postImageBasePath?: string;
+	bannerConfig?: BannerConfig;
 }
-
-const backgroundImages = getBackgroundImages();
 
 const {
 	title,
@@ -78,14 +72,29 @@ const {
 	bannerPostMeta,
 	postImage,
 	postImageBasePath = "/",
+	bannerConfig: pageBannerConfigOverride,
 } = Astro.props;
 
+const bannerConfig = {
+	...getPageBannerConfig(Astro.url.pathname),
+	...pageBannerConfigOverride,
+};
+
+const isPostPage = !!postSlug;
+
 // 检查背景壁纸模式和是否允许切换
-const isBannerMode = backgroundWallpaper.mode === "banner";
-const isFullscreenMode = backgroundWallpaper.mode === "fullscreen";
-const isOverlayMode = backgroundWallpaper.mode === "overlay";
-const isBackgroundEnabled = backgroundWallpaper.mode !== "none";
+const {
+	isBannerMode,
+	isFullscreenMode,
+	isOverlayMode,
+	isBackgroundEnabled: effectiveBackgroundEnabled,
+} = getBannerLayoutState({
+	wallpaperMode: backgroundWallpaper.mode,
+	bannerEnabled: bannerConfig?.enabled,
+	isPostPage,
+});
 const isWallpaperSwitchable = backgroundWallpaper.switchable ?? true;
+const shouldApplyWallpaperSwitching = isWallpaperSwitchable && !isPostPage;
 
 // 检查是否启用水波纹动画效果
 const wavesConfig = backgroundWallpaper.common?.waves?.enable;
@@ -118,61 +127,28 @@ const shouldRenderGradient =
 
 // 检查是否为首页
 const isHomePageCheck = isHomePage(Astro.url.pathname);
+const normalizedPathname = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isArchivePageCheck = normalizedPathname === "/archive";
 
-const shouldRenderCategoryBar = !!siteConfig.categoryBar;
+const shouldRenderCategoryBar =
+	!!siteConfig.categoryBar && (isHomePageCheck || isArchivePageCheck);
 
-// 检查是否在文章详情页
-const isPostPage = !!postSlug;
-
-// 文章封面图：当文章页定义了 image 时，用其作为 banner 背景（模糊+压暗），否则使用默认壁纸
-const hasPostImage = !!postImage && postImage !== "";
-const usePostImageAsBanner = isPostPage && hasPostImage;
-
-// 随机选择副标题（当打字机关闭且为数组时）
-const getRandomSubtitle = () => {
-	const subtitle = backgroundWallpaper.common?.homeText?.subtitle;
-	if (Array.isArray(subtitle)) {
-		const randomIndex = Math.floor(Math.random() * subtitle.length);
-		return subtitle[randomIndex];
-	}
-	return subtitle;
-};
-const randomSubtitle = getRandomSubtitle();
-
-// 主页横幅文本只在首页且全局开关为 true 时显示，不区分设备
-const homeTextEnable = backgroundWallpaper.common?.homeText?.enable;
-const showHomeText =
-	(isBannerMode || isFullscreenMode) && !!homeTextEnable && isHomePageCheck;
-
-const showBannerPostMeta =
-	(isBannerMode || isFullscreenMode) &&
-	isBackgroundEnabled &&
-	!isHomePageCheck &&
-	isPostPage &&
-	!!bannerPostMeta;
-
-const showBannerDim = (isBannerMode || isFullscreenMode) && isBackgroundEnabled;
-const dimOpacity = backgroundWallpaper.common?.dimOpacity ?? 0.15;
-
-const showBannerPageTitle =
-	(isBannerMode || isFullscreenMode) &&
-	isBackgroundEnabled &&
-	!isHomePageCheck &&
-	!isPostPage &&
-	!!title;
 // 手机端非首页不显示banner的CSS类
-const mobileNonHomeBannerClass = !isHomePageCheck ? "mobile-hide-banner" : "";
+const mobileNonHomeBannerClass =
+	effectiveBackgroundEnabled && !isHomePageCheck && !isPostPage
+		? "mobile-hide-banner"
+		: "";
 
 // 计算主内容区域位置，考虑手机端非首页时banner被隐藏
 const mainPanelTop =
-	isBannerMode && isBackgroundEnabled
+	isBannerMode && effectiveBackgroundEnabled
 		? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
 		: "5.5rem";
 
 // 当banner模式被禁用时，主内容区域应该始终从顶栏下面开始
 // 非首页在小于1024px时会通过 mobile-main-no-banner CSS类覆盖top值为5.5rem
 const finalMainPanelTop =
-	isBannerMode && isBackgroundEnabled ? mainPanelTop : "5.5rem";
+	isBannerMode && effectiveBackgroundEnabled ? mainPanelTop : "5.5rem";
 
 // 获取响应式侧边栏配置
 const sidebarConfig = getResponsiveSidebarConfig();
@@ -228,6 +204,36 @@ const rightSidebarClass =
 		: "";
 const mainContentClass = generateMainContentClasses(updatedGridConfig);
 const staticBarClass = mainContentClass.replace("transition-main", "").trim();
+const categoryBarClass = ["col-span-1"];
+
+if (
+	updatedGridConfig.isBothSidebars &&
+	updatedGridConfig.hasLeftComponents &&
+	updatedGridConfig.hasRightComponents
+) {
+	if (updatedGridConfig.tabletSidebar === "right") {
+		categoryBarClass.push(
+			"md:col-start-1",
+			"md:col-end-3",
+			"xl:col-start-2",
+			"xl:col-end-4",
+		);
+	} else {
+		categoryBarClass.push("md:col-start-2", "xl:col-start-2", "xl:col-end-4");
+	}
+} else if (
+	updatedGridConfig.hasLeftComponents &&
+	!updatedGridConfig.hasRightComponents
+) {
+	categoryBarClass.push("md:col-start-2");
+} else if (
+	!updatedGridConfig.hasLeftComponents &&
+	updatedGridConfig.hasRightComponents
+) {
+	categoryBarClass.push("md:col-start-1", "md:col-end-3");
+}
+
+const categoryBarClassName = categoryBarClass.join(" ");
 
 const footerClass = ["footer", "col-span-1", "onload-animation"];
 
@@ -265,29 +271,13 @@ if (
 const footerClassName = footerClass.join(" ");
 
 // 检查是否应该启用半透明效果
-const shouldEnableTransparency = isOverlayMode && isBackgroundEnabled;
+const shouldEnableTransparency = isOverlayMode && effectiveBackgroundEnabled;
 
 const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
-
-// 获取图片质量配置
-const configQuality = getImageQuality();
-const mobileQuality = Math.round(configQuality * 0.9);
-const bannerCarouselEnabledDefault =
-	backgroundWallpaper.common?.carousel?.enable ?? false;
-const bannerCarouselSwitchable =
-	backgroundWallpaper.common?.carousel?.switchable ?? false;
-const bannerCarouselInterval = Math.max(
-	backgroundWallpaper.common?.carousel?.interval ?? 5000,
-	3000,
-);
-const bannerCarouselEffect =
-	backgroundWallpaper.common?.carousel?.transitionEffect ?? "fade";
-const hasMultipleImages =
-	backgroundImages.desktop.length > 1 || backgroundImages.mobile.length > 1;
 ---
 
-<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug}>
+<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} bannerEnabled={effectiveBackgroundEnabled}>
 
 
 <!-- 为全屏壁纸模式添加body类 -->
@@ -319,13 +309,14 @@ const hasMultipleImages =
 </div>
 
 <!-- Wallpaper - 如果允许切换则始终渲染，否则只渲染当前模式 -->
-{(isWallpaperSwitchable || isBannerMode || isFullscreenMode || isOverlayMode) && (
+{effectiveBackgroundEnabled && (shouldApplyWallpaperSwitching || isBannerMode || isFullscreenMode || isOverlayMode) && (
 <div id="wallpaper-wrapper" class:list={[
 	`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`,
-	(isOverlayMode && !isWallpaperSwitchable) ? 'wallpaper-overlay' : '',
-	(isFullscreenMode && !isWallpaperSwitchable) ? 'wallpaper-fullscreen' : '',
+	!effectiveBackgroundEnabled ? "page-banner-disabled" : "",
+	(isOverlayMode && !shouldApplyWallpaperSwitching) ? 'wallpaper-overlay' : '',
+	(isFullscreenMode && !shouldApplyWallpaperSwitching) ? 'wallpaper-fullscreen' : '',
 ]} style={
-	isWallpaperSwitchable
+	shouldApplyWallpaperSwitching
 		? `top: -${BANNER_HEIGHT_EXTEND}vh; display: none; --overlay-opacity: ${backgroundWallpaper.overlay?.opacity ?? 0.8}; --overlay-z-index: ${backgroundWallpaper.overlay?.zIndex ?? -1}; --overlay-blur: ${backgroundWallpaper.overlay?.blur ?? 0}px;`
 		: isOverlayMode
 			? `--overlay-opacity: ${backgroundWallpaper.overlay?.opacity ?? 0.8}; --overlay-z-index: ${backgroundWallpaper.overlay?.zIndex ?? -1}; --overlay-blur: ${backgroundWallpaper.overlay?.blur ?? 0}px;`
@@ -333,503 +324,22 @@ const hasMultipleImages =
 				? ``
 				: `top: -${BANNER_HEIGHT_EXTEND}vh`
 }>
-    <!-- 背景图片显示 -->
-    {hasMultipleImages ? (
-    /* 轮播模式：渲染所有图片为 slide-item */
-    <div class:list={["relative h-full w-full bg-black", `effect-${bannerCarouselEffect}`]} id="banner-images-container"
-         style={`z-index: 5; --carousel-interval: ${bannerCarouselInterval}ms`}
-         data-carousel-enabled={bannerCarouselEnabledDefault}
-         data-carousel-switchable={bannerCarouselSwitchable}
-         data-carousel-interval={bannerCarouselInterval}
-         data-carousel-effect={bannerCarouselEffect}>
-        {backgroundImages.mobile.map((src, index) => (
-            <div class:list={["slide-item block lg:hidden", index === 0 && "active"]} data-index={index}>
-                <ImageWrapper
-                    alt="Mobile background image of the blog"
-                    class="object-cover h-full w-full"
-                    src={src}
-                    position={backgroundWallpaper.banner?.position}
-                    widths={[640, 750, 1080]}
-                    sizes="100vw"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    fetchpriority={index === 0 ? "high" : undefined}
-                    quality={mobileQuality}
-                />
-            </div>
-        ))}
-        {backgroundImages.desktop.map((src, index) => (
-            <div class:list={["slide-item hidden lg:block", index === 0 && "active"]} data-index={index}>
-                <ImageWrapper
-                    id="banner"
-                    alt="Desktop background image of the blog"
-                    class="object-cover h-full"
-                    src={src}
-                    position={backgroundWallpaper.banner?.position}
-                    widths={[1280, 1920, 2560]}
-                    sizes="100vw"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    fetchpriority={index === 0 ? "high" : undefined}
-                    quality={configQuality}
-                />
-            </div>
-        ))}
-    </div>
-    ) : (
-    /* 单图模式 */
-    <div class="relative h-full w-full" id="banner-images-container">
-        {backgroundImages.mobile.length > 0 && (
-            <div class="banner-image-slot-mobile absolute inset-0 block lg:hidden">
-                <ImageWrapper
-                    alt="Mobile background image of the blog"
-                    class="object-cover h-full w-full"
-                    src={backgroundImages.mobile[0]}
-                    position={backgroundWallpaper.banner?.position}
-                    widths={[640, 750, 1080]}
-                    sizes="100vw"
-                    loading="eager"
-                    fetchpriority="high"
-                    quality={mobileQuality}
-                />
-            </div>
-        )}
-        {backgroundImages.desktop.length > 0 && (
-            <div class="banner-image-slot-desktop absolute inset-0 hidden lg:block">
-                <ImageWrapper
-                    id="banner"
-                    alt="Desktop background image of the blog"
-                    class="object-cover h-full"
-                    src={backgroundImages.desktop[0]}
-                    position={backgroundWallpaper.banner?.position}
-                    widths={[1280, 1920, 2560]}
-                    sizes="100vw"
-                    loading="eager"
-                    fetchpriority="high"
-                    quality={configQuality}
-                />
-            </div>
-        )}
-    </div>
-    )}
-
-    <!-- 文章封面图作为 banner 覆盖层（Swup 容器，导航时会被替换） -->
-    <!-- 当文章页定义了 image 时，覆盖在默认壁纸之上（模糊+压暗）；否则为空，露出默认壁纸 -->
-    <div id="post-banner-image" class="absolute inset-0 pointer-events-none overflow-hidden" style="z-index: 6">
-        {usePostImageAsBanner && (
-            <>
-                <div class="absolute inset-0 block lg:hidden">
-                    <ImageWrapper
-                        alt="Post banner image"
-                        class="object-cover h-full w-full"
-                        src={postImage}
-                        basePath={postImageBasePath}
-                        position={backgroundWallpaper.banner?.position}
-                        widths={[640, 750, 1080]}
-                        sizes="100vw"
-                        loading="eager"
-                        fetchpriority="high"
-                        quality={mobileQuality}
-                    />
-                </div>
-                <div class="absolute inset-0 hidden lg:block">
-                    <ImageWrapper
-                        alt="Post banner image"
-                        class="object-cover h-full"
-                        src={postImage}
-                        basePath={postImageBasePath}
-                        position={backgroundWallpaper.banner?.position}
-                        widths={[1280, 1920, 2560]}
-                        sizes="100vw"
-                        loading="eager"
-                        fetchpriority="high"
-                        quality={configQuality}
-                    />
-                </div>
-            </>
-        )}
-    </div>
-
-    <!-- 壁纸轮播脚本（基于 CSS transition） -->
-    {hasMultipleImages && (
-    <script is:inline data-swup-ignore-script>
-        (function initBannerCarousel() {
-            var container = document.getElementById('banner-images-container');
-            if (!container) return;
-
-            var WALLPAPER_BANNER = 'banner';
-            var interval = parseInt(container.dataset.carouselInterval || '5000', 10);
-            var switchable = container.dataset.carouselSwitchable === 'true';
-            var defaultEnabled = container.dataset.carouselEnabled === 'true';
-            var effect = container.dataset.carouselEffect || 'fade';
-            var FADE_MS = 800;
-            var transitioning = false;
-
-            // 创建过渡遮罩（用于 kenburns 效果的 LQIP 桥接）
-            var overlay = null;
-            if (effect === 'kenburns') {
-                overlay = document.createElement('div');
-                overlay.style.cssText = 'position:absolute;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity ' + (FADE_MS / 2) + 'ms ease-in-out;background-size:cover;background-position:center;';
-                container.appendChild(overlay);
-            }
-
-            // 从 slide-item 中提取 LQIP 渐变样式
-            function getSlideLqipStyle(slide) {
-                var ph = slide.querySelector('.lqip-placeholder');
-                if (ph) {
-                    var bg = ph.style.background || ph.style.backgroundImage;
-                    if (bg) return bg;
-                }
-                return '#000';
-            }
-
-            function isCarouselEnabled() {
-                if (!switchable) return defaultEnabled;
-                var stored = localStorage.getItem('bannerCarouselEnabled');
-                if (stored === null) return defaultEnabled;
-                return stored === 'true';
-            }
-
-            function isBannerWallpaperMode() {
-                var mode = document.documentElement.getAttribute('data-wallpaper-mode');
-                return mode === WALLPAPER_BANNER || mode === 'fullscreen';
-            }
-
-            // 获取当前设备可见的 slide-item
-            function getVisibleSlides() {
-                var all = container.querySelectorAll('.slide-item');
-                var isLg = window.innerWidth >= 1024;
-                var visible = [];
-                for (var i = 0; i < all.length; i++) {
-                    var el = all[i];
-                    if (isLg && el.classList.contains('lg:hidden')) continue;
-                    if (!isLg && el.classList.contains('hidden') && !el.classList.contains('lg:hidden')) continue;
-                    visible.push(el);
-                }
-                if (visible.length === 0) {
-                    for (var j = 0; j < all.length; j++) visible.push(all[j]);
-                }
-                return visible;
-            }
-
-            function getCurrentIndex(slides) {
-                for (var i = 0; i < slides.length; i++) {
-                    if (slides[i].classList.contains('active')) return i;
-                }
-                return 0;
-            }
-
-            function applySlideChange(slides, nextIndex) {
-                // Slide 效果需要 prev-waiting 辅助类
-                if (effect === 'slide') {
-                    for (var i = 0; i < slides.length; i++) {
-                        slides[i].classList.remove('prev-waiting');
-                        if (i < nextIndex) slides[i].classList.add('prev-waiting');
-                    }
-                }
-                for (var j = 0; j < slides.length; j++) {
-                    if (j === nextIndex) slides[j].classList.add('active');
-                    else slides[j].classList.remove('active');
-                }
-            }
-
-            function changeToSlide(targetIndex, resetProgress) {
-                var slides = getVisibleSlides();
-                if (slides.length <= 1) return;
-                if (transitioning) return;
-
-                var nextIndex = targetIndex;
-                if (nextIndex >= slides.length) nextIndex = 0;
-                else if (nextIndex < 0) nextIndex = slides.length - 1;
-
-                var currentIndex = getCurrentIndex(slides);
-                if (nextIndex === currentIndex) return;
-
-                if (effect === 'kenburns' && overlay) {
-                    // Ken Burns: 用下一张图的 LQIP 做桥接过渡
-                    transitioning = true;
-                    overlay.style.background = getSlideLqipStyle(slides[nextIndex]);
-                    overlay.style.opacity = '1';
-                    setTimeout(function() {
-                        applySlideChange(slides, nextIndex);
-                        // 等新图 Ken Burns 动画开始后再移除遮罩
-                        setTimeout(function() {
-                            overlay.style.opacity = '0';
-                            transitioning = false;
-                        }, 150);
-                    }, FADE_MS / 2);
-                } else {
-                    // 其他效果：直接切换（CSS transition 处理）
-                    applySlideChange(slides, nextIndex);
-                }
-
-                if (resetProgress !== false && appState.isPlaying) {
-                    startAutoPlay();
-                }
-            }
-
-            var appState = {
-                isPlaying: false,
-                autoPlayTimer: null,
-                touchStartX: 0,
-                touchEndX: 0
-            };
-
-            function startAutoPlay() {
-                stopAutoPlay();
-                if (!isCarouselEnabled()) return;
-                if (!isBannerWallpaperMode()) return;
-
-                appState.isPlaying = true;
-                appState.autoPlayTimer = setTimeout(function advance() {
-                    if (!appState.isPlaying) return;
-                    var slides = getVisibleSlides();
-                    var currentIdx = getCurrentIndex(slides);
-                    changeToSlide(currentIdx + 1, false);
-                    appState.autoPlayTimer = setTimeout(advance, interval);
-                }, interval);
-            }
-
-            function stopAutoPlay() {
-                appState.isPlaying = false;
-                if (appState.autoPlayTimer) {
-                    clearTimeout(appState.autoPlayTimer);
-                    appState.autoPlayTimer = null;
-                }
-            }
-
-            // 键盘控制
-            document.addEventListener('keydown', function(e) {
-                if (!isBannerWallpaperMode() || !isCarouselEnabled()) return;
-                if (e.key === 'ArrowRight') {
-                    var slides = getVisibleSlides();
-                    changeToSlide(getCurrentIndex(slides) + 1);
-                } else if (e.key === 'ArrowLeft') {
-                    var slides2 = getVisibleSlides();
-                    changeToSlide(getCurrentIndex(slides2) - 1);
-                } else if (e.key === ' ') {
-                    e.preventDefault();
-                    appState.isPlaying ? stopAutoPlay() : startAutoPlay();
-                }
-            });
-
-            // 触屏滑动
-            document.addEventListener('touchstart', function(e) {
-                appState.touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-            document.addEventListener('touchend', function(e) {
-                appState.touchEndX = e.changedTouches[0].screenX;
-                var diff = appState.touchEndX - appState.touchStartX;
-                if (Math.abs(diff) > 50) {
-                    var slides = getVisibleSlides();
-                    if (diff > 0) changeToSlide(getCurrentIndex(slides) - 1);
-                    else changeToSlide(getCurrentIndex(slides) + 1);
-                }
-            }, { passive: true });
-
-            // 事件监听
-            window.addEventListener('bannerCarouselChange', function(e) {
-                e.detail && e.detail.enabled ? startAutoPlay() : stopAutoPlay();
-            });
-            window.addEventListener('wallpaperModeChange', function(e) {
-                if (e.detail && (e.detail.mode === 'banner' || e.detail.mode === 'fullscreen')) {
-                    if (isCarouselEnabled()) startAutoPlay();
-                } else {
-                    stopAutoPlay();
-                }
-            });
-
-            // 随机首张
-            var slides = getVisibleSlides();
-            if (slides.length > 1) {
-                var randomIdx = Math.floor(Math.random() * slides.length);
-                for (var k = 0; k < slides.length; k++) {
-                    if (k === randomIdx) slides[k].classList.add('active');
-                    else slides[k].classList.remove('active');
-                }
-            }
-
-            // 启动
-            if (isCarouselEnabled() && isBannerWallpaperMode()) {
-                startAutoPlay();
-            }
-        })();
-    </script>
-    )}
-    
-    {backgroundWallpaper.playerEnable && typeof backgroundWallpaper.src === "object" && !Array.isArray(backgroundWallpaper.src) && backgroundWallpaper.src.playerUrl && (
-        <BackgroundPlayer playerUrl={backgroundWallpaper.src.playerUrl} playerMode={backgroundWallpaper.common?.playerMode ?? "order"} />
-    )}
-
-    <div id="banner-dim-container" class="absolute inset-0 z-10 pointer-events-none">
-        {showBannerDim && <div class="banner-dim-overlay absolute inset-0" style={`background: rgba(0, 0, 0, ${dimOpacity})`}></div>}
-    </div>
-
-    <div id="banner-overlay-container" class="absolute inset-0 z-20 pointer-events-none transition-swup-fade">    <!-- Home page text overlay - 始终渲染以便切换模式时控制显示 -->
-    {homeTextEnable && (
-        <div class={`banner-home-text-overlay absolute inset-0 z-20 flex items-center justify-center ${!showHomeText ? 'hidden' : ''}`}>
-            <div class="w-4/5 lg:w-3/4 text-center mb-0">
-                <div class="flex flex-col">
-                    {backgroundWallpaper.common?.homeText?.title && (
-                        <div class="banner-title font-bold text-white mb-2 lg:mb-4 leading-tight" style={{ '--banner-title-size': backgroundWallpaper.common.homeText.titleSize || "3rem" }}>
-                            {backgroundWallpaper.common.homeText.title}
-                        </div>
-                    )}
-                    {backgroundWallpaper.common?.homeText?.subtitle && (
-                        <div id="banner-subtitle" class="banner-subtitle text-white/90 leading-snug" style={{ fontSize: backgroundWallpaper.common.homeText.subtitleSize || "1.5rem" }} data-subtitles={JSON.stringify(backgroundWallpaper.common.homeText.subtitle)}>
-                            {backgroundWallpaper.common.homeText.typewriter?.enable ? (
-                                <TypewriterText
-                                    text={backgroundWallpaper.common.homeText.subtitle}
-                                    speed={backgroundWallpaper.common.homeText.typewriter.speed}
-                                    deleteSpeed={backgroundWallpaper.common.homeText.typewriter.deleteSpeed}
-                                    pauseTime={backgroundWallpaper.common.homeText.typewriter.pauseTime}
-                                />
-                            ) : (
-                                randomSubtitle
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    )}
-
-    <script is:inline>
-        function setRandomSubtitle() {
-            const subtitleElement = document.getElementById('banner-subtitle');
-            if (!subtitleElement) return;
-
-            const subtitlesData = subtitleElement.dataset.subtitles;
-            if (!subtitlesData) return;
-
-            try {
-                const subtitles = JSON.parse(subtitlesData);
-                // Only randomize if it's an array and typewriter is NOT enabled (check for typewriter class)
-                if (Array.isArray(subtitles) && subtitles.length > 0 && !subtitleElement.querySelector('.typewriter')) {
-                    // Use a global variable to persist the subtitle across Swup navigations
-                    // This variable will be reset on full page reload (F5), meeting the requirement
-                    if (!window.fireflyCachedSubtitle) {
-                        const randomIndex = Math.floor(Math.random() * subtitles.length);
-                        window.fireflyCachedSubtitle = subtitles[randomIndex];
-                    }
-                    subtitleElement.textContent = window.fireflyCachedSubtitle;
-                }
-            } catch (e) {
-                console.error("Failed to parse subtitles", e);
-            }
-        }
-
-        // Run on initial load
-        setRandomSubtitle();
-    </script>
-
-    <!-- Non-home non-post page title overlay (desktop only) -->
-    {showBannerPageTitle && (
-        <div class="banner-page-title-overlay absolute inset-0 z-20 hidden lg:flex items-center justify-center pointer-events-none">
-            <div class="w-4/5 lg:w-3/4 text-center mb-0">
-                <div class="banner-page-title font-bold text-white leading-tight inline-flex items-center justify-center gap-3">
-                    {/* <Icon is:inline name="material-symbols:bookmark-rounded" class="banner-page-title-icon" /> */}
-                    <span class="banner-page-title-text">{title}</span>
-                </div>
-            </div>
-        </div>
-    )}
-
-    <!-- Non-home post banner meta overlay (desktop only) -->
-    {showBannerPostMeta && bannerPostMeta && (
-        <div class="banner-post-meta-overlay absolute inset-0 z-20 hidden lg:flex items-center justify-center pointer-events-none">
-            <div class="w-4/5 lg:w-3/4 text-center mb-0">
-                <div class="flex flex-col items-center gap-3">
-                    <div class="banner-post-title font-bold text-white leading-tight">
-                        {bannerPostMeta.title}
-                    </div>
-                    <div class="banner-post-meta-list flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-white/90 text-sm md:text-base">
-                        <span class="inline-flex items-center gap-1.5">
-                            <Icon is:inline name="material-symbols:calendar-month-outline-rounded" class="text-[1.05em]" />
-                            <span>{i18n(I18nKey.publishedAt)} {formatDateToYYYYMMDD(bannerPostMeta.published)}</span>
-                        </span>
-                        {bannerPostMeta.updated &&
-                            bannerPostMeta.updated.getTime() !== bannerPostMeta.published.getTime() && (
-                                <span class="inline-flex items-center gap-1.5">
-                                    <Icon is:inline name="material-symbols:update-rounded" class="text-[1.05em]" />
-                                    <span>{i18n(I18nKey.updatedAt)} {formatDateToYYYYMMDD(bannerPostMeta.updated)}</span>
-                                </span>
-                            )}
-                        {typeof bannerPostMeta.words === "number" && (
-                            <span class="inline-flex items-center gap-1.5">
-                                <Icon is:inline name="material-symbols:ink-pen-outline-rounded" class="text-[1.05em]" />
-                                <span>
-                                    {bannerPostMeta.words} {i18n(bannerPostMeta.words === 1 ? I18nKey.wordCount : I18nKey.wordsCount)}
-                                </span>
-                            </span>
-                        )}
-                        {typeof bannerPostMeta.minutes === "number" && (
-                            <span class="inline-flex items-center gap-1.5">
-                                <Icon is:inline name="material-symbols:schedule-outline-rounded" class="text-[1.05em]" />
-                                <span>
-                                    {bannerPostMeta.minutes} {i18n(bannerPostMeta.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)} · {i18n(I18nKey.readTime)}
-                                </span>
-                            </span>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </div>
-    )}
-
-    <!-- Fullscreen 模式下显示向下滚动指示器 -->
-    {(isFullscreenMode || isWallpaperSwitchable) && <ScrollDownIndicator />}
-    </div>
-
-    <!-- Water waves effect - 如果允许切换或任一设备启用则渲染 -->
-    {shouldRenderWaves ? (
-    <div class={`waves absolute -bottom-px h-[10vh] max-h-37.5 min-h-12.5 w-full md:h-[15vh]
-        ${!wavesEnabledOnMobile ? 'hidden' : ''} ${!wavesEnabledOnDesktop ? 'md:hidden' : ''} ${wavesEnabledOnDesktop ? 'md:block' : ''}`}
-        id="header-waves"
-        style="transform: translateZ(0);">
-        <svg
-            class="waves"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            viewBox="0 24 150 28"
-            preserveAspectRatio="none"
-            shape-rendering="geometricPrecision"
-        >
-            <defs>
-                <path
-                    id="gentle-wave"
-                    d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v48h-352z"
-                >
-                </path>
-            </defs>
-            <g class="parallax">
-                <use
-                    xlink:href="#gentle-wave"
-                    x="48"
-                    y="0"
-                    class="opacity-25 fill-(--page-bg)"
-                ></use>
-                <use
-                    xlink:href="#gentle-wave"
-                    x="48"
-                    y="3"
-                    class="opacity-50 fill-(--page-bg)"
-                ></use>
-                <use
-                    xlink:href="#gentle-wave"
-                    x="48"
-                    y="5"
-                    class="opacity-65 fill-(--page-bg)"
-                ></use>
-                <use
-                    xlink:href="#gentle-wave"
-                    x="48"
-                    y="7"
-                    class=" opacity-75 fill-(--page-bg)"
-                ></use>
-            </g>
-        </svg>
-    </div>
-    ) : null}
-
+    <Banner
+    title={title}
+    isBannerMode={isBannerMode}
+    isFullscreenMode={isFullscreenMode}
+    isBackgroundEnabled={effectiveBackgroundEnabled}
+    isWallpaperSwitchable={shouldApplyWallpaperSwitching}
+    isHomePage={isHomePageCheck}
+    isPostPage={isPostPage}
+    bannerConfig={bannerConfig}
+    bannerPostMeta={bannerPostMeta}
+    postImage={postImage}
+    postImageBasePath={postImageBasePath}
+    shouldRenderWaves={shouldRenderWaves}
+    wavesEnabledOnDesktop={wavesEnabledOnDesktop}
+    wavesEnabledOnMobile={wavesEnabledOnMobile}
+/>
     <!-- Gradient transition - 当水波纹关闭时显示，提供壁纸底部到背景色的平滑过渡 -->
     {shouldRenderGradient ? (
     <div class={`wallpaper-gradient absolute bottom-0 left-0 w-full pointer-events-none
@@ -842,7 +352,7 @@ const hasMultipleImages =
 )}
 
 {/* 当壁纸未渲染时，添加空的 Swup 占位容器，避免 Swup 找不到容器而回退为整页加载 */}
-{!(isWallpaperSwitchable || isBannerMode || isFullscreenMode || isOverlayMode) && (
+{!(effectiveBackgroundEnabled && (shouldApplyWallpaperSwitching || isBannerMode || isFullscreenMode || isOverlayMode)) && (
 <>
     <div id="banner-overlay-container" class="hidden"></div>
     <div id="banner-dim-container" class="hidden"></div>
@@ -851,7 +361,7 @@ const hasMultipleImages =
 )}
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!(isBannerMode && isBackgroundEnabled) ? 'no-banner-layout' : ''}`} style={isFullscreenMode ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
+<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!(isBannerMode && effectiveBackgroundEnabled) ? 'no-banner-layout' : ''}`} style={isFullscreenMode && effectiveBackgroundEnabled ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
@@ -894,14 +404,28 @@ const hasMultipleImages =
                 </div>
             )}
                     
-            {/* 主内容区包装器 - 包含静态栏位和swup容器，作为单个grid item */}
+            {/* 分类导航栏 - 首页和归档页显示，作为独立 grid item 可跨到右侧栏上方 */}
+            {siteConfig.categoryBar && (
+                <div
+                    id="category-bar-wrapper"
+                    class:list={[
+                        categoryBarClassName,
+                        !shouldRenderCategoryBar && "hidden",
+                        isArchivePageCheck && "category-bar-compact",
+                    ]}
+                >
+                    <CategoryBar currentPostCategory={postCategory} />
+                </div>
+            )}
+
+            {/* 主内容区包装器 - 包含swup容器，作为单个grid item */}
             <div class={staticBarClass}>
-                {/* 分类导航栏 - 全站渲染并显示 */}
-                {shouldRenderCategoryBar && <div id="category-bar-wrapper"><CategoryBar currentPostCategory={postCategory} /></div>}
                 {/* 主内容区 - 始终渲染，确保 Swup 容器存在 */}
                 <main
                     id="swup-container"
                     class="transition-main"
+                    data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
+                    data-is-post-page={isPostPage ? "true" : "false"}
                     data-current-post-category={postCategory || ""}
                 >
                 {/* 携带网格布局类名，用于JS更新父容器 */}
@@ -971,6 +495,25 @@ const hasMultipleImages =
                 transform 0.35s ease-in-out;
   }
 
+  #wallpaper-wrapper.page-banner-disabled {
+    display: none !important;
+  }
+
+  #main-grid:has(#category-bar-wrapper:not(.hidden)) #right-sidebar {
+    grid-row-start: 2 !important;
+    grid-row-end: 4 !important;
+  }
+
+  #category-bar-wrapper.category-bar-compact #category-bar {
+    margin-bottom: 0.75rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  #category-bar-wrapper.category-bar-compact #category-bar .category-pill {
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+
   @keyframes swupFadeOut {
     from {
       opacity: 1;
@@ -978,13 +521,6 @@ const hasMultipleImages =
     to {
       opacity: 0.95;
     }
-  }
-
-  /* 文章封面作为 banner 覆盖层：模糊 + 压暗，确保 banner 文字可读 */
-  #post-banner-image img {
-    filter: blur(8px) brightness(0.6);
-    /* 轻微放大，避免模糊后边缘出现透明 */
-    transform: scale(1.08);
   }
 
 </style>

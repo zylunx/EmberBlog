@@ -48,6 +48,7 @@ published: ${getDate()}
 updated: ${getDate()}
 description: ''
 image: ''
+color: ''
 tags: []
 category: ''
 draft: false 

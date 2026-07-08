@@ -68,23 +68,23 @@ const descriptionText = description || remarkPluginFrontmatter.excerpt || "";
 const cardDate = updated ?? published;
 
 function formatCardDate(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const dayMs = 24 * 60 * 60 * 1000;
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const dayMs = 24 * 60 * 60 * 1000;
 
-  if (diffMs >= 0 && diffMs < dayMs) {
-    return "刚刚";
-  }
+	if (diffMs >= 0 && diffMs < dayMs) {
+		return "刚刚";
+	}
 
-  if (diffMs >= 0 && diffMs < 7 * dayMs) {
-    return `${Math.floor(diffMs / dayMs)}天前`;
-  }
+	if (diffMs >= 0 && diffMs < 7 * dayMs) {
+		return `${Math.floor(diffMs / dayMs)}天前`;
+	}
 
-  if (date.getFullYear() === now.getFullYear()) {
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  }
+	if (date.getFullYear() === now.getFullYear()) {
+		return `${date.getMonth() + 1}/${date.getDate()}`;
+	}
 
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+	return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 }
 ---
 

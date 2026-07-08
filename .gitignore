@@ -1,6 +1,8 @@
 # build output
 dist/
 PROMPT/
+docs/
+skills/
 
 # generated types
 .astro/

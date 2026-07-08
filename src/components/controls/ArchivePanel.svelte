@@ -36,6 +36,7 @@ export let tags: string[] = [];
 export let categories: string[] = [];
 export let sortedPosts: Post[] = [];
 export let foldArticle = true;
+export let compact = false;
 
 // ===== 状态 =====
 let yearGroups: YearGroup[] = [];
@@ -385,7 +386,7 @@ onMount(() => {
 });
 </script>
 
-<div class="archive-panel card-base" bind:this={panelEl}>
+<div class="archive-panel card-base" class:compact bind:this={panelEl}>
 
 	<!-- 筛选器摘要 -->
 	{#if primaryFilter}
@@ -546,6 +547,10 @@ onMount(() => {
 	position: relative; /* 高亮覆盖层的定位基准 */
 	/* 整体内边距，让文字与卡片边缘有宽松的呼吸感 */
 	padding: 1.25rem 1.5rem;
+}
+
+.archive-panel.compact {
+	padding: 0.75rem 1rem;
 }
 
 /* ── 年份块 ── */

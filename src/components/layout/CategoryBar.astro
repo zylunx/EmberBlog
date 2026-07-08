@@ -254,6 +254,17 @@ const archiveUrl = url("/archive/");
     }
   }
 
+  function updateCategoryBarVisibility(bar: HTMLElement, currentUrl: URL) {
+    const wrapper = document.getElementById("category-bar-wrapper");
+    if (!wrapper) return;
+
+    const { isHome, isArchive } = getCategoryBarState(bar, currentUrl);
+    const shouldShow = isHome || isArchive;
+    wrapper.classList.toggle("hidden", !shouldShow);
+    wrapper.classList.toggle("category-bar-compact", isArchive);
+    wrapper.toggleAttribute("hidden", !shouldShow);
+  }
+
   function scrollActiveCategoryIntoView(bar: HTMLElement, behavior: ScrollBehavior = "smooth") {
     const activePill =
       bar.querySelector<HTMLAnchorElement>('.category-pill[data-active]') ||
@@ -285,6 +296,7 @@ const archiveUrl = url("/archive/");
       bar.setAttribute("data-current-post-category", currentPostCategory);
     }
 
+    updateCategoryBarVisibility(bar, currentUrl);
     setActiveCategory(bar, currentUrl);
 
     const deferScroll = options.deferScroll ?? shouldDeferCategoryScroll(bar, currentUrl);
@@ -427,6 +439,7 @@ const archiveUrl = url("/archive/");
       const bar = document.getElementById("category-bar");
       if (!bar) return;
       const targetUrl = new URL(visit.to.url, window.location.href);
+      updateCategoryBarVisibility(bar, targetUrl);
       setActiveCategory(bar, targetUrl);
     });
   }
