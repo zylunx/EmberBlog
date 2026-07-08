@@ -362,20 +362,27 @@ const siteLang = lang.replace("_", "-");
         // 使用 requestAnimationFrame 确保在下一帧之前执行
         requestAnimationFrame(function () {
           // 根据模式隐藏显示对应元素
-          if (
+          // 文章页始终使用 post-page-banner 类，不受 wallpaper mode 影响
+          if (forceArticleBanner) {
+            if (document.body) {
+              document.body.classList.remove("enable-banner");
+              document.body.classList.add("post-page-banner");
+              document.body.classList.remove("no-banner-layout");
+            }
+          } else if (
             wallpaperMode === WALLPAPER_NONE ||
             wallpaperMode === WALLPAPER_OVERLAY ||
             wallpaperMode === WALLPAPER_FULLSCREEN
           ) {
             // 隐藏横幅
             if (document.body) {
-              document.body.classList.remove("enable-banner");
+              document.body.classList.remove("enable-banner", "post-page-banner");
               document.body.classList.add("no-banner-layout");
             }
           } else {
             if (document.body) {
               document.body.classList.add("enable-banner");
-              document.body.classList.remove("no-banner-layout");
+              document.body.classList.remove("post-page-banner", "no-banner-layout");
             }
           }
 
