@@ -828,3 +828,71 @@ html[data-wallpaper-mode="fullscreen"] body:not(.wallpaper-initialized) .w-full.
         transition: top 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s !important;
     }
 }
+
+/* ============================================
+ * 文章详情页独立 banner 布局（与 .enable-banner 解耦）
+ * 当 mode: "none" 时，文章页仍保持 banner 视觉布局
+ * ============================================ */
+@layer components {
+  .post-page-banner #wallpaper-wrapper {
+    height: var(--banner-height-home);
+    transform: translateY(var(--banner-height-extend));
+  }
+
+  .post-page-banner #banner {
+    height: var(--banner-height-home);
+    transform: translateY(0);
+  }
+
+  .post-page-banner #main-grid {
+    transform: translateY(var(--banner-height-extend));
+  }
+
+  .post-page-banner #top-row {
+    height: calc(var(--banner-height-home) - 4.5rem);
+    @apply transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .post-page-banner #sidebar-sticky,
+  .post-page-banner #left-sidebar-sticky,
+  .post-page-banner #right-sidebar-sticky {
+    top: calc(1rem - var(--banner-height-extend)) !important;
+  }
+
+  body.post-page-banner.sticky-navbar #sidebar-sticky,
+  body.post-page-banner.sticky-navbar #left-sidebar-sticky,
+  body.post-page-banner.sticky-navbar #right-sidebar-sticky {
+    top: calc(5.5rem - var(--banner-height-extend)) !important;
+  }
+
+  @media (max-width: 1023px) {
+    .post-page-banner:not(.lg\:is-home) #main-grid {
+      transform: none !important;
+    }
+    .post-page-banner:not(.lg\:is-home) #top-row {
+      height: auto !important;
+    }
+    .post-page-banner:not(.lg\:is-home) #sidebar-sticky,
+    .post-page-banner:not(.lg\:is-home) #left-sidebar-sticky,
+    .post-page-banner:not(.lg\:is-home) #right-sidebar-sticky {
+      top: 1rem !important;
+    }
+  }
+}
+
+/* ============================================
+ * mode: none 非文章页布局修复
+ * 主内容紧跟导航栏，消除空白
+ * ============================================ */
+html[data-wallpaper-mode="none"] body:not(.post-page-banner) .absolute.w-full.z-30.no-banner-layout {
+  top: 5.5rem !important;
+  min-height: calc(100vh - 5.5rem) !important;
+}
+
+html[data-wallpaper-mode="none"] body:not(.post-page-banner):not(.sticky-navbar) #top-row {
+  height: 0 !important;
+  overflow: visible !important;
+  transition: none !important;
+}
