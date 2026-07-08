@@ -61,10 +61,11 @@ const navbarTransparentMode =
 const shouldShowTopHighlight =
 	navbarTransparentMode === "full" || navbarTransparentMode === "semifull";
 
-const enableBanner =
-	(backgroundWallpaper.mode === "banner" || !!postSlug) &&
-	bannerEnabled !== false;
+// 文章页使用独立的 post-page-banner 类，不再依赖 enable-banner
 const forceArticleBanner = !!postSlug && bannerEnabled !== false;
+// enableBanner 仅用于 banner 模式（非文章页）
+const enableBanner =
+	backgroundWallpaper.mode === "banner" && bannerEnabled !== false;
 
 let pageTitle: string;
 if (title) {
@@ -565,6 +566,7 @@ const siteLang = lang.replace("_", "-");
         "is-home": isHomePageCheck,
         "lg:is-home": isHomePageCheck,
         "enable-banner": enableBanner,
+        "post-page-banner": forceArticleBanner,
         "sticky-navbar": siteConfig.navbar.stickyNavbar ?? false,
         "enable-card-border": siteConfig.card?.border,
         "card-follow-theme-hue": siteConfig.card?.followTheme,
