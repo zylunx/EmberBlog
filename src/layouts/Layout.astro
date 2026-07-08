@@ -1098,14 +1098,21 @@ function disableAnimation() {
       const currentWallpaperMode = isPostPage
         ? "banner"
         : document.documentElement.getAttribute("data-wallpaper-mode");
-      if (currentWallpaperMode !== "banner") {
-        bodyElement!.classList.remove("enable-banner");
+      if (isPostPage) {
+        // 文章页：确保 post-page-banner 类，移除 enable-banner 和 no-banner-layout
+        bodyElement!.classList.remove("enable-banner", "no-banner-layout");
+        bodyElement!.classList.add("post-page-banner");
+      } else if (currentWallpaperMode !== "banner") {
+        bodyElement!.classList.remove("enable-banner", "post-page-banner");
         bodyElement!.classList.add("no-banner-layout");
         if (currentWallpaperMode === "overlay") {
           bodyElement!.classList.add("wallpaper-transparent");
         } else {
           bodyElement!.classList.remove("wallpaper-transparent");
         }
+      } else {
+        // 非文章页 banner 模式：清理 post-page-banner 残留
+        bodyElement!.classList.remove("post-page-banner");
       }
 
       // Control navbar transparency based on page
