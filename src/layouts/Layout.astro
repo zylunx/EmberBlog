@@ -1285,11 +1285,15 @@ function disableAnimation() {
       const pageBannerEnabled = swupContainer?.dataset.pageBannerEnabled !== "false";
 
       if (currentMode === "banner") {
-        if (pageBannerEnabled) {
+        if (isPostPage) {
+          // 文章页：使用 post-page-banner 类，与 enable-banner 解耦
+          document.body.classList.add("post-page-banner");
+          document.body.classList.remove("enable-banner", "no-banner-layout");
+        } else if (pageBannerEnabled) {
           document.body.classList.add("enable-banner");
-          document.body.classList.remove("no-banner-layout");
+          document.body.classList.remove("no-banner-layout", "post-page-banner");
         } else {
-          document.body.classList.remove("enable-banner");
+          document.body.classList.remove("enable-banner", "post-page-banner");
           document.body.classList.add("no-banner-layout");
         }
       }
@@ -1366,6 +1370,14 @@ function disableAnimation() {
         // 桌面端横幅模式：统一用banner高度定位，不改变grid transform
         if (!isMobileForBanner && currentMode === "banner" && mainEl) {
           mainEl.style.setProperty("top", "calc(var(--banner-height) - 3.5rem)", "important");
+          mainEl.style.position = "";
+          mainEl.style.zIndex = "";
+          mainEl.style.setProperty("margin-top", "0", "important");
+        }
+
+        // 桌面端 none 模式非文章页：主内容紧跟导航栏，无空白
+        if (!isMobileForBanner && currentMode === "none" && mainEl && !isPostPage) {
+          mainEl.style.setProperty("top", "5.5rem", "important");
           mainEl.style.position = "";
           mainEl.style.zIndex = "";
           mainEl.style.setProperty("margin-top", "0", "important");
