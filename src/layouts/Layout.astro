@@ -1216,6 +1216,13 @@ function disableAnimation() {
             mainContentWrapper.style.zIndex = "";
             mainContentWrapper.style.setProperty("margin-top", "0", "important");
           }
+          // 桌面端 none 模式非文章页：主内容紧跟导航栏，无空白
+          if (visitDesktopMode === "none") {
+            mainContentWrapper.style.setProperty("top", "5.5rem", "important");
+            mainContentWrapper.style.position = "";
+            mainContentWrapper.style.zIndex = "";
+            mainContentWrapper.style.setProperty("margin-top", "0", "important");
+          }
         }
       }
 
