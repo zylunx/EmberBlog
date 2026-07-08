@@ -150,6 +150,14 @@ const mainPanelTop =
 const finalMainPanelTop =
 	isBannerMode && effectiveBackgroundEnabled ? mainPanelTop : "5.5rem";
 
+// 文章页使用独立的 post-page-banner 类（由 Layout.astro 添加），不加 no-banner-layout
+const isPostPageBannerLayout = isPostPage && effectiveBackgroundEnabled;
+const mainContentLayoutClass = isPostPageBannerLayout
+	? ""
+	: (isBannerMode && effectiveBackgroundEnabled)
+		? ""
+		: "no-banner-layout";
+
 // 获取响应式侧边栏配置
 const sidebarConfig = getResponsiveSidebarConfig();
 
@@ -361,7 +369,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 )}
 
 <!-- Main content -->
-<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${!(isBannerMode && effectiveBackgroundEnabled) ? 'no-banner-layout' : ''}`} style={isFullscreenMode && effectiveBackgroundEnabled ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
+<div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${mainContentLayoutClass}`} style={isFullscreenMode && effectiveBackgroundEnabled ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
