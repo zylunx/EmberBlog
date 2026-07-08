@@ -1011,6 +1011,14 @@ function disableAnimation() {
         mainEl.style.setProperty("margin-top", "0", "important");
       }
 
+      // 桌面端 none 模式非文章页：主内容紧跟导航栏，无空白
+      if (!isMobileForBanner && currentMode === "none" && mainEl && !isPostPage) {
+        mainEl.style.setProperty("top", "5.5rem", "important");
+        mainEl.style.position = "";
+        mainEl.style.zIndex = "";
+        mainEl.style.setProperty("margin-top", "0", "important");
+      }
+
       // 更新侧边栏组件的可见性（根据新页面的 URL）
       updateSidebarComponentsVisibility();
 
