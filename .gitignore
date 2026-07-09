@@ -3,6 +3,7 @@ dist/
 PROMPT/
 docs/
 skills/
+.worktrees/
 
 # generated types
 .astro/
