@@ -53,6 +53,14 @@ const pinnedClass = [
 ]
 	.filter(Boolean)
 	.join(" ");
+
+const categoryLinkClass = [
+	isHome ? "post-card-category-link" : "link-lg",
+	"transition text-50 text-sm font-medium whitespace-nowrap",
+	!isHome ? "hover:text-(--primary) dark:hover:text-(--primary)" : "",
+]
+	.filter(Boolean)
+	.join(" ");
 ---
 
 <div
@@ -106,8 +114,7 @@ const pinnedClass = [
       <a
         href={getCategoryUrl(category || "")}
         aria-label={`View all posts in the ${category} category`}
-        class="link-lg transition text-50 text-sm font-medium
-                            hover:text-(--primary) dark:hover:text-(--primary) whitespace-nowrap"
+        class={categoryLinkClass}
       >
         {category || i18n(I18nKey.uncategorized)}
       </a>
@@ -203,3 +210,21 @@ const pinnedClass = [
         )
     }
 </div>
+
+<style>
+  .post-card-category-link {
+    display: inline-block;
+    background: transparent !important;
+    border-radius: 0;
+    transform-origin: center;
+    transition:
+      color var(--interactive-hover-duration) var(--interactive-hover-ease),
+      transform var(--interactive-hover-duration) var(--interactive-hover-ease);
+  }
+
+  .post-card-category-link:hover {
+    background: transparent !important;
+    color: var(--theme-hue-primary);
+    transform: scale(1.06);
+  }
+</style>

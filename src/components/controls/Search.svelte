@@ -16,6 +16,7 @@ let initialized = false;
 let debounceTimer: NodeJS.Timeout;
 let isDesktopSearchOpen = false;
 let desktopInput: HTMLInputElement;
+let desktopSearchCloseTimer: number;
 
 // --- Mocks for Dev Mode ---
 const fakeResult: SearchResult[] = [
@@ -39,17 +40,27 @@ const togglePanel = () => {
 		?.classList.toggle("float-panel-closed");
 };
 
-const openDesktopSearch = async (): Promise<void> => {
+const expandDesktopSearch = (): void => {
+	window.clearTimeout(desktopSearchCloseTimer);
 	isDesktopSearchOpen = true;
+};
+
+const focusDesktopSearch = async (): Promise<void> => {
+	expandDesktopSearch();
 	await tick();
 	desktopInput?.focus();
 	search(keywordDesktop, true);
 };
 
 const closeDesktopSearch = (): void => {
-	if (keywordDesktop) return;
+	if (keywordDesktop || document.activeElement === desktopInput) return;
 	isDesktopSearchOpen = false;
 	document.getElementById("search-panel")?.classList.add("float-panel-closed");
+};
+
+const scheduleDesktopSearchClose = (): void => {
+	window.clearTimeout(desktopSearchCloseTimer);
+	desktopSearchCloseTimer = window.setTimeout(closeDesktopSearch, 180);
 };
 
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
@@ -158,7 +169,7 @@ $: if (initialized && (keywordMobile || keywordMobile === "")) {
       {isDesktopSearchOpen
           ? 'w-60 bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10'
           : 'w-11 bg-transparent'}
-">
+" on:mouseenter={expandDesktopSearch} on:mouseleave={scheduleDesktopSearchClose}>
     <input
         bind:this={desktopInput}
         placeholder={i18n(I18nKey.search)}
@@ -167,7 +178,7 @@ $: if (initialized && (keywordMobile || keywordMobile === "")) {
             isDesktopSearchOpen = true;
             search(keywordDesktop, true);
         }}
-        on:blur={() => window.setTimeout(closeDesktopSearch, 160)}
+        on:blur={scheduleDesktopSearchClose}
         class="absolute right-11 h-full bg-transparent outline-0 text-sm
                text-black/50 dark:text-white/50
                transition-[width,opacity,padding] duration-300 ease-out
@@ -177,7 +188,7 @@ $: if (initialized && (keywordMobile || keywordMobile === "")) {
     >
     <button
         type="button"
-        on:click={openDesktopSearch}
+        on:click={focusDesktopSearch}
         aria-label={i18n(I18nKey.search)}
         class="btn-plain scale-animation absolute right-0 top-0 z-10 rounded-lg w-11 h-11 active:scale-90 flex items-center justify-center"
     >

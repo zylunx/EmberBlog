@@ -9,7 +9,7 @@ export const siteConfig: SiteConfig = {
 	title: "Ember",
 
 	// 站点副标题
-	subtitle: "Ember Blog",
+	subtitle: "人间烟火散尽，唯留心底余烬",
 
 	// 站点 URL
 	site_url: "https://blog.tuuki.top",
@@ -40,7 +40,7 @@ export const siteConfig: SiteConfig = {
 		// 是否开启卡片边框和阴影，开启后让网站更有立体感
 		border: true,
 		// 是否让卡片风格跟随主题色相
-		followTheme: true,
+		followTheme: false,
 		// 是否在主页文章卡片上显示文章简介
 		showDescriptionOnHome: false,
 	},
@@ -65,13 +65,13 @@ export const siteConfig: SiteConfig = {
 		// 2. 本地图片（public目录，不优化）: { type: "image", value: "/assets/images/logo.webp", alt: "Logo" }
 		// 3. 本地图片（src目录，自动优化但会增加构建时间）: { type: "image", value: "assets/images/logo.webp", alt: "Logo" }
 		// 4. 网络图片: { type: "url", value: "https://example.com/logo.png", alt: "Logo" }
-		logo: {
-			type: "image",
-			value: "assets/images/ember.png",
-			alt: "✨",
-		},
+		// logo: {
+		// 	 type: "image",
+		// 	 value: "assets/images/ember.png",
+		//	 alt: "✨",
+		// },
 		// 导航栏标题
-		title: "Ember",
+		title: "EMBER",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
 		// 导航菜单对齐方式，left：左对齐，center：居中
@@ -79,7 +79,7 @@ export const siteConfig: SiteConfig = {
 		// 导航栏图标和标题是否跟随主题色
 		followTheme: false,
 		// 导航栏是否固定在顶部并始终可见
-		stickyNavbar: false,
+		stickyNavbar: true,
 	},
 
 	// 站点开始日期，用于统计运行天数

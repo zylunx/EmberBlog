@@ -26,9 +26,9 @@
   position: relative;
   z-index: 0;
   transition:
-    color 0.18s ease-out,
-    margin 0.18s ease-out,
-    border-radius 0.18s ease-out;
+    color var(--interactive-hover-duration) var(--interactive-hover-ease),
+    transform var(--interactive-hover-duration) var(--interactive-hover-ease),
+    border-radius var(--interactive-hover-duration) var(--interactive-hover-ease);
   &::before {
     content: '';
     position: absolute;
@@ -36,12 +36,11 @@
     border-radius: var(--interactive-pill-radius);
     scale: 0.85;
     z-index: -10;
-    transition: all 0.15s ease-out;
+    transition: all var(--interactive-hover-duration) var(--interactive-hover-ease);
   }
   &:hover {
-    color: white;
+    color: var(--interactive-hover-fg);
     border-radius: var(--interactive-pill-radius);
-    margin-inline: var(--interactive-hover-gap);
   }
   &:hover::before {
     background-color: var(--interactive-hue-bg);
@@ -59,8 +58,17 @@
 :root {
     --interactive-hue-bg: oklch(0.68 0.18 var(--hue));
     --interactive-hue-bg-active: oklch(0.60 0.18 var(--hue));
+    --interactive-hover-fg: white;
     --interactive-pill-radius: 9999px;
     --interactive-hover-gap: 0.125rem;
+    --interactive-hover-duration: 0.28s;
+    --interactive-hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root.dark {
+    --interactive-hue-bg: oklch(0.78 0.14 var(--hue));
+    --interactive-hue-bg-active: oklch(0.70 0.14 var(--hue));
+    --interactive-hover-fg: #000;
 }
 
 html {
@@ -88,6 +96,8 @@ html {
 /* 暗色主题下的渐变高光效果 */
 :root.dark .top-gradient-highlight {
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.05) 80%, transparent 100%);
+    opacity: 0;
+    visibility: hidden;
 }
 
 @layer components {
@@ -283,12 +293,11 @@ html {
     }
 
     .btn-card {
-        @apply transition-all duration-150 flex items-center justify-center bg-(--card-bg);
+        @apply transition-all duration-300 flex items-center justify-center bg-(--card-bg);
         &:hover {
             background-color: var(--interactive-hue-bg);
             border-radius: var(--interactive-pill-radius);
-            color: white;
-            margin-inline: var(--interactive-hover-gap);
+            color: var(--interactive-hover-fg);
         }
         &:active {
             background-color: var(--interactive-hue-bg-active);
@@ -298,12 +307,11 @@ html {
         @apply pointer-events-none text-black/10 dark:text-white/10
     }
     .btn-plain {
-        @apply transition-all duration-150 relative flex items-center justify-center bg-none
+        @apply transition-all duration-300 relative flex items-center justify-center bg-none
         text-black/75 dark:text-white/75;
         &:hover {
-            color: white;
+            color: var(--interactive-hover-fg);
             border-radius: var(--interactive-pill-radius);
-            margin-inline: var(--interactive-hover-gap);
         }
         &:not(.scale-animation) {
             &:hover {
@@ -318,18 +326,17 @@ html {
         }
     }
     .current-theme-btn {
-        @apply text-white;
         background-color: var(--interactive-hue-bg);
         border-radius: var(--interactive-pill-radius);
+        color: var(--interactive-hover-fg);
     }
     .btn-regular {
-        @apply transition-all duration-150 flex items-center justify-center bg-(--btn-regular-bg)
+        @apply transition-all duration-300 flex items-center justify-center bg-(--btn-regular-bg)
         text-(--btn-content) dark:text-white/75;
         &:hover {
             background-color: var(--interactive-hue-bg);
             border-radius: var(--interactive-pill-radius);
-            color: white;
-            margin-inline: var(--interactive-hover-gap);
+            color: var(--interactive-hover-fg);
         }
         &:active {
             background-color: var(--interactive-hue-bg-active);
@@ -341,6 +348,33 @@ html {
     .btn-regular:hover :where(*),
     .dropdown-item:hover :where(*) {
         color: inherit;
+    }
+
+    :where(.btn-card, .btn-plain, .btn-regular, .dropdown-item):has(+ :where(.btn-card, .btn-plain, .btn-regular, .dropdown-item):hover) {
+        transform: translateX(calc(-1 * var(--interactive-hover-gap)));
+    }
+
+    :where(.btn-card, .btn-plain, .btn-regular, .dropdown-item):hover + :where(.btn-card, .btn-plain, .btn-regular, .dropdown-item) {
+        transform: translateX(var(--interactive-hover-gap));
+    }
+
+    #navbar .navbar-glass-left:hover,
+    #navbar .navbar-glass-left:hover :where(*) {
+        color: var(--interactive-hover-fg) !important;
+    }
+
+    :root.dark #navbar :where(.btn-plain, .btn-card, .btn-regular, .dropdown-item, .dropdown-trigger, .navbar-glass-left),
+    :root.dark #navbar :where(.btn-plain, .btn-card, .btn-regular, .dropdown-item, .dropdown-trigger, .navbar-glass-left) :where(*) {
+        color: white;
+    }
+
+    :root.dark #navbar :where(.btn-plain:hover, .btn-card:hover, .btn-regular:hover, .dropdown-item:hover, .navbar-glass-left:hover),
+    :root.dark #navbar .dropdown-container:hover > .dropdown-trigger,
+    :root.dark #navbar .dropdown-container:focus-within > .dropdown-trigger,
+    :root.dark #navbar :where(.btn-plain:hover, .btn-card:hover, .btn-regular:hover, .dropdown-item:hover, .navbar-glass-left:hover) :where(*),
+    :root.dark #navbar .dropdown-container:hover > .dropdown-trigger :where(*),
+    :root.dark #navbar .dropdown-container:focus-within > .dropdown-trigger :where(*) {
+        color: var(--interactive-hover-fg) !important;
     }
 
     .link-underline {
@@ -383,7 +417,7 @@ html {
 
     /* 下拉菜单样式 */
     .dropdown-container {
-        @apply relative;
+        @apply relative transition-transform duration-300;
     }
 
     .dropdown-menu {
@@ -405,12 +439,11 @@ html {
     }
 
     .dropdown-item {
-        @apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 transition-all duration-150 font-medium;
+        @apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 transition-all duration-300 font-medium;
         &:hover {
             background-color: var(--interactive-hue-bg);
             border-radius: var(--interactive-pill-radius);
-            color: white;
-            margin-inline: var(--interactive-hover-gap);
+            color: var(--interactive-hover-fg);
         }
     }
 
@@ -424,6 +457,242 @@ html {
 
     .dropdown-item:hover {
         border-radius: var(--interactive-pill-radius);
+    }
+
+    #navbar .navbar-center-menu > .dropdown-container:has(+ .dropdown-container:hover) {
+        transform: translateX(calc(-1 * var(--interactive-hover-gap)));
+    }
+
+    #navbar .navbar-center-menu > .dropdown-container:hover + .dropdown-container {
+        transform: translateX(var(--interactive-hover-gap));
+    }
+
+    #navbar .dropdown-container:hover > .dropdown-trigger,
+    #navbar .dropdown-container:focus-within > .dropdown-trigger {
+        border-radius: var(--interactive-pill-radius);
+        color: var(--interactive-hover-fg);
+    }
+
+    #navbar .dropdown-container:hover > .dropdown-trigger::before,
+    #navbar .dropdown-container:focus-within > .dropdown-trigger::before {
+        background-color: var(--interactive-hue-bg);
+        scale: 1;
+    }
+
+    #navbar .dropdown-container:hover > .dropdown-trigger :where(*),
+    #navbar .dropdown-container:focus-within > .dropdown-trigger :where(*) {
+        color: inherit;
+    }
+
+    .hue-glass-surface,
+    #navbar .navbar-glass-section {
+        border: 1px solid transparent;
+        border-radius: 9999px !important;
+        transition:
+            background-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            backdrop-filter 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #navbar .navbar-glass-section {
+        background: transparent;
+        border: none !important;
+        box-shadow: none;
+        backdrop-filter: blur(0);
+        -webkit-backdrop-filter: blur(0);
+    }
+
+    #navbar .navbar-inner-frame {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    #top-row,
+    #navbar-wrapper,
+    #navbar,
+    #navbar > div,
+    #navbar .navbar-inner-frame {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        filter: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        isolation: auto !important;
+        mix-blend-mode: normal !important;
+    }
+
+    #top-row::before,
+    #top-row::after,
+    #navbar-wrapper::before,
+    #navbar-wrapper::after,
+    #navbar::before,
+    #navbar::after,
+    #navbar > div::before,
+    #navbar > div::after,
+    #navbar .navbar-inner-frame::before,
+    #navbar .navbar-inner-frame::after {
+        content: none !important;
+        display: none !important;
+    }
+
+    .hue-glass-surface,
+    .float-panel.hue-glass-surface,
+    .dropdown-content.hue-glass-surface,
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-glass-section {
+        background: color-mix(in srgb, var(--card-bg) 52%, transparent) !important;
+        border-color: color-mix(in srgb, var(--primary) 46%, transparent) !important;
+        box-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 14%, transparent) !important;
+        backdrop-filter: blur(24px) saturate(1.35) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.35) !important;
+    }
+
+    :root.dark .hue-glass-surface,
+    :root.dark .float-panel.hue-glass-surface,
+    :root.dark .dropdown-content.hue-glass-surface,
+    :root.dark body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-glass-section {
+        background: color-mix(in srgb, var(--card-bg) 46%, transparent) !important;
+        border-color: color-mix(in srgb, var(--primary) 52%, transparent) !important;
+        box-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 20%, transparent) !important;
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-glass-section,
+    :root.dark body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-glass-section {
+        border: none !important;
+    }
+
+    #navbar .dropdown-menu .dropdown-content {
+        background: rgba(255, 255, 255, 0.72) !important;
+        border-color: color-mix(in srgb, var(--theme-hue-primary) 58%, transparent) !important;
+        border-radius: var(--interactive-pill-radius) !important;
+        box-shadow: 0 10px 32px rgba(255, 255, 255, 0.18) !important;
+    }
+
+    #navbar .dropdown-menu .dropdown-item,
+    #navbar .dropdown-menu .dropdown-item::before {
+        border-radius: var(--interactive-pill-radius) !important;
+    }
+
+    :root.dark #navbar .dropdown-menu .dropdown-content {
+        background: rgba(0, 0, 0, 0.72) !important;
+        border-color: color-mix(in srgb, var(--theme-hue-primary) 68%, transparent) !important;
+        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.34) !important;
+    }
+
+    #navbar .navbar-center-menu,
+    #navbar .navbar-center-title {
+        transition:
+            opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+            transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+            filter 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+            backdrop-filter 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: opacity, transform, filter, background-color, border-color, box-shadow;
+    }
+
+    #navbar .navbar-center-menu {
+        opacity: 1;
+        filter: blur(0);
+        width: max-content;
+        min-width: max-content;
+        white-space: nowrap;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    #navbar .navbar-center-menu .dropdown-container,
+    #navbar .navbar-center-menu .dropdown-trigger,
+    #navbar .navbar-center-menu > a {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    #navbar .navbar-center-title {
+        appearance: none;
+        cursor: pointer;
+        opacity: 0;
+        filter: blur(12px);
+        font: inherit;
+        pointer-events: none;
+        visibility: hidden;
+        white-space: nowrap;
+        transform: translate(-50%, calc(-50% + 0.9rem)) scale(0.82);
+    }
+
+    #navbar .navbar-center-title-main,
+    #navbar .navbar-center-title-separator,
+    #navbar .navbar-center-title-sub {
+        transition: color 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #navbar .navbar-center-title-main {
+        color: #000;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    #navbar .navbar-center-title-separator {
+        color: #000;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1;
+        margin: 0 0.35rem;
+    }
+
+    #navbar .navbar-center-title-sub {
+        color: #000;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1;
+        max-width: 14rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    :root.dark #navbar .navbar-center-title-main,
+    :root.dark #navbar .navbar-center-title-separator,
+    :root.dark #navbar .navbar-center-title-sub {
+        color: white;
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-menu {
+        opacity: 0;
+        pointer-events: none;
+        filter: blur(10px);
+        transform: translate(-50%, calc(-50% - 0.9rem)) scale(0.84);
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title {
+        opacity: 1;
+        filter: blur(0);
+        pointer-events: auto;
+        visibility: visible;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title:hover {
+        border-color: color-mix(in srgb, var(--primary) 70%, transparent) !important;
+        border-radius: var(--interactive-pill-radius) !important;
+        box-shadow: 0 10px 34px color-mix(in srgb, var(--primary) 24%, transparent) !important;
+        transform: translate(-50%, -50%) scale(1.045);
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title:active {
+        transform: translate(-50%, -50%) scale(0.98);
+    }
+
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title:hover .navbar-center-title-main,
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title:hover .navbar-center-title-separator,
+    body.sticky-navbar #navbar.navbar-sticky-shadow .navbar-center-title:hover .navbar-center-title-sub {
+        color: var(--theme-hue-primary) !important;
     }
 
     /* 移动端菜单样式 */

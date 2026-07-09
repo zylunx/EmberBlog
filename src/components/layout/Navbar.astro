@@ -63,8 +63,8 @@ let links: NavBarLink[] = navBarConfig.links
         className,
         "overflow-visible! h-18 px-4"
     ]}>
-        <div class="relative mx-auto h-full w-full max-w-(--page-width) flex items-center justify-between">
-            <a href={url('/')} class="btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
+        <div class="navbar-inner-frame relative mx-auto h-full w-full max-w-(--page-width) flex items-center justify-between">
+            <a href={url('/')} class="navbar-glass-section navbar-glass-left btn-plain scale-animation rounded-lg h-13 px-5 font-bold active:scale-95">
                 <div class:list={[
                     "flex flex-row items-center text-md",
                     siteConfig.navbar.followTheme ? "text-(--primary)" : "dark:text-white text-black"
@@ -72,12 +72,23 @@ let links: NavBarLink[] = navBarConfig.links
                     {navbarTitle}
                 </div>
             </a>
-            <div class="hidden lg:flex items-center space-x-1 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                {links.map((l) => {
-                    return <DropdownMenu link={l} />;
-                })}
+            <div class="navbar-center-stage hidden lg:block absolute left-1/2 top-1/2 h-13 -translate-x-1/2 -translate-y-1/2">
+                <div class="navbar-glass-section navbar-center-menu absolute left-1/2 top-1/2 flex h-13 w-max min-w-max items-center justify-center space-x-1 px-3">
+                    {links.map((l) => {
+                        return <DropdownMenu link={l} />;
+                    })}
+                </div>
+                <button id="navbar-center-title-button" class="navbar-glass-section navbar-center-title absolute left-1/2 top-1/2 flex h-13 max-w-[min(24rem,70vw)] items-center justify-center px-5 text-center" aria-label="Back to top" type="button">
+                    <span class="navbar-center-title-main" style="font-family: var(--font-navbar-title, inherit)">
+                        {siteConfig.title}
+                    </span>
+                    <span class="navbar-center-title-separator">-</span>
+                    <span class="navbar-center-title-sub">
+                        {siteConfig.subtitle}
+                    </span>
+                </button>
             </div>
-            <div class="flex">
+            <div class="navbar-glass-section navbar-glass-right flex">
                 <!--<SearchPanel client:load>-->
                 <Search
                     client:load
@@ -148,6 +159,13 @@ function loadButtonScript() {
             if (themePanel) {
                 themePanel.classList.toggle("float-panel-closed");
             }
+        };
+    }
+
+    let navbarCenterTitleBtn = document.getElementById("navbar-center-title-button");
+    if (navbarCenterTitleBtn) {
+        navbarCenterTitleBtn.onclick = function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
         };
     }
 
