@@ -2,7 +2,7 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { navigateToPage } from "@utils/navigation-utils";
-import { onMount } from "svelte";
+import { onMount, tick } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
 import type { SearchResult } from "@/global";
 import { url as formatUrl, getSearchUrl } from "@/utils/url-utils";
@@ -14,6 +14,8 @@ let result: SearchResult[] = [];
 let isSearching = false;
 let initialized = false;
 let debounceTimer: NodeJS.Timeout;
+let isDesktopSearchOpen = false;
+let desktopInput: HTMLInputElement;
 
 // --- Mocks for Dev Mode ---
 const fakeResult: SearchResult[] = [
@@ -37,6 +39,19 @@ const togglePanel = () => {
 		?.classList.toggle("float-panel-closed");
 };
 
+const openDesktopSearch = async (): Promise<void> => {
+	isDesktopSearchOpen = true;
+	await tick();
+	desktopInput?.focus();
+	search(keywordDesktop, true);
+};
+
+const closeDesktopSearch = (): void => {
+	if (keywordDesktop) return;
+	isDesktopSearchOpen = false;
+	document.getElementById("search-panel")?.classList.add("float-panel-closed");
+};
+
 const setPanelVisibility = (show: boolean, isDesktop: boolean): void => {
 	const panel = document.getElementById("search-panel");
 	if (
@@ -54,6 +69,7 @@ const closeSearchPanel = (): void => {
 	document.getElementById("search-panel")?.classList.add("float-panel-closed");
 	keywordDesktop = "";
 	keywordMobile = "";
+	isDesktopSearchOpen = false;
 	result = [];
 };
 
@@ -137,17 +153,36 @@ $: if (initialized && (keywordMobile || keywordMobile === "")) {
 </script>
 
 <!-- search bar for desktop view -->
-<div id="search-bar" class="hidden lg:flex transition-all items-center h-11 mr-2 rounded-lg
-      bg-black/4 hover:bg-black/6 focus-within:bg-black/6
-      dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10
+<div id="search-bar" class="hidden lg:flex relative items-center h-11 mr-2 rounded-lg overflow-hidden
+      transition-[width,background-color,box-shadow] duration-300 ease-out
+      {isDesktopSearchOpen
+          ? 'w-60 bg-black/4 hover:bg-black/6 focus-within:bg-black/6 dark:bg-white/5 dark:hover:bg-white/10 dark:focus-within:bg-white/10'
+          : 'w-11 bg-transparent'}
 ">
-    <Icon icon="material-symbols:search"
-          class="absolute text-[1.25rem] pointer-events-none ml-3 transition my-auto text-black/30 dark:text-white/30"></Icon>
-    <input placeholder="{i18n(I18nKey.search)}" bind:value={keywordDesktop}
-           on:focus={() => search(keywordDesktop, true)}
-           class="transition-all pl-10 text-sm bg-transparent outline-0
-         h-full w-40 active:w-60 focus:w-60 text-black/50 dark:text-white/50"
+    <input
+        bind:this={desktopInput}
+        placeholder={i18n(I18nKey.search)}
+        bind:value={keywordDesktop}
+        on:focus={() => {
+            isDesktopSearchOpen = true;
+            search(keywordDesktop, true);
+        }}
+        on:blur={() => window.setTimeout(closeDesktopSearch, 160)}
+        class="absolute right-11 h-full bg-transparent outline-0 text-sm
+               text-black/50 dark:text-white/50
+               transition-[width,opacity,padding] duration-300 ease-out
+               {isDesktopSearchOpen
+                   ? 'w-[12.25rem] opacity-100 pl-3 pr-2'
+                   : 'w-0 opacity-0 pl-0 pr-0 pointer-events-none'}"
     >
+    <button
+        type="button"
+        on:click={openDesktopSearch}
+        aria-label={i18n(I18nKey.search)}
+        class="btn-plain scale-animation absolute right-0 top-0 z-10 rounded-lg w-11 h-11 active:scale-90 flex items-center justify-center"
+    >
+        <Icon icon="material-symbols:search" class="text-[1.25rem]"></Icon>
+    </button>
 </div>
 
 <!-- toggle btn for phone/tablet view -->
@@ -240,4 +275,3 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         overflow-y: auto;
     }
 </style>
-

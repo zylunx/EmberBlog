@@ -39,7 +39,6 @@ export type {
 	Favicon,
 	LIGHT_DARK_MODE,
 	SiteConfig,
-	WALLPAPER_MODE,
 } from "./siteConfig";
 export type {
 	SponsorConfig,

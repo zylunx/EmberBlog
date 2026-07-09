@@ -3,17 +3,7 @@
  * 
  * 模式说明：
  * ============================================
- * 1. 壁纸模式 (backgroundWallpaper.mode):
- *    - "banner": 横幅壁纸模式 (有 #wallpaper-wrapper)
- *    - "overlay": 全屏壁纸模式 (body.wallpaper-transparent)
- *    - "none": 纯色背景无壁纸
- * 
- * 2. 导航栏配置 (banner.navbar):
- *    - transparentMode: "semi" | "full" | "semifull" (仅在 Banner 模式下生效)
- *    - enableBlur: true/false (仅在 Banner 模式下生效)
- * 
- * 注意：Overlay 模式下的导航栏始终跟随卡片样式 (var(--card-bg-transparent) + blur)，
- * 不受 Banner 配置 (transparentMode, enableBlur) 的影响。
+ * 站点固定使用纯色背景无壁纸布局。
  * ============================================
  */
 
@@ -318,4 +308,32 @@ body.wallpaper-transparent #navbar-wrapper #navbar[data-full-width="true"] > div
     .navbar-icon {
         display: none !important;
     }
+}
+
+/* ============================================
+ * 全局文字导航：移除导航栏背景与按钮底色
+ * ============================================ */
+#navbar>div,
+#navbar.navbar-sticky-shadow>div,
+#navbar[data-transparent-mode]>div,
+#navbar[data-transparent-mode].scrolled>div,
+body:has(#wallpaper-wrapper) #navbar>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode]>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode].scrolled>div,
+#wallpaper-wrapper~* #navbar[data-transparent-mode]>div,
+#wallpaper-wrapper~* #navbar[data-transparent-mode].scrolled>div {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+body:not(.sticky-navbar) #navbar>div {
+    margin-top: 0 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+#navbar .btn-plain:hover,
+#navbar .btn-plain:active {
+    background: transparent !important;
 }

@@ -11,7 +11,6 @@ import FloatingControls from "@/components/controls/FloatingControls.astro";
 import CategoryBar from "@/components/layout/CategoryBar.astro";
 import {
 	backgroundWallpaper,
-	getPageBannerConfig,
 	live2dWidgetConfig,
 	sidebarLayoutConfig,
 	siteConfig,
@@ -22,7 +21,6 @@ import {
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "@/constants/constants";
 import type { BannerConfig } from "@/types/bannerConfig";
-import { getBannerLayoutState } from "@/utils/banner-layout-utils";
 import { isHomePage } from "@/utils/layout-utils";
 import {
 	generateGridClasses,
@@ -72,58 +70,26 @@ const {
 	bannerPostMeta,
 	postImage,
 	postImageBasePath = "/",
-	bannerConfig: pageBannerConfigOverride,
+	bannerConfig,
 } = Astro.props;
-
-const bannerConfig = {
-	...getPageBannerConfig(Astro.url.pathname),
-	...pageBannerConfigOverride,
-};
 
 const isPostPage = !!postSlug;
 
-// 检查背景壁纸模式和是否允许切换
-const {
-	isBannerMode,
-	isFullscreenMode,
-	isOverlayMode,
-	isBackgroundEnabled: effectiveBackgroundEnabled,
-} = getBannerLayoutState({
-	wallpaperMode: backgroundWallpaper.mode,
-	bannerEnabled: bannerConfig?.enabled,
-	isPostPage,
-});
-const isWallpaperSwitchable = backgroundWallpaper.switchable ?? true;
-const shouldApplyWallpaperSwitching = isWallpaperSwitchable && !isPostPage;
+// 仅文章详情页保留顶部视觉区域和水波纹，非文章页固定为 none 模式。
+const isBannerMode = isPostPage;
+const isFullscreenMode = false;
+const effectiveBackgroundEnabled =
+	isPostPage && bannerConfig?.enabled !== false;
 
-// 检查是否启用水波纹动画效果
-const wavesConfig = backgroundWallpaper.common?.waves?.enable;
-const wavesSwitchable = backgroundWallpaper.common?.waves?.switchable ?? false;
+// 检查文章详情页是否启用水波纹动画效果
+const wavesConfig = backgroundWallpaper.articleWaves?.enable;
 // 处理分设备控制的水波纹动画
 const wavesEnabledOnDesktop =
 	typeof wavesConfig === "object" ? wavesConfig.desktop : wavesConfig;
 const wavesEnabledOnMobile =
 	typeof wavesConfig === "object" ? wavesConfig.mobile : wavesConfig;
-// 是否需要渲染水波纹元素（任一设备启用 或 允许用户切换）
 const shouldRenderWaves =
-	wavesEnabledOnDesktop || wavesEnabledOnMobile || wavesSwitchable;
-
-// 渐变过渡配置
-const gradientConfig = backgroundWallpaper.common?.gradient?.enable;
-const gradientSwitchable =
-	backgroundWallpaper.common?.gradient?.switchable ?? false;
-const gradientEnabledOnDesktop =
-	typeof gradientConfig === "object"
-		? gradientConfig.desktop
-		: (gradientConfig ?? true);
-const gradientEnabledOnMobile =
-	typeof gradientConfig === "object"
-		? gradientConfig.mobile
-		: (gradientConfig ?? true);
-const gradientHeight = backgroundWallpaper.common?.gradient?.height ?? "30vh";
-// 是否需要渲染渐变元素（任一设备启用 或 允许用户切换）
-const shouldRenderGradient =
-	gradientEnabledOnDesktop || gradientEnabledOnMobile || gradientSwitchable;
+	isPostPage && !!(wavesEnabledOnDesktop || wavesEnabledOnMobile);
 
 // 检查是否为首页
 const isHomePageCheck = isHomePage(Astro.url.pathname);
@@ -139,22 +105,26 @@ const mobileNonHomeBannerClass =
 		? "mobile-hide-banner"
 		: "";
 
+const navbarContentOffset = "var(--navbar-content-offset, 4.5rem)";
+
 // 计算主内容区域位置，考虑手机端非首页时banner被隐藏
 const mainPanelTop =
 	isBannerMode && effectiveBackgroundEnabled
 		? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
-		: "5.5rem";
+		: navbarContentOffset;
 
 // 当banner模式被禁用时，主内容区域应该始终从顶栏下面开始
-// 非首页在小于1024px时会通过 mobile-main-no-banner CSS类覆盖top值为5.5rem
+// 非首页在小于1024px时会通过 mobile-main-no-banner CSS类覆盖top值
 const finalMainPanelTop =
-	isBannerMode && effectiveBackgroundEnabled ? mainPanelTop : "5.5rem";
+	isBannerMode && effectiveBackgroundEnabled
+		? mainPanelTop
+		: navbarContentOffset;
 
 // 文章页使用独立的 post-page-banner 类（由 Layout.astro 添加），不加 no-banner-layout
 const isPostPageBannerLayout = isPostPage && effectiveBackgroundEnabled;
 const mainContentLayoutClass = isPostPageBannerLayout
 	? ""
-	: (isBannerMode && effectiveBackgroundEnabled)
+	: isBannerMode && effectiveBackgroundEnabled
 		? ""
 		: "no-banner-layout";
 
@@ -278,22 +248,11 @@ if (
 
 const footerClassName = footerClass.join(" ");
 
-// 检查是否应该启用半透明效果
-const shouldEnableTransparency = isOverlayMode && effectiveBackgroundEnabled;
-
 const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 ---
 
 <Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} bannerEnabled={effectiveBackgroundEnabled}>
-
-
-<!-- 为全屏壁纸模式添加body类 -->
-{shouldEnableTransparency && (
-	<script>
-		document.body.classList.add('wallpaper-transparent');
-	</script>
-)}
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
@@ -316,28 +275,17 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     </div>
 </div>
 
-<!-- Wallpaper - 如果允许切换则始终渲染，否则只渲染当前模式 -->
-{effectiveBackgroundEnabled && (shouldApplyWallpaperSwitching || isBannerMode || isFullscreenMode || isOverlayMode) && (
+<!-- Article header visual area -->
+{effectiveBackgroundEnabled && (
 <div id="wallpaper-wrapper" class:list={[
 	`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`,
 	!effectiveBackgroundEnabled ? "page-banner-disabled" : "",
-	(isOverlayMode && !shouldApplyWallpaperSwitching) ? 'wallpaper-overlay' : '',
-	(isFullscreenMode && !shouldApplyWallpaperSwitching) ? 'wallpaper-fullscreen' : '',
-]} style={
-	shouldApplyWallpaperSwitching
-		? `top: -${BANNER_HEIGHT_EXTEND}vh; display: none; --overlay-opacity: ${backgroundWallpaper.overlay?.opacity ?? 0.8}; --overlay-z-index: ${backgroundWallpaper.overlay?.zIndex ?? -1}; --overlay-blur: ${backgroundWallpaper.overlay?.blur ?? 0}px;`
-		: isOverlayMode
-			? `--overlay-opacity: ${backgroundWallpaper.overlay?.opacity ?? 0.8}; --overlay-z-index: ${backgroundWallpaper.overlay?.zIndex ?? -1}; --overlay-blur: ${backgroundWallpaper.overlay?.blur ?? 0}px;`
-			: isFullscreenMode
-				? ``
-				: `top: -${BANNER_HEIGHT_EXTEND}vh`
-}>
+]} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
     <Banner
     title={title}
     isBannerMode={isBannerMode}
     isFullscreenMode={isFullscreenMode}
     isBackgroundEnabled={effectiveBackgroundEnabled}
-    isWallpaperSwitchable={shouldApplyWallpaperSwitching}
     isHomePage={isHomePageCheck}
     isPostPage={isPostPage}
     bannerConfig={bannerConfig}
@@ -348,19 +296,11 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     wavesEnabledOnDesktop={wavesEnabledOnDesktop}
     wavesEnabledOnMobile={wavesEnabledOnMobile}
 />
-    <!-- Gradient transition - 当水波纹关闭时显示，提供壁纸底部到背景色的平滑过渡 -->
-    {shouldRenderGradient ? (
-    <div class={`wallpaper-gradient absolute bottom-0 left-0 w-full pointer-events-none
-        ${!gradientEnabledOnMobile ? 'hidden' : ''} ${!gradientEnabledOnDesktop ? 'md:hidden' : ''} ${gradientEnabledOnDesktop ? 'md:block' : ''}`}
-        id="wallpaper-gradient"
-        style={`height: ${gradientHeight}; background: linear-gradient(to bottom, transparent, var(--page-bg));`}>
-    </div>
-    ) : null}
 </div>
 )}
 
 {/* 当壁纸未渲染时，添加空的 Swup 占位容器，避免 Swup 找不到容器而回退为整页加载 */}
-{!(effectiveBackgroundEnabled && (shouldApplyWallpaperSwitching || isBannerMode || isFullscreenMode || isOverlayMode)) && (
+{!effectiveBackgroundEnabled && (
 <>
     <div id="banner-overlay-container" class="hidden"></div>
     <div id="banner-dim-container" class="hidden"></div>

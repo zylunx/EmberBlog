@@ -277,24 +277,10 @@ export const ru: Translation = {
 	[Key.postEncrypted]: "Эта статья зашифрована",
 
 	// Режим обоев
-	[Key.wallpaperMode]: "Режим обоев",
-	[Key.wallpaperBannerMode]: "Баннер обои",
-	[Key.wallpaperFullscreenMode]: "Полноэкранные обои",
-	[Key.wallpaperOverlayMode]: "Прозрачный",
-	[Key.wallpaperNoneMode]: "Однотонный фон",
 
 	// Настройки обоев
-	[Key.wallpaperSettings]: "Настройки обоев",
-	[Key.wallpaperTitle]: "Заголовок главных обоев",
-	[Key.wallpaperCarousel]: "Карусель обоев",
-	[Key.wavesAnimation]: "Анимация волн",
-	[Key.gradientTransition]: "Градиентный переход",
 	[Key.sakuraEffect]: "Эффект сакуры",
 	[Key.effectsSettings]: "Настройки эффектов",
-	[Key.overlaySettings]: "Настройки прозрачности",
-	[Key.overlayOpacity]: "Прозрачность обоев",
-	[Key.overlayBlur]: "Размытие фона",
-	[Key.overlayCardOpacity]: "Прозрачность карточек",
 
 	// Макет списка сообщений
 	[Key.postListLayout]: "Макет списка сообщений",

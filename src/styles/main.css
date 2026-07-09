@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import './layout-styles.css';
 @import './navbar.css';
-@import './banner-title.css';
 @import './waves.css';
 @import './transition.css';
 @import './custom-scrollbar.css';
@@ -240,46 +239,6 @@ html {
     .enable-card-border #navbar > div:not(.absolute) {
         @apply transition-all duration-300 border shadow-xs;
         border-color: var(--line-divider) !important;
-    }
-
-    /* 壁纸模式切换期间禁止导航栏边框和阴影闪现 */
-    .is-wallpaper-transitioning #navbar > div {
-        border-color: transparent !important;
-        box-shadow: none !important;
-        transition: none !important;
-    }
-
-    /* 壁纸模式切换期间禁止 #main-grid 的 transform 过渡动画，防止抖动 */
-    /* .is-wallpaper-transitioning #main-grid {
-        transition: none !important;
-    } */
-
-    /* 全屏壁纸模式下的半透明效果 */
-    .wallpaper-transparent .card-base {
-        background-color: var(--card-bg-transparent) !important;
-    }
- 
-    
-    .wallpaper-transparent #navbar > div {
-        background-color: var(--card-bg-transparent) !important;
-    }
-
-    /* Overlay 模式下，滚动后提高导航栏背景模糊度，增强与正文区分 */
-    .wallpaper-transparent #navbar.navbar-sticky-shadow > div {
-        backdrop-filter: blur(20px) !important;
-     
-    }
-
-    :root.dark .wallpaper-transparent #navbar.navbar-sticky-shadow > div {
-        backdrop-filter: blur(20px) !important;
-    }
-    
-    .wallpaper-transparent .btn-card {
-        background-color: var(--card-bg-transparent) !important;
-    }
-
-    .wallpaper-transparent .bg-\(--card-bg\) {
-        background-color: var(--card-bg-transparent) !important;
     }
 
     h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {

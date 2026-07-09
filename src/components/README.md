@@ -38,7 +38,6 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 - `LayoutSwitchButton.svelte` - 布局切换按钮
 - `LightDarkSwitch.svelte` - 主题切换组件
 - `Search.svelte` - 搜索功能组件
-- `WallpaperSwitch.svelte` - 壁纸模式切换组件
 
 ### 🔧 common/ - 公共可复用组件
 

@@ -275,24 +275,10 @@ export const en: Translation = {
 	[Key.postEncrypted]: "This post is encrypted",
 
 	// Wallpaper Mode
-	[Key.wallpaperMode]: "Wallpaper Mode",
-	[Key.wallpaperBannerMode]: "Banner Wallpaper",
-	[Key.wallpaperFullscreenMode]: "Fullscreen Wallpaper",
-	[Key.wallpaperOverlayMode]: "Overlay Wallpaper",
-	[Key.wallpaperNoneMode]: "None Wallpaper",
 
 	// Wallpaper Settings
-	[Key.wallpaperSettings]: "Wallpaper Settings",
-	[Key.wallpaperTitle]: "Home Wallpaper Title",
-	[Key.wallpaperCarousel]: "Wallpaper Carousel",
-	[Key.wavesAnimation]: "Waves Animation",
-	[Key.gradientTransition]: "Gradient Transition",
 	[Key.sakuraEffect]: "Sakura Effect",
 	[Key.effectsSettings]: "Effects Settings",
-	[Key.overlaySettings]: "Transparency Settings",
-	[Key.overlayOpacity]: "Wallpaper Opacity",
-	[Key.overlayBlur]: "Background Blur",
-	[Key.overlayCardOpacity]: "Card Opacity",
 
 	// Post List Layout
 	[Key.postListLayout]: "Post List Layout",

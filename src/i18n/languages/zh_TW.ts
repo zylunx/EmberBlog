@@ -269,24 +269,10 @@ export const zh_TW: Translation = {
 	[Key.postEncrypted]: "本文已加密",
 
 	// 壁紙模式
-	[Key.wallpaperMode]: "壁紙模式",
-	[Key.wallpaperBannerMode]: "橫幅壁紙",
-	[Key.wallpaperFullscreenMode]: "全屏壁紙",
-	[Key.wallpaperOverlayMode]: "全屏透明",
-	[Key.wallpaperNoneMode]: "純色背景",
 
 	// 壁紙設置
-	[Key.wallpaperSettings]: "壁紙設置",
-	[Key.wallpaperTitle]: "首頁壁紙標題",
-	[Key.wallpaperCarousel]: "壁紙輪播",
-	[Key.wavesAnimation]: "水波紋動畫",
-	[Key.gradientTransition]: "漸變過渡",
 	[Key.sakuraEffect]: "櫻花特效",
 	[Key.effectsSettings]: "特效設定",
-	[Key.overlaySettings]: "透明設定",
-	[Key.overlayOpacity]: "桌布透明度",
-	[Key.overlayBlur]: "背景模糊度",
-	[Key.overlayCardOpacity]: "卡片透明度",
 
 	// 文章佈局
 	[Key.postListLayout]: "文章佈局",

@@ -264,25 +264,8 @@ enum I18nKey {
 	// 加密
 	postEncrypted = "postEncrypted",
 
-	// 壁纸模式
-	wallpaperMode = "wallpaperMode",
-	wallpaperBannerMode = "wallpaperBannerMode",
-	wallpaperFullscreenMode = "wallpaperFullscreenMode",
-	wallpaperOverlayMode = "wallpaperOverlayMode",
-	wallpaperNoneMode = "wallpaperNoneMode",
-
-	// 壁纸设置
-	wallpaperSettings = "wallpaperSettings",
-	wallpaperTitle = "wallpaperTitle",
-	wallpaperCarousel = "wallpaperCarousel",
-	wavesAnimation = "wavesAnimation",
-	gradientTransition = "gradientTransition",
 	sakuraEffect = "sakuraEffect",
 	effectsSettings = "effectsSettings",
-	overlaySettings = "overlaySettings",
-	overlayOpacity = "overlayOpacity",
-	overlayBlur = "overlayBlur",
-	overlayCardOpacity = "overlayCardOpacity",
 
 	// 文章布局
 	postListLayout = "postListLayout",

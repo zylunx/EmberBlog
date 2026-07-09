@@ -13,7 +13,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 	// 基础导航栏链接
 	const links: NavBarLink[] = [
 		// 主页
-		LinkPresets.Home,
+		//		LinkPresets.Home,
 	];
 
 	// 文章及其子菜单
