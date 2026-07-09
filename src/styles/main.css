@@ -25,21 +25,30 @@
 @utility expand-animation {
   position: relative;
   z-index: 0;
+  transition:
+    color 0.18s ease-out,
+    margin 0.18s ease-out,
+    border-radius 0.18s ease-out;
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: inherit;
+    border-radius: var(--interactive-pill-radius);
     scale: 0.85;
     z-index: -10;
     transition: all 0.15s ease-out;
   }
+  &:hover {
+    color: white;
+    border-radius: var(--interactive-pill-radius);
+    margin-inline: var(--interactive-hover-gap);
+  }
   &:hover::before {
-    background-color: var(--btn-plain-bg-hover);
+    background-color: var(--interactive-hue-bg);
     scale: 1;
   }
   &:active::before {
-    background-color: var(--btn-plain-bg-active);
+    background-color: var(--interactive-hue-bg-active);
   }
   &:active {
     background: none;
@@ -47,6 +56,13 @@
 }
 
 /* 确保平滑滚动 */
+:root {
+    --interactive-hue-bg: oklch(0.68 0.18 var(--hue));
+    --interactive-hue-bg-active: oklch(0.60 0.18 var(--hue));
+    --interactive-pill-radius: 9999px;
+    --interactive-hover-gap: 0.125rem;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -267,28 +283,64 @@ html {
     }
 
     .btn-card {
-        @apply transition-colors duration-150 flex items-center justify-center bg-(--card-bg) hover:bg-(--btn-card-bg-hover)
-        active:bg-(--btn-card-bg-active)
+        @apply transition-all duration-150 flex items-center justify-center bg-(--card-bg);
+        &:hover {
+            background-color: var(--interactive-hue-bg);
+            border-radius: var(--interactive-pill-radius);
+            color: white;
+            margin-inline: var(--interactive-hover-gap);
+        }
+        &:active {
+            background-color: var(--interactive-hue-bg-active);
+        }
     }
     .btn-card.disabled {
         @apply pointer-events-none text-black/10 dark:text-white/10
     }
     .btn-plain {
-        @apply transition-colors duration-150 relative flex items-center justify-center bg-none
-        text-black/75 hover:text-(--primary) dark:text-white/75 dark:hover:text-(--primary);
+        @apply transition-all duration-150 relative flex items-center justify-center bg-none
+        text-black/75 dark:text-white/75;
+        &:hover {
+            color: white;
+            border-radius: var(--interactive-pill-radius);
+            margin-inline: var(--interactive-hover-gap);
+        }
         &:not(.scale-animation) {
-            @apply hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active)
+            &:hover {
+                background-color: var(--interactive-hue-bg);
+            }
+            &:active {
+                background-color: var(--interactive-hue-bg-active);
+            }
         }
         &.scale-animation {
             @apply expand-animation;
         }
     }
     .current-theme-btn {
-        @apply bg-(--btn-plain-bg-hover) text-(--primary);
+        @apply text-white;
+        background-color: var(--interactive-hue-bg);
+        border-radius: var(--interactive-pill-radius);
     }
     .btn-regular {
-        @apply transition-colors duration-150 flex items-center justify-center bg-(--btn-regular-bg) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active)
-        text-(--btn-content) dark:text-white/75
+        @apply transition-all duration-150 flex items-center justify-center bg-(--btn-regular-bg)
+        text-(--btn-content) dark:text-white/75;
+        &:hover {
+            background-color: var(--interactive-hue-bg);
+            border-radius: var(--interactive-pill-radius);
+            color: white;
+            margin-inline: var(--interactive-hover-gap);
+        }
+        &:active {
+            background-color: var(--interactive-hue-bg-active);
+        }
+    }
+
+    .btn-card:hover :where(*),
+    .btn-plain:hover :where(*),
+    .btn-regular:hover :where(*),
+    .dropdown-item:hover :where(*) {
+        color: inherit;
     }
 
     .link-underline {
@@ -353,7 +405,13 @@ html {
     }
 
     .dropdown-item {
-        @apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 hover:text-(--primary) hover:bg-(--btn-plain-bg-hover) transition-colors duration-150 font-medium;
+        @apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 transition-all duration-150 font-medium;
+        &:hover {
+            background-color: var(--interactive-hue-bg);
+            border-radius: var(--interactive-pill-radius);
+            color: white;
+            margin-inline: var(--interactive-hover-gap);
+        }
     }
 
     .dropdown-item:first-child {
@@ -362,6 +420,10 @@ html {
 
     .dropdown-item:last-child {
         @apply rounded-b-[calc(var(--radius-large)-0.5rem)];
+    }
+
+    .dropdown-item:hover {
+        border-radius: var(--interactive-pill-radius);
     }
 
     /* 移动端菜单样式 */

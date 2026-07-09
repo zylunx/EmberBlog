@@ -332,8 +332,3 @@ body:not(.sticky-navbar) #navbar>div {
     margin-top: 0 !important;
     margin-bottom: 0.75rem !important;
 }
-
-#navbar .btn-plain:hover,
-#navbar .btn-plain:active {
-    background: transparent !important;
-}
