@@ -40,11 +40,19 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	hue?: number;
 	bannerEnabled?: boolean;
 }
 
-let { title, description, lang, setOGTypeArticle, postSlug, bannerEnabled } =
-	Astro.props;
+let {
+	title,
+	description,
+	lang,
+	setOGTypeArticle,
+	postSlug,
+	hue,
+	bannerEnabled,
+} = Astro.props;
 
 // apply a class to the body element to decide the height of the banner, only used for initial page load
 // Swup can update the body for each page visit, but it's after the page transition, causing a delay for banner height change
@@ -238,6 +246,7 @@ const siteLang = lang.replace("_", "-");
         BANNER_HEIGHT_EXTEND,
         PAGE_WIDTH,
         configHue,
+        articleHue: hue,
         defaultMode: siteConfig.themeColor.defaultMode ?? "light",
         forceArticleBanner,
         darkTheme: expressiveCodeConfig.darkTheme,
@@ -285,8 +294,12 @@ const siteLang = lang.replace("_", "-");
       );
 
       // Load the hue from local storage
-      const hue = localStorage.getItem("hue") || configHue;
-      document.documentElement.style.setProperty("--hue", hue);
+      const hue = articleHue ?? (localStorage.getItem("hue") || configHue);
+      document.documentElement.style.setProperty(
+        "--hue",
+        String(hue),
+        articleHue === undefined ? "" : "important",
+      );
 
       // calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
       // 使用更准确的窗口高度计算
@@ -780,6 +793,16 @@ function disableAnimation() {
       const mainEl = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
       const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
       const isPostPage = swupContainer?.dataset.isPostPage === "true";
+      const pageHue = swupContainer?.dataset.pageHue;
+      if (pageHue) {
+        document.documentElement.style.setProperty("--hue", pageHue, "important");
+      } else {
+        document.documentElement.style.removeProperty("--hue");
+        document.documentElement.style.setProperty(
+          "--hue",
+          localStorage.getItem("hue") || String(configHue),
+        );
+      }
 
       if (mainEl && !isPostPage) {
         mainEl.classList.add("no-banner-layout");

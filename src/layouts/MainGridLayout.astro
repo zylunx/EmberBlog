@@ -6,8 +6,8 @@ import Footer from "@components/layout/Footer.astro";
 import Navbar from "@components/layout/Navbar.astro";
 import SideBar from "@components/layout/SideBar.astro";
 import type { MarkdownHeading } from "astro";
-import Banner from "@/components/layout/Banner.astro";
 import FloatingControls from "@/components/controls/FloatingControls.astro";
+import Banner from "@/components/layout/Banner.astro";
 import CategoryBar from "@/components/layout/CategoryBar.astro";
 import {
 	backgroundWallpaper,
@@ -42,6 +42,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
+	hue?: number;
 	postCategory?: string;
 	headings?: MarkdownHeading[];
 	bannerPostMeta?: {
@@ -65,6 +66,7 @@ const {
 	lang,
 	setOGTypeArticle,
 	postSlug,
+	hue,
 	postCategory,
 	headings = [],
 	bannerPostMeta,
@@ -219,7 +221,7 @@ const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 ---
 
-<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} bannerEnabled={effectiveBackgroundEnabled}>
+<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} hue={hue} bannerEnabled={effectiveBackgroundEnabled}>
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
@@ -341,6 +343,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
                     class="transition-main"
                     data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
                     data-is-post-page={isPostPage ? "true" : "false"}
+                    data-page-hue={hue}
                     data-current-post-category={postCategory || ""}
                 >
                 {/* 携带网格布局类名，用于JS更新父容器 */}

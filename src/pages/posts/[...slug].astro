@@ -47,6 +47,13 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 
+const hueMatch = entry.data.color.match(
+	/hsl\(\s*([+-]?(?:\d+\.?\d*|\.\d+))(?:deg)?(?:[\s,]|\/)/i,
+);
+const postHue = hueMatch
+	? ((Number(hueMatch[1]) % 360) + 360) % 360
+	: undefined;
+
 const { remarkPluginFrontmatter } = await render(entry);
 
 const bannerPostMeta = {
@@ -139,6 +146,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
   lang={entry.data.lang}
   setOGTypeArticle={true}
   postSlug={entry.id}
+  hue={postHue}
   postCategory={entry.data.category || undefined}
   headings={headings}
   bannerPostMeta={bannerPostMeta}

@@ -8,6 +8,7 @@ tags:
   - 教程
   - 分类
 category: 技术分享
+color: "hsl(218 39% 21%)"
 draft: false
 slug: firefly-category-beautify
 image: https://img.laplace.de5.net/file/blog/dcaq5pYz.webp

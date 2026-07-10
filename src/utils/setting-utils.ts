@@ -59,6 +59,10 @@ export function getHue(): number {
 	if (typeof window === "undefined" || !window.localStorage) {
 		return getDefaultHue();
 	}
+	const pageHue = document.getElementById("swup-container")?.dataset.pageHue;
+	if (pageHue) {
+		return Number.parseInt(pageHue, 10);
+	}
 	const stored = localStorage.getItem("hue");
 	return stored ? Number.parseInt(stored, 10) : getDefaultHue();
 }

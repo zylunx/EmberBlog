@@ -8,6 +8,7 @@ tags:
   - AI
   - 教程
 category: 技术分享
+color: "hsl(220 27% 83%)"
 draft: false
 slug: firefly-ai-post-summary
 ai: >-
