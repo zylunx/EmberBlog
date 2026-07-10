@@ -55,6 +55,8 @@ interface Props {
 	postImage?: string;
 	// 文章图片的基础路径，用于解析本地相对路径图片
 	postImageBasePath?: string;
+	// 文章 frontmatter 中的 theme 字段，用于 banner 背景色
+	postTheme?: string;
 	bannerConfig?: BannerConfig;
 }
 
@@ -70,6 +72,7 @@ const {
 	bannerPostMeta,
 	postImage,
 	postImageBasePath = "/",
+	postTheme,
 	bannerConfig,
 } = Astro.props;
 
@@ -259,6 +262,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     bannerPostMeta={bannerPostMeta}
     postImage={postImage}
     postImageBasePath={postImageBasePath}
+	postTheme={postTheme}
     shouldRenderWaves={shouldRenderWaves}
     wavesEnabledOnDesktop={wavesEnabledOnDesktop}
     wavesEnabledOnMobile={wavesEnabledOnMobile}

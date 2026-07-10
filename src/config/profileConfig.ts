@@ -33,17 +33,23 @@ export const profileConfig: ProfileConfig = {
 		// 	url: "https://github.com/CuteLeaf",
 		// 	showName: false,
 		// },
-		// {
-		// 	name: "Email",
-		// 	icon: "fa7-solid:envelope",
-		// 	url: "mailto:zylux@protonmail.com",
-		// 	showName: false,
-		// },
-		// {
-		// 	name: "RSS",
-		// 	icon: "fa7-solid:rss",
-		// 	url: "/rss/",
-		// 	showName: false,
-		// },
+		{
+			name: "Email",
+			icon: "fa7-solid:envelope",
+			url: "mailto:zylux@protonmail.com",
+			showName: false,
+		},
+		{
+			name: "RSS",
+			icon: "fa7-solid:rss",
+			url: "/rss/",
+			showName: false,
+		},
+		{
+			name: "Telegram",
+			icon: "fa7-brands:telegram",
+			url: "https://t.me/outoutoutoutout",
+			showName: false,
+		},
 	],
 };

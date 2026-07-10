@@ -24,6 +24,7 @@ interface Props {
 	};
 	postImage?: string;
 	postImageBasePath?: string;
+	postTheme?: string;
 	shouldRenderWaves: boolean;
 	wavesEnabledOnDesktop?: boolean;
 	wavesEnabledOnMobile?: boolean;
@@ -37,6 +38,7 @@ const {
 	bannerPostMeta,
 	postImage,
 	postImageBasePath = "/",
+	postTheme,
 	shouldRenderWaves,
 	wavesEnabledOnDesktop,
 	wavesEnabledOnMobile,
@@ -48,25 +50,30 @@ const effectivePostImage = bannerConfig?.image ?? postImage;
 const effectivePostImageBasePath =
 	bannerConfig?.imageBasePath ?? postImageBasePath;
 const hasPostImage = !!effectivePostImage && effectivePostImage !== "";
+const postThemeColor = postTheme?.trim();
+const isPostBanner = isBackgroundEnabled && !isHomePage && isPostPage;
 const showBannerPostMeta =
-	bannerConfig?.showPostMeta !== false &&
-	isBackgroundEnabled &&
-	!isHomePage &&
-	isPostPage &&
-	!!bannerPostMeta;
+	bannerConfig?.showPostMeta !== false && isPostBanner && !!bannerPostMeta;
 ---
 
 <div
 	id="post-banner-image"
-	class="absolute inset-0 pointer-events-none overflow-hidden bg-(--page-bg)"
-	style="z-index: 6"
+	class:list={[
+		"absolute inset-0 pointer-events-none overflow-hidden bg-(--page-bg)",
+		{ "post-banner-surface": isPostBanner },
+	]}
+	style={
+		postThemeColor
+			? `z-index: 6; --post-banner-color: ${postThemeColor}`
+			: "z-index: 6"
+	}
 >
 	{hasPostImage && effectivePostImage && (
 		<>
 			<div class="absolute inset-0 block lg:hidden">
 				<ImageWrapper
 					alt="Post banner image"
-					class="object-cover h-full w-full"
+					class="object-cover h-full w-full post-banner-cover"
 					src={effectivePostImage}
 					basePath={effectivePostImageBasePath}
 					position="center"
@@ -77,10 +84,10 @@ const showBannerPostMeta =
 					quality={mobileQuality}
 				/>
 			</div>
-			<div class="absolute inset-0 hidden lg:block">
+			<div class="post-banner-cover-frame absolute hidden lg:block">
 				<ImageWrapper
 					alt="Post banner image"
-					class="object-cover h-full"
+					class="object-cover h-full w-full post-banner-cover"
 					src={effectivePostImage}
 					basePath={effectivePostImageBasePath}
 					position="center"
@@ -96,7 +103,12 @@ const showBannerPostMeta =
 </div>
 
 <div id="banner-dim-container" class="absolute inset-0 z-10 pointer-events-none">
-	<div class="banner-dim-overlay absolute inset-0 bg-black/45"></div>
+	<div
+		class:list={[
+			"banner-dim-overlay absolute inset-0 bg-black/45",
+			{ "post-banner-dim-overlay": isPostBanner },
+		]}
+	></div>
 </div>
 
 <div
@@ -104,13 +116,13 @@ const showBannerPostMeta =
 	class="absolute inset-0 z-20 pointer-events-none transition-swup-fade"
 >
 	{showBannerPostMeta && bannerPostMeta && (
-		<div class="banner-post-meta-overlay absolute inset-0 z-20 hidden lg:flex items-center justify-center pointer-events-none">
-			<div class="w-4/5 lg:w-3/4 text-center mb-0">
-				<div class="flex flex-col items-center gap-3">
+		<div class="banner-post-meta-overlay absolute inset-0 z-20 hidden lg:flex items-center pointer-events-none">
+			<div class="w-4/5 lg:w-[46%] lg:ml-[10%] text-left mb-0">
+				<div class="flex flex-col items-start gap-4">
 					<div class="banner-post-title font-bold text-white leading-tight">
 						{bannerPostMeta.title}
 					</div>
-					<div class="banner-post-meta-list flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-white/90 text-sm md:text-base">
+					<div class="banner-post-meta-list flex flex-wrap items-center gap-x-5 gap-y-2 text-white/90 text-sm md:text-base">
 						<span class="inline-flex items-center gap-1.5">
 							<Icon
 								is:inline
@@ -235,10 +247,3 @@ const showBannerPostMeta =
 		</svg>
 	</div>
 ) : null}
-
-<style is:global>
-	#post-banner-image img {
-		filter: blur(8px) brightness(0.6);
-		transform: scale(1.08);
-	}
-</style>

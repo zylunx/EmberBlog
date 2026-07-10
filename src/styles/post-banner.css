@@ -1,0 +1,50 @@
+#post-banner-image:not(.post-banner-surface) img {
+	filter: blur(8px) brightness(0.6);
+	transform: scale(1.08);
+}
+
+#post-banner-image.post-banner-surface {
+	background:
+		radial-gradient(circle at 78% 28%, color-mix(in oklch, white 28%, transparent), transparent 30%),
+		linear-gradient(120deg, color-mix(in oklch, var(--post-banner-color, var(--primary)) 88%, black), var(--post-banner-color, var(--primary)));
+}
+
+#post-banner-image .post-banner-cover-frame {
+	top: 14%;
+	right: 9%;
+	bottom: 14%;
+	width: min(36vw, 34rem);
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, white 45%, transparent);
+	border-radius: 1.25rem;
+	box-shadow:
+		1.5rem 1.75rem 2.5rem color-mix(in srgb, black 34%, transparent),
+		-0.5rem -0.5rem 1.25rem color-mix(in srgb, white 20%, transparent);
+	transform: perspective(1000px) rotateY(-8deg) rotateX(2deg);
+	transform-origin: center right;
+}
+
+#post-banner-image .post-banner-cover {
+	filter: none;
+	transform: scale(1.02);
+}
+
+#banner-dim-container .post-banner-dim-overlay {
+	background: linear-gradient(90deg, color-mix(in srgb, black 18%, transparent), transparent 70%);
+}
+
+.banner-post-title {
+	font-size: clamp(2.75rem, 4.8vw, 5.5rem);
+	letter-spacing: -0.045em;
+	text-shadow: 0 0.25rem 0.75rem color-mix(in srgb, black 28%, transparent);
+}
+
+@media (max-width: 1023px) {
+	#post-banner-image.post-banner-surface {
+		background: linear-gradient(135deg, color-mix(in oklch, var(--post-banner-color, var(--primary)) 88%, black), var(--post-banner-color, var(--primary)));
+	}
+
+	#post-banner-image.post-banner-surface > div {
+		display: none;
+	}
+}
