@@ -10,8 +10,6 @@ export function normalizePageInput(
 	const normalizedValue = value.replace(/\D/g, "").replace(/^0+/, "");
 	if (!normalizedValue) return { value: "", page: null };
 
-	return {
-		value: normalizedValue,
-		page: Math.min(Number.parseInt(normalizedValue, 10), lastPage),
-	};
+	const page = Math.min(Number.parseInt(normalizedValue, 10), lastPage);
+	return { value: String(page), page };
 }

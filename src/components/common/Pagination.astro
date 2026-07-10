@@ -158,9 +158,59 @@ const getPageUrl = (p: number) => {
           aria-hidden="true"
         />
       </a>
+      <div
+        class="page-jump-control"
+        data-first-page-url={url(getPageUrl(1))}
+        data-page-url-template={url("/__PAGE__/")}
+        data-last-page={page.lastPage}
+      >
+        <span class="page-jump-control__label" aria-hidden="true">&gt;&gt;</span>
+        <input
+          class="page-jump-control__input"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          aria-label="跳转页码"
+        />
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+  import { normalizePageInput } from "@/utils/pagination-utils";
+
+  function initializePageJumpControls() {
+    document.querySelectorAll<HTMLElement>(".page-jump-control").forEach((control) => {
+      const input = control.querySelector<HTMLInputElement>(".page-jump-control__input");
+      if (!input || input.dataset.initialized === "true") return;
+
+      input.dataset.initialized = "true";
+      const lastPage = Number.parseInt(control.dataset.lastPage || "", 10);
+      const firstPageUrl = control.dataset.firstPageUrl;
+      const pageUrlTemplate = control.dataset.pageUrlTemplate;
+
+      if (!Number.isInteger(lastPage) || !firstPageUrl || !pageUrlTemplate) return;
+
+      input.addEventListener("input", () => {
+        input.value = normalizePageInput(input.value, lastPage).value;
+      });
+
+      input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+
+        const { value, page } = normalizePageInput(input.value, lastPage);
+        input.value = value;
+        if (page === null) return;
+
+        window.location.href =
+          page === 1 ? firstPageUrl : pageUrlTemplate.replace("__PAGE__", String(page));
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", initializePageJumpControls);
+</script>
 
 <style>
   .pagination-wrapper {
@@ -174,6 +224,61 @@ const getPageUrl = (p: number) => {
 
   .desktop-pagination {
     display: none;
+  }
+
+  .page-jump-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: var(--card-bg);
+    color: var(--primary);
+    transition: width 0.2s ease-out;
+  }
+
+  .page-jump-control:hover,
+  .page-jump-control:focus-within {
+    width: 8rem;
+  }
+
+  .page-jump-control__label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    pointer-events: none;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .page-jump-control:hover .page-jump-control__label,
+  .page-jump-control:focus-within .page-jump-control__label {
+    opacity: 0;
+  }
+
+  .page-jump-control__input {
+    width: 100%;
+    height: 100%;
+    padding: 0 0.75rem;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font-weight: 700;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+  }
+
+  .page-jump-control:hover .page-jump-control__input,
+  .page-jump-control:focus-within .page-jump-control__input {
+    opacity: 1;
   }
 
   @media (min-width: 1024px) {
