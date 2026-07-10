@@ -26,7 +26,7 @@ curl "https://img2color-go-jade.vercel.app/api?img=https%3A%2F%2Fexample.com%2Fi
 
 响应：
 
-`colors`为`1`时或为空时：
+`format`为`hex`,`colors`为`1`时或为空时：
 
 ```json
 {
@@ -41,6 +41,39 @@ curl "https://img2color-go-jade.vercel.app/api?img=https%3A%2F%2Fexample.com%2Fi
   "message": "success"
 }
 ```
+
+或者
+
+`format`为`hsl`,`colors`为`1`时或为空时：
+
+```
+{
+  "code": 0,
+  "data": {
+    "dominant": {
+      "h": 33,
+      "s": 12,
+      "l": 55
+    },
+    "palette": [
+      {
+        "color": {
+          "h": 33,
+          "s": 12,
+          "l": 55
+        },
+        "ratio": 0.5
+      }
+    ],
+    "format": "hsl",
+    "width": 2364,
+    "height": 1773
+  },
+  "message": "success"
+}
+```
+
+
 
 请求：`https://img2color-go-jade.vercel.app/api?img=https://img.laplace.de5.net/file/blog/Gk79AwEG.webp&format=hex&colors=5&skipBackground=true`
 

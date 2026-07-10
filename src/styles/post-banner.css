@@ -6,7 +6,7 @@
 #post-banner-image.post-banner-surface {
 	background:
 		radial-gradient(circle at 78% 28%, color-mix(in oklch, white 28%, transparent), transparent 30%),
-		linear-gradient(120deg, color-mix(in oklch, var(--post-banner-color, var(--primary)) 88%, black), var(--post-banner-color, var(--primary)));
+		linear-gradient(120deg, color-mix(in oklch, var(--primary) 88%, black), var(--primary));
 }
 
 #post-banner-image .post-banner-cover-frame {
@@ -41,7 +41,7 @@
 
 @media (max-width: 1023px) {
 	#post-banner-image.post-banner-surface {
-		background: linear-gradient(135deg, color-mix(in oklch, var(--post-banner-color, var(--primary)) 88%, black), var(--post-banner-color, var(--primary)));
+		background: linear-gradient(135deg, color-mix(in oklch, var(--primary) 88%, black), var(--primary));
 	}
 
 	#post-banner-image.post-banner-surface > div {

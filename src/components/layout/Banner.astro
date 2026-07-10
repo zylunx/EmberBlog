@@ -24,7 +24,6 @@ interface Props {
 	};
 	postImage?: string;
 	postImageBasePath?: string;
-	postTheme?: string;
 	shouldRenderWaves: boolean;
 	wavesEnabledOnDesktop?: boolean;
 	wavesEnabledOnMobile?: boolean;
@@ -38,7 +37,6 @@ const {
 	bannerPostMeta,
 	postImage,
 	postImageBasePath = "/",
-	postTheme,
 	shouldRenderWaves,
 	wavesEnabledOnDesktop,
 	wavesEnabledOnMobile,
@@ -50,7 +48,6 @@ const effectivePostImage = bannerConfig?.image ?? postImage;
 const effectivePostImageBasePath =
 	bannerConfig?.imageBasePath ?? postImageBasePath;
 const hasPostImage = !!effectivePostImage && effectivePostImage !== "";
-const postThemeColor = postTheme?.trim();
 const isPostBanner = isBackgroundEnabled && !isHomePage && isPostPage;
 const showBannerPostMeta =
 	bannerConfig?.showPostMeta !== false && isPostBanner && !!bannerPostMeta;
@@ -62,11 +59,7 @@ const showBannerPostMeta =
 		"absolute inset-0 pointer-events-none overflow-hidden bg-(--page-bg)",
 		{ "post-banner-surface": isPostBanner },
 	]}
-	style={
-		postThemeColor
-			? `z-index: 6; --post-banner-color: ${postThemeColor}`
-			: "z-index: 6"
-	}
+	style="z-index: 6"
 >
 	{hasPostImage && effectivePostImage && (
 		<>

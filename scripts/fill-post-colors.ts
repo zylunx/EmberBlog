@@ -20,6 +20,12 @@ type Img2ColorResponse = {
 	message?: string;
 };
 
+type HslColor = {
+	h: number;
+	s: number;
+	l: number;
+};
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const POSTS_DIR = path.resolve(__dirname, "../src/content/posts");
 const COLOR_FIELD = "color";
@@ -35,6 +41,52 @@ function isBlankColor(value: unknown): boolean {
 
 function isRemoteImageUrl(value: unknown): value is string {
 	return typeof value === "string" && /^https?:\/\//i.test(value);
+}
+
+function isHslColor(value: unknown): value is HslColor {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		return false;
+	}
+
+	const { h, s, l } = value as Record<string, unknown>;
+	return (
+		typeof h === "number" &&
+		Number.isFinite(h) &&
+		h >= 0 &&
+		h <= 360 &&
+		typeof s === "number" &&
+		Number.isFinite(s) &&
+		s >= 0 &&
+		s <= 100 &&
+		typeof l === "number" &&
+		Number.isFinite(l) &&
+		l >= 0 &&
+		l <= 100
+	);
+}
+
+function normalizeDominantColor(value: unknown): string | undefined {
+	if (typeof value === "string" && value.trim() !== "") {
+		return value.trim();
+	}
+
+	if (isHslColor(value)) {
+		return `hsl(${value.h} ${value.s}% ${value.l}%)`;
+	}
+}
+
+function quoteColorInFrontmatter(source: string, color: string): string {
+	const frontmatterEnd = source.indexOf("\n---\n");
+	if (frontmatterEnd === -1) {
+		throw new Error("Unable to find frontmatter end delimiter");
+	}
+
+	const frontmatter = source.slice(0, frontmatterEnd);
+	if (!/^color:.*$/m.test(frontmatter)) {
+		throw new Error("Unable to find frontmatter color field");
+	}
+
+	return `${frontmatter.replace(/^color:.*$/m, `color: ${JSON.stringify(color)}`)}${source.slice(frontmatterEnd)}`;
 }
 
 function buildApiUrl(imageUrl: string): string {
@@ -67,12 +119,12 @@ async function fetchDominantColor(imageUrl: string): Promise<string> {
 		}
 
 		const json = (await response.json()) as Img2ColorResponse;
-		const dominant = json.data?.dominant;
-		if (typeof dominant !== "string" || dominant.trim() === "") {
+		const dominant = normalizeDominantColor(json.data?.dominant);
+		if (!dominant) {
 			throw new Error(json.message || "API response missing data.dominant");
 		}
 
-		return dominant.trim();
+		return dominant;
 	} finally {
 		clearTimeout(timeout);
 	}
@@ -105,11 +157,11 @@ async function processPost(filePath: string): Promise<ProcessResult> {
 
 		const color = await fetchDominantColor(image);
 		parsed.data[COLOR_FIELD] = color;
-		await fs.writeFile(
-			filePath,
+		const output = quoteColorInFrontmatter(
 			matter.stringify(parsed.content, parsed.data),
-			"utf-8",
+			color,
 		);
+		await fs.writeFile(filePath, output, "utf-8");
 
 		return { file: relativePath, status: "updated", reason: color };
 	} catch (error) {

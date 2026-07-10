@@ -144,7 +144,6 @@ const relatedPosts = await getRelatedPosts(entry, 5);
   bannerPostMeta={bannerPostMeta}
   postImage={processedImage}
   postImageBasePath={getFileDirFromPath(entry.filePath || '')}
-	postTheme={entry.data.theme}
 >
   <!-- KaTeX 按需加载 - 仅在文章页面 -->
   <KatexManager slot="head" />
