@@ -14,9 +14,9 @@ Add a desktop page-jump control after the final pagination button. It opens into
 
 1. The collapsed control displays `>>`.
 2. Hovering the control or focusing it with the keyboard expands it symmetrically into an input field. Its width transition occurs in the existing flex row, moving prior pagination items left and consuming available space to the right.
-3. The input accepts only decimal digits. Typing or pasting non-digits removes them from the displayed value. Leading zeroes are removed, so the displayed value is always empty or a positive integer.
+3. The input accepts only decimal digits. Typing or pasting non-digits removes them from the displayed value. Leading zeroes are removed, and a value above `page.lastPage` is immediately replaced with `page.lastPage`.
 4. Pressing Enter with a positive integer navigates to that page. Page `1` uses `/`; all other pages use `/<page>/`.
-5. A submitted page number above `page.lastPage` is replaced with `page.lastPage` before navigation. Empty input does not navigate.
+5. Empty input does not navigate.
 
 ## Accessibility And Responsive Behavior
 
