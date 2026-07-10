@@ -14,3 +14,8 @@ const source = readFileSync("src/components/common/Pagination.astro", "utf8");
 assert.match(source, /class="page-jump-control"/);
 assert.match(source, /normalizePageInput/);
 assert.match(source, /inputmode="numeric"/);
+assert.match(source, /page\.url\.prev && \(/);
+assert.match(source, /page\.url\.next && \(/);
+assert.match(source, /desktop-pagination__pages/);
+assert.match(source, /desktop-pagination__previous/);
+assert.match(source, /desktop-pagination__next/);
