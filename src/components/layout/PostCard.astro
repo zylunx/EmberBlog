@@ -170,11 +170,9 @@ function formatCardDate(date: Date): string {
                 <a
                   href={getTagUrl(tag)}
                   aria-label={`View all posts with the ${tag.trim()} tag`}
-                  class="group h-6 inline-flex items-baseline gap-1 pl-0 pr-2 py-1 rounded-md
-                           transition-all duration-200 hover:text-(--primary) hover:scale-105 active:scale-95"
+                  class="post-tag post-card-tag"
                 >
-                  <span class="text-[0.7rem] text-neutral-300 dark:text-neutral-500">#</span>
-                  <span class="text-[0.8rem] text-black/80 dark:text-white/80 group-hover:text-(--primary)">{tag.trim()}</span>
+                  {tag.trim()}
                 </a>
               ))}
             {!(tags && tags.length > 0) && (

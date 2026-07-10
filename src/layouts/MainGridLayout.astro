@@ -213,40 +213,7 @@ if (
 
 const categoryBarClassName = categoryBarClass.join(" ");
 
-const footerClass = ["footer", "col-span-1", "onload-animation"];
-
-if (
-	updatedGridConfig.isBothSidebars &&
-	updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
-) {
-	// 双侧栏：Footer 在平板与桌面都跟随内容列
-	if (updatedGridConfig.tabletSidebar === "right") {
-		footerClass.push(
-			"md:col-start-1 md:col-span-1 xl:col-start-2 xl:col-span-1",
-		);
-	} else {
-		footerClass.push(
-			"md:col-start-2 md:col-span-1 xl:col-start-2 xl:col-span-1",
-		);
-	}
-} else if (
-	updatedGridConfig.hasLeftComponents &&
-	!updatedGridConfig.hasRightComponents
-) {
-	// 仅左侧栏：内容列在第2列
-	footerClass.push("md:col-start-2 md:col-span-1 xl:col-start-2 xl:col-span-1");
-} else if (
-	!updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
-) {
-	// 仅右侧栏：内容列在第1列
-	footerClass.push("md:col-start-1 md:col-span-1 xl:col-start-1 xl:col-span-1");
-} else {
-	footerClass.push("md:col-start-1 md:col-span-1 xl:col-start-1 xl:col-span-1");
-}
-
-const footerClassName = footerClass.join(" ");
+const footerClassName = "footer col-span-full onload-animation";
 
 const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
@@ -449,7 +416,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 
   #main-grid:has(#category-bar-wrapper:not(.hidden)) #right-sidebar {
     grid-row-start: 2 !important;
-    grid-row-end: 4 !important;
+    grid-row-end: 3 !important;
   }
 
   #category-bar-wrapper.category-bar-compact #category-bar {

@@ -10,7 +10,7 @@ import { getTagUrl, url } from "@/utils/url-utils";
 
 const tags = await getTagList();
 
-const COLLAPSED_HEIGHT = "7.5rem";
+const COLLAPSED_HEIGHT = "20rem";
 
 interface Props {
 	class?: string;
@@ -23,11 +23,12 @@ const collapseThreshold = widgetConfig?.specificConfig?.collapseThreshold;
 const showTitle = widgetConfig?.showTitle !== false;
 const isCollapsed = collapseThreshold ? tags.length > collapseThreshold : false;
 ---
-<WidgetLayout name={i18n(I18nKey.tags)} showTitle={showTitle} id="tags" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT} useExpandedButtonSpacing={true} moreUrl={url("/tags/")} class={className} style={style}>
-    <div class="flex gap-2 flex-wrap">
+<WidgetLayout name={i18n(I18nKey.tags)} showTitle={showTitle} id="tags" isCollapsed={isCollapsed} collapsedHeight={COLLAPSED_HEIGHT} useExpandedButtonSpacing={true} moreUrl={url("/tags/")} moreButtonClass="sidebar-tags-more-btn btn-plain rounded-lg h-10 font-bold px-4 active:scale-95" moreButtonShowIcon={false} moreButtonText="查看更多" class={className} style={style}>
+    <div class="sidebar-tag-list">
         {tags.map(t => (
-            <ButtonTag href={getTagUrl(t.name)} label={`View all posts with the ${t.name.trim()} tag`}>
-                {t.name.trim()}
+            <ButtonTag href={getTagUrl(t.name)} label={`View all ${t.count} posts with the ${t.name.trim()} tag`}>
+                <span>{t.name.trim()}</span>
+                <span class="sidebar-tag-count" aria-hidden="true">{t.count}</span>
             </ButtonTag>
         ))}
     </div>

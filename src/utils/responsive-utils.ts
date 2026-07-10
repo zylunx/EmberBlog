@@ -100,7 +100,6 @@ export function generateSidebarClasses(
 	config: ResponsiveSidebarConfig,
 ): string {
 	const classes = [
-		"mb-4",
 		"hidden",
 		"md:col-span-1",
 		"md:max-w-70",
@@ -127,7 +126,7 @@ export function generateSidebarClasses(
 export function generateRightSidebarClasses(
 	config: ResponsiveSidebarConfig,
 ): string {
-	const classes = ["mb-4", "hidden", "onload-animation"];
+	const classes = ["hidden", "onload-animation"];
 
 	if (config.isBothSidebars && config.tabletSidebar === "right") {
 		// 双侧栏+平板端显示右侧栏：769px+显示右侧栏

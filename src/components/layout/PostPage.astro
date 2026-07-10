@@ -14,7 +14,13 @@ type PostEntry = CollectionEntry<"posts">;
 
 const masonryEnabled = siteConfig.postListLayout.grid.masonry;
 const columnWidth = siteConfig.postListLayout.grid.columnWidth || 280;
-const gridColumns = siteConfig.postListLayout.grid.columns || "auto-fill";
+const gridColumns = String(
+	siteConfig.postListLayout.grid.columns || "auto-fill",
+);
+const isFixedGridColumnCount = /^[1-9]\d*$/.test(gridColumns);
+const postGridTemplateColumns = isFixedGridColumnCount
+	? `repeat(${gridColumns}, minmax(0, 1fr))`
+	: `repeat(${gridColumns}, minmax(min(100%, ${columnWidth}px), 1fr))`;
 
 // 根据配置设置初始布局模式，避免闪烁
 const defaultLayout = siteConfig.postListLayout.defaultMode || "list";
@@ -33,7 +39,7 @@ const initialLayoutClass =
   data-mobile-default-layout={mobileDefaultLayout}
   data-masonry-enabled={masonryEnabled}
   data-column-width={columnWidth}
-  style={`--post-card-min-width: ${columnWidth}px; --post-grid-columns: ${gridColumns};`}
+  style={`--post-card-min-width: ${columnWidth}px; --post-grid-columns: ${gridColumns}; --post-grid-template-columns: ${postGridTemplateColumns};`}
 >
   {
     page.data.map((entry: PostEntry, index: number) => (
@@ -327,7 +333,7 @@ const initialLayoutClass =
 <style is:global>
   .post-grid-auto {
     display: grid;
-    grid-template-columns: repeat(var(--post-grid-columns, auto-fill), minmax(min(100%, var(--post-card-min-width, 320px)), 1fr));
+    grid-template-columns: var(--post-grid-template-columns, repeat(auto-fill, minmax(min(100%, var(--post-card-min-width, 320px)), 1fr)));
     gap: 0.5rem;
   }
 

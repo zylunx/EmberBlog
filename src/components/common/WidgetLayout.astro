@@ -12,6 +12,9 @@ interface Props {
 	useExpandedButtonSpacing?: boolean;
 	contentPadding?: boolean;
 	moreUrl?: string;
+	moreButtonClass?: string;
+	moreButtonShowIcon?: boolean;
+	moreButtonText?: string;
 	class?: string;
 	style?: string;
 }
@@ -24,6 +27,9 @@ const {
 	useExpandedButtonSpacing = false,
 	contentPadding = true,
 	moreUrl,
+	moreButtonClass,
+	moreButtonShowIcon = true,
+	moreButtonText = i18n(I18nKey.more),
 	style,
 } = Astro.props;
 const className = Astro.props.class;
@@ -50,12 +56,12 @@ const className = Astro.props.class;
         {moreUrl ? (
             <a
                 href={moreUrl}
-                class="btn-plain rounded-lg w-full h-9 flex items-center justify-center"
-                title={i18n(I18nKey.more)}
-            >
-                <div class="text-(--primary) flex items-center justify-center gap-2 -translate-x-2">
-                    <Icon is:inline name="material-symbols:more-horiz" class="text-[1.75rem]" aria-hidden="true"></Icon>
-                    <span>{i18n(I18nKey.more)}</span>
+				class={moreButtonClass ?? "btn-plain rounded-lg w-full h-9 flex items-center justify-center"}
+				title={moreButtonText}
+			>
+				<div class:list={["flex items-center justify-center", { "gap-2 -translate-x-2": moreButtonShowIcon }]}>
+					{moreButtonShowIcon && <Icon is:inline name="material-symbols:more-horiz" class="text-[1.75rem]" aria-hidden="true"></Icon>}
+					<span>{moreButtonText}</span>
                 </div>
             </a>
         ) : (
