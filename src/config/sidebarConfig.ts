@@ -59,16 +59,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			showOnPostPage: false,
 		},
 		{
-			// 组件类型：音乐播放器
-			type: "music",
-			// 是否启用该组件
-			enable: false,
-			// 组件位置
-			position: "sticky",
-			// 是否在文章详情页显示
-			showOnPostPage: true,
-		},
-		{
 			// 组件类型：分类组件
 			type: "categories",
 			// 是否启用该组件
@@ -296,14 +286,6 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 			enable: true,
 			// 是否在文章详情页显示
 			showOnPostPage: true,
-		},
-		{
-			// 组件类型：音乐播放器
-			type: "music",
-			// 是否启用该组件
-			enable: false,
-			// 是否在文章详情页显示
-			showOnPostPage: false,
 		},
 		{
 			// 组件类型：分类组件

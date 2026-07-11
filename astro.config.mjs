@@ -100,6 +100,7 @@ export default defineConfig({
 				"#banner-overlay-container",
 				"#banner-dim-container",
 				"#post-banner-image",
+				"#post-banner-meta-overlay",
 				"#swup-container",
 				"#left-sidebar-dynamic",
 				"#right-sidebar-dynamic",
@@ -324,4 +325,3 @@ export default defineConfig({
 		},
 	},
 });
-

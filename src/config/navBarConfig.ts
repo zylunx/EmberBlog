@@ -62,10 +62,10 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		url: "#",
 		icon: "material-symbols:info",
 		children: [
-			// 		// 打赏
-			// 		// LinkPresets.Sponsor,
+			//打赏
+			LinkPresets.Sponsor,
 
-			// 		// 关于页面
+			// 关于页面
 			LinkPresets.About,
 		],
 	});
@@ -83,33 +83,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 	// 			external: true,
 	// 			icon: "fa7-brands:github",
 	// 		},
-	// 		{
-	// 			name: "Gitee",
-	// 			url: "https://gitee.com/CuteLeaf/Firefly",
-	// 			external: true,
-	// 			icon: "fa7-brands:gitee",
-	// 		},
-	// 		{
-	// 			name: "QQ交流群",
-	// 			url: "https://qm.qq.com/q/ZGsFa8qX2G",
-	// 			external: true,
-	// 			icon: "fa7-brands:qq",
-	// 		},
-	// 		{
-	// 			name: "Firefly文档",
-	// 			url: "https://docs-firefly.cuteleaf.cn",
-	// 			external: true,
-	// 			icon: "material-symbols:docs",
-	// 		},
 	// 	],
-	// });
-
-	// 文档链接
-	// links.push({
-	// 	name: "文档",
-	// 	url: "https://docs-firefly.cuteleaf.cn",
-	// 	external: true,
-	// 	icon: "material-symbols:docs",
 	// });
 
 	return { links } as NavBarConfig;

@@ -26,7 +26,7 @@ There is **no unit test suite**. The validation path is `pnpm check` → `pnpm t
 ## Architecture
 
 ### Config-driven design
-The entire site is customized through typed config objects in `src/config/`, each paired with an interface in `src/types/`. `src/config/index.ts` is the single barrel — import config from `@/config`, never from individual files. `siteConfig.ts` holds core settings (title, URL, theme hue, page toggles); other files cover comments, gallery, nav bar, sidebar layout, fonts, effects, etc. Adding a feature usually means: define the type in `src/types/`, add the config file, re-export it from `index.ts`, then consume it in components.
+The entire site is customized through typed config objects in `src/config/`, each paired with an interface in `src/types/`. `src/config/index.ts` is the single barrel — import config from `@/config`, never from individual files. `siteConfig.ts` holds core settings (title, URL, theme hue, page toggles); other files cover comments, gallery, nav bar, sidebar layout, and fonts. Adding a feature usually means: define the type in `src/types/`, add the config file, re-export it from `index.ts`, then consume it in components.
 
 Page visibility is gated by `siteConfig.pages.*` flags, which are also honored by the sitemap `filter` in `astro.config.mjs` — toggling a page off there must stay consistent with the route existing.
 

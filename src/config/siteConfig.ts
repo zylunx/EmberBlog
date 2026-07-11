@@ -41,7 +41,7 @@ export const siteConfig: SiteConfig = {
 		border: true,
 		// 是否让卡片风格跟随主题色相
 		followTheme: false,
-		// 是否在主页文章卡片上显示文章简介
+		// 是否在主页文章卡片上显示文章简介 移动到postListLayout
 		showDescriptionOnHome: false,
 	},
 
@@ -59,22 +59,22 @@ export const siteConfig: SiteConfig = {
 
 	// 导航栏配置
 	navbar: {
-		// 导航栏Logo
+		// 导航栏Logo  恢复设置
 		// 支持三种类型：
 		// 1. Astro图标库: { type: "icon", value: "material-symbols:home-pin-outline" }
 		// 2. 本地图片（public目录，不优化）: { type: "image", value: "/assets/images/logo.webp", alt: "Logo" }
 		// 3. 本地图片（src目录，自动优化但会增加构建时间）: { type: "image", value: "assets/images/logo.webp", alt: "Logo" }
 		// 4. 网络图片: { type: "url", value: "https://example.com/logo.png", alt: "Logo" }
-		// logo: {
-		// 	 type: "image",
-		// 	 value: "assets/images/ember.png",
-		//	 alt: "✨",
-		// },
+		logo: {
+			type: "image",
+			value: "assets/images/ember.png",
+			alt: "✨",
+		},
 		// 导航栏标题
 		title: "EMBER",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
-		// 导航菜单对齐方式，left：左对齐，center：居中
+		// 导航菜单对齐方式，left：左对齐，center：居中   无用去掉
 		menuAlign: "center",
 		// 导航栏图标和标题是否跟随主题色
 		followTheme: false,
@@ -83,7 +83,7 @@ export const siteConfig: SiteConfig = {
 	},
 
 	// 站点开始日期，用于统计运行天数
-	siteStartDate: "2025-01-01",
+	siteStartDate: "2026-07-01",
 
 	// 站点时区（IANA 时区字符串），用于格式化bangumi、rss里的构建日期时间等等..
 	// 示例："Asia/Shanghai", "UTC", 如果为空，则按照构建服务器的时区进行时区转换
@@ -94,9 +94,9 @@ export const siteConfig: SiteConfig = {
 		// 友链页面开关
 		friends: true,
 		// 打赏页面开关
-		sponsor: false,
+		sponsor: true,
 		// 留言板页面开关，需要配置评论系统
-		guestbook: false,
+		guestbook: true,
 		// 番组计划页面开关，含追番、游戏、书籍和音乐
 		bangumi: true,
 		// 相册页面开关
@@ -127,6 +127,7 @@ export const siteConfig: SiteConfig = {
 		grid: {
 			// 是否开启瀑布流布局，同时有封面图和无封面图的混合文章推荐开启
 			masonry: false,
+			//列数量，为2最好看
 			columns: 2,
 		},
 	},
@@ -144,7 +145,7 @@ export const siteConfig: SiteConfig = {
 		// 文章页底部的"上次编辑时间"卡片开关
 		showLastModified: true,
 		// 文章过期阈值（天数），超过此天数才显示"上次编辑"卡片
-		outdatedThreshold: 30,
+		outdatedThreshold: 365,
 		// 是否开启分享海报生成功能
 		sharePoster: true,
 		// OpenGraph图片功能，注意开启后要渲染很长时间，不建议本地调试的时候开启

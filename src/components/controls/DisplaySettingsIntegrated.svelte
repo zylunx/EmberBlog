@@ -1,17 +1,10 @@
 <script lang="ts">
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
-import {
-	getDefaultHue,
-	getDefaultSakuraEnabled,
-	getHue,
-	getStoredSakuraEnabled,
-	setHue,
-	setSakuraEnabled,
-} from "@utils/setting-utils";
+import { getDefaultHue, getHue, setHue } from "@utils/setting-utils";
 import { onMount } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
-import { sakuraConfig, siteConfig } from "@/config";
+import { siteConfig } from "@/config";
 
 let hue = $state(getHue());
 const defaultHue = getDefaultHue();
@@ -27,16 +20,13 @@ let isMobileWidth = $state(
 	typeof window !== "undefined" ? window.innerWidth < 780 : false,
 );
 let isSwitching = $state(false);
-let sakuraEnabled = $state(true);
-const defaultSakuraEnabled = getDefaultSakuraEnabled();
 
 const allowLayoutSwitch = siteConfig.postListLayout.allowSwitch;
 let effectiveDefaultLayout = $derived(
 	isMobileWidth ? mobileDefaultLayout : defaultLayout,
 );
 const showThemeColor = !siteConfig.themeColor.fixed;
-const isSakuraSwitchable = sakuraConfig?.switchable ?? false;
-const hasAnyContent = showThemeColor || allowLayoutSwitch || isSakuraSwitchable;
+const hasAnyContent = showThemeColor || allowLayoutSwitch;
 
 function resetHue() {
 	hue = getDefaultHue();
@@ -52,11 +42,6 @@ function resetLayout() {
 			detail: { layout: effectiveDefaultLayout },
 		}),
 	);
-}
-
-function toggleSakuraEnabled() {
-	sakuraEnabled = !sakuraEnabled;
-	setSakuraEnabled(sakuraEnabled);
 }
 
 function checkScreenSize() {
@@ -117,7 +102,6 @@ function switchLayout() {
 onMount(() => {
 	mounted = true;
 	checkScreenSize();
-	sakuraEnabled = getStoredSakuraEnabled();
 
 	const savedLayout = localStorage.getItem("postListLayout");
 	if (savedLayout && (savedLayout === "list" || savedLayout === "grid")) {
@@ -174,7 +158,7 @@ $effect(() => {
 </script>
 
 {#if hasAnyContent}
-<div id="display-setting" class="float-panel float-panel-closed absolute transition-all w-80 right-4 px-4 py-2">
+<div id="display-setting" class="float-panel float-panel-closed absolute z-[60] right-4 w-[calc(100vw-2rem)] max-w-80 max-h-[calc(100dvh-6rem)] overflow-y-auto origin-top-right px-4 py-2 transition-all">
     {#if showThemeColor}
     <div class="mt-2 mb-2">
         <div class="flex flex-row gap-2 mb-2 items-center justify-between">
@@ -244,38 +228,32 @@ $effect(() => {
         </div>
     {/if}
 
-    {#if isSakuraSwitchable}
-        <div class="mt-2 mb-2">
-            <div class="flex gap-2 font-bold text-lg text-neutral-900 dark:text-neutral-100 transition relative ml-3 mb-2
-                before:w-1 before:h-4 before:rounded-md before:bg-(--primary)
-                before:absolute before:-left-3 before:top-1/2 before:-translate-y-1/2"
-            >
-                {i18n(I18nKey.effectsSettings)}
-                <button aria-label="Reset to Default" class="btn-regular w-7 h-7 rounded-md active:scale-90"
-                        class:opacity-0={sakuraEnabled === defaultSakuraEnabled} class:pointer-events-none={sakuraEnabled === defaultSakuraEnabled} onclick={() => { sakuraEnabled = defaultSakuraEnabled; setSakuraEnabled(defaultSakuraEnabled); }}>
-                    <div class="text-(--btn-content)">
-                        <Icon icon="fa7-solid:arrow-rotate-left" class="text-[0.875rem]"></Icon>
-                    </div>
-                </button>
-            </div>
-            <div class="space-y-1">
-                <button
-                    class="w-full btn-regular rounded-md py-2 px-3 flex items-center gap-3 text-left active:scale-95 transition-all relative overflow-hidden"
-                    class:bg-(--btn-regular-bg-hover)={sakuraEnabled}
-                    onclick={toggleSakuraEnabled}
-                >
-                    <Icon icon="mdi:flower-poppy" class="text-[1.25rem] shrink-0"></Icon>
-                    <span class="text-sm flex-1">{i18n(I18nKey.sakuraEffect)}</span>
-                    <div class="w-10 h-5 rounded-full transition-all duration-200 relative"
-                         class:bg-(--primary)={sakuraEnabled}
-                         class:bg-(--btn-regular-bg-active)={!sakuraEnabled}>
-                        <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200"
-                             class:left-0.5={!sakuraEnabled}
-                             class:left-5={sakuraEnabled}></div>
-                    </div>
-                </button>
-            </div>
-        </div>
-    {/if}
 </div>
 {/if}
+
+<style>
+	#display-setting input[type="range"] {
+		appearance: none;
+		-webkit-appearance: none;
+		height: 1.5rem;
+		background: var(--color-selection-bar);
+		transition: background-image 0.15s ease-in-out;
+	}
+
+	#display-setting input[type="range"]::-webkit-slider-thumb {
+		appearance: none;
+		-webkit-appearance: none;
+		height: 1rem;
+		width: 0.5rem;
+		border-radius: 0.125rem;
+		background: rgb(255 255 255 / 70%);
+	}
+
+	#display-setting input[type="range"]::-moz-range-thumb {
+		height: 1rem;
+		width: 0.5rem;
+		border: 0;
+		border-radius: 0.125rem;
+		background: rgb(255 255 255 / 70%);
+	}
+</style>

@@ -28,7 +28,6 @@ enum I18nKey {
 	postList = "postList",
 	tableOfContents = "tableOfContents",
 	tocEmpty = "tocEmpty",
-	music = "music",
 
 	// 公告栏
 	announcement = "announcement",
@@ -52,26 +51,6 @@ enum I18nKey {
 	postsCount = "postsCount",
 	tagsCount = "tagsCount",
 	noData = "noData",
-
-	// Music Widget
-	musicNoPlaying = "musicNoPlaying",
-	musicLyrics = "musicLyrics",
-	musicVolume = "musicVolume",
-	musicPlayMode = "musicPlayMode",
-	musicPrev = "musicPrev",
-	musicNext = "musicNext",
-	musicPlaylist = "musicPlaylist",
-	musicNoLyrics = "musicNoLyrics",
-	musicLoadingLyrics = "musicLoadingLyrics",
-	musicFailedLyrics = "musicFailedLyrics",
-	musicNoSongs = "musicNoSongs",
-	musicError = "musicError",
-	musicPlay = "musicPlay",
-	musicPause = "musicPause",
-	musicProgress = "musicProgress",
-	musicCover = "musicCover",
-	musicNoCover = "musicNoCover",
-	musicAudioPlayer = "musicAudioPlayer",
 
 	themeColor = "themeColor",
 
@@ -263,9 +242,6 @@ enum I18nKey {
 
 	// 加密
 	postEncrypted = "postEncrypted",
-
-	sakuraEffect = "sakuraEffect",
-	effectsSettings = "effectsSettings",
 
 	// 文章布局
 	postListLayout = "postListLayout",

@@ -32,25 +32,6 @@ export const en: Translation = {
 	[Key.postList]: "Post List",
 	[Key.tableOfContents]: "Table of Contents",
 	[Key.tocEmpty]: "No table of contents on this page",
-	[Key.music]: "Music",
-	[Key.musicNoPlaying]: "No playing",
-	[Key.musicLyrics]: "Lyrics",
-	[Key.musicVolume]: "Volume",
-	[Key.musicPlayMode]: "Switch Play Mode",
-	[Key.musicPrev]: "Previous",
-	[Key.musicNext]: "Next",
-	[Key.musicPlaylist]: "Playlist",
-	[Key.musicNoLyrics]: "No lyrics available",
-	[Key.musicLoadingLyrics]: "Loading lyrics...",
-	[Key.musicFailedLyrics]: "Failed to load lyrics",
-	[Key.musicNoSongs]: "No songs",
-	[Key.musicError]: "Player Error",
-	[Key.musicPlay]: "Play",
-	[Key.musicPause]: "Pause",
-	[Key.musicProgress]: "Playback Progress",
-	[Key.musicCover]: "Cover",
-	[Key.musicNoCover]: "No cover available",
-	[Key.musicAudioPlayer]: "Audio Player",
 
 	// Announcement
 	[Key.announcement]: "Announcement",
@@ -277,9 +258,6 @@ export const en: Translation = {
 	// Wallpaper Mode
 
 	// Wallpaper Settings
-	[Key.sakuraEffect]: "Sakura Effect",
-	[Key.effectsSettings]: "Effects Settings",
-
 	// Post List Layout
 	[Key.postListLayout]: "Post List Layout",
 	[Key.postListLayoutList]: "List",

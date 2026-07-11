@@ -8,7 +8,7 @@ tags:
   - 示例
 category: 文章示例
 draft: false
-image: api
+image: ""
 ai: >-
   Firefly 主题全面支持 KaTeX 数学公式渲染，行内公式用单 $ 包裹（如 $e^{i\pi} = 0$ 和 $E = mc^2$），块级公式用双
   $$ 包裹并居中显示（如 $\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$ 和质能方程）。  

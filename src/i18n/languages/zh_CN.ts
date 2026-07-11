@@ -32,25 +32,6 @@ export const zh_CN: Translation = {
 	[Key.postList]: "文章列表",
 	[Key.tableOfContents]: "文章目录",
 	[Key.tocEmpty]: "当前页面没有目录",
-	[Key.music]: "音乐",
-	[Key.musicNoPlaying]: "暂未播放",
-	[Key.musicLyrics]: "歌词",
-	[Key.musicVolume]: "音量",
-	[Key.musicPlayMode]: "切换播放模式",
-	[Key.musicPrev]: "上一首",
-	[Key.musicNext]: "下一首",
-	[Key.musicPlaylist]: "列表",
-	[Key.musicNoLyrics]: "暂无歌词",
-	[Key.musicLoadingLyrics]: "正在加载歌词...",
-	[Key.musicFailedLyrics]: "歌词加载失败",
-	[Key.musicNoSongs]: "暂无歌曲",
-	[Key.musicError]: "播放器错误",
-	[Key.musicPlay]: "播放",
-	[Key.musicPause]: "暂停",
-	[Key.musicProgress]: "播放进度",
-	[Key.musicCover]: "封面",
-	[Key.musicNoCover]: "暂无封面",
-	[Key.musicAudioPlayer]: "音频播放器",
 
 	// 公告栏
 	[Key.announcement]: "公告",
@@ -269,9 +250,6 @@ export const zh_CN: Translation = {
 	// 壁纸模式
 
 	// 壁纸设置
-	[Key.sakuraEffect]: "樱花特效",
-	[Key.effectsSettings]: "特效设置",
-
 	// 文章布局
 	[Key.postListLayout]: "文章布局",
 	[Key.postListLayoutList]: "列表",

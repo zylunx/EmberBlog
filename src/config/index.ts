@@ -8,17 +8,14 @@ export type {
 	AnnouncementConfig,
 	BackgroundWallpaperConfig,
 	CommentConfig,
-	CoverImageConfig,
 	ExpressiveCodeConfig,
 	FooterConfig,
 	GalleryAlbum,
 	GalleryConfig,
 	LicenseConfig,
-	MusicPlayerConfig,
 	NavBarConfig,
 	PlantUMLConfig,
 	ProfileConfig,
-	SakuraConfig,
 	SidebarLayoutConfig,
 	SiteConfig,
 	SponsorConfig,
@@ -40,8 +37,6 @@ export { announcementConfig } from "./announcementConfig"; // 公告配置
 export { backgroundWallpaper } from "./backgroundWallpaper"; // 背景壁纸配置
 // 功能配置
 export { commentConfig } from "./commentConfig"; // 评论系统配置
-export { coverImageConfig } from "./coverImageConfig"; // 封面图配置
-export { sakuraConfig } from "./effectsConfig"; // 动画特效配置（樱花等）
 export { expressiveCodeConfig } from "./expressiveCodeConfig"; // 代码高亮配置
 export { fontConfig, fontsList } from "./fontConfig"; // 字体配置
 export { footerConfig } from "./footerConfig"; // 页脚配置
@@ -50,9 +45,7 @@ export { galleryConfig } from "./galleryConfig"; // 相册配置
 export { img2colorConfig } from "./img2colorConfig"; // 图片主色调提取配置
 export { licenseConfig } from "./licenseConfig"; // 许可证配置
 // 组件配置
-export { musicPlayerConfig } from "./musicConfig"; // 音乐播放器配置
 export { navBarConfig, navBarSearchConfig } from "./navBarConfig"; // 导航栏配置与搜索配置
-export { live2dWidgetConfig, spineModelConfig } from "./pioConfig"; // 看板娘配置
 export { plantumlConfig } from "./plantumlConfig"; // PlantUML 图表配置
 export { profileConfig } from "./profileConfig"; // 用户资料配置
 // 布局配置

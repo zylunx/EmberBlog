@@ -481,7 +481,7 @@ onMount(() => {
 										<a
 											href={getPostUrlBySlug(post.id)}
 											aria-label={post.data.title}
-											class="ap-post-link group btn-plain"
+											class="ap-post-link group"
 											on:mouseenter={() => onPostEnter(post.id)}
 											on:mouseleave={onPostLeave}
 										>
@@ -523,12 +523,17 @@ onMount(() => {
 		</details>
 	{/each}
 
-	<!-- 高亮 SVG 线：一条连续 path 覆盖虚线，拐角带圆弧 -->
-	{#if highlightPathD}
-		<svg class="ap-highlight-svg" aria-hidden="true">
-			<path d={highlightPathD} fill="none" stroke="var(--lh)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-		</svg>
-	{/if}
+	<!-- 高亮 SVG 线：一条连续 path 覆盖虚线，拐角带圆弧。
+	     用绝对定位的 .ap-highlight-layer 作为纯覆盖层包裹 <svg>：
+	     裸 <svg> 是替换元素，hover 时插入并带 height:100% 会把 .card-base 撑高（底部“多出一块”）；
+	     外层绝对定位 div 的盒子由 inset:0 固定、与子元素无关，可将 SVG 彻底移出卡片布局流。 -->
+	<div class="ap-highlight-layer" aria-hidden="true">
+		{#if highlightPathD}
+			<svg class="ap-highlight-svg">
+				<path d={highlightPathD} fill="none" stroke="var(--lh)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+		{/if}
+	</div>
 
 </div>
 
@@ -705,13 +710,20 @@ onMount(() => {
    高亮 SVG 线
    一条连续 path 覆盖虚线，拐角带圆弧
 ══════════════════════════════════════════════════ */
+/* 覆盖层：绝对定位的纯 overlay，盒子由 inset:0 固定、不受子元素影响，
+   保证内部高亮 SVG 不参与 .card-base 的高度计算（修复 hover 时卡片底部被撑高） */
+.ap-highlight-layer {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+	overflow: visible;
+}
 .ap-highlight-svg {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	pointer-events: none;
-	z-index: 1;
 	overflow: visible;
 }
 .ap-highlight-svg path {
@@ -778,6 +790,14 @@ onMount(() => {
 	padding: 0.4rem 1rem;
 	margin-left: 0;
 	border-radius: 0.5rem; text-decoration: none; overflow: hidden;
+	transition: background-color 0.15s ease;
+}
+/* hover 反馈：与年份行（.ap-year-toggle:hover）保持一致的浅色背景。
+   原先复用 btn-plain 会套用强主题色块 + 胶囊圆角（--interactive-pill-radius: 9999px），
+   在浅/暗色下都表现为一块过重的色块，且圆角从 0.5rem 动画到 9999px 时行底会露出“多出一截”。
+   这里改用 --btn-plain-bg-hover，并保持 0.5rem 圆角 + overflow:hidden 兜底，色块完整贴合行内。 */
+.ap-post-link:hover {
+	background: var(--btn-plain-bg-hover);
 }
 .ap-date {
 	font-size: 0.875rem; color: var(--content-meta);
@@ -817,6 +837,8 @@ onMount(() => {
 	margin: 0 0.05rem;
 }
 .ap-tag {
+	/* 移除 btn-plain 后不再继承其 text-black/75 dark:text-white/75，显式指定中性色 */
+	color: var(--content-meta);
 	font-size: 0.8rem;
 	font-weight: 700;
 	white-space: nowrap;
@@ -835,7 +857,11 @@ onMount(() => {
 	flex: 1; min-width: 0; transition: color 0.15s ease; display: block;
 }
 
-/* 暗色模式由 variables.styl 中的 --primary / --meta-divider / --card-bg 自动适配，无需覆写 */
+/* 暗色模式：variables.styl 未为 --deep-text 定义暗色覆写，年份/月份/标题会在深色背景下仍显示为深色。
+   在面板作用域内将 --deep-text 覆写为白色，使这三处标题变白，同时保留标题 hover 变主题色的效果。 */
+:global(.dark) .archive-panel {
+	--deep-text: rgba(255, 255, 255, 0.92);
+}
 
 @media (max-width: 768px) {
 	.archive-panel { --tw: 1.5rem; }

@@ -32,25 +32,6 @@ export const ru: Translation = {
 	[Key.postList]: "Список постов",
 	[Key.tableOfContents]: "Содержание",
 	[Key.tocEmpty]: "На этой странице нет оглавления",
-	[Key.music]: "Музыка",
-	[Key.musicNoPlaying]: "Ничего не воспроизводится",
-	[Key.musicLyrics]: "Текст песни",
-	[Key.musicVolume]: "Громкость",
-	[Key.musicPlayMode]: "Переключить режим воспроизведения",
-	[Key.musicPrev]: "Предыдущий трек",
-	[Key.musicNext]: "Следующий трек",
-	[Key.musicPlaylist]: "Плейлист",
-	[Key.musicNoLyrics]: "Текст песни отсутствует",
-	[Key.musicLoadingLyrics]: "Загрузка текста песни...",
-	[Key.musicFailedLyrics]: "Ошибка загрузки текста песни",
-	[Key.musicNoSongs]: "Нет песен",
-	[Key.musicError]: "Ошибка плеера",
-	[Key.musicPlay]: "Воспроизвести",
-	[Key.musicPause]: "Пауза",
-	[Key.musicProgress]: "Прогресс воспроизведения",
-	[Key.musicCover]: "Обложка",
-	[Key.musicNoCover]: "Нет обложки",
-	[Key.musicAudioPlayer]: "Аудиоплеер",
 
 	// Объявление
 	[Key.announcement]: "Объявление",
@@ -279,9 +260,6 @@ export const ru: Translation = {
 	// Режим обоев
 
 	// Настройки обоев
-	[Key.sakuraEffect]: "Эффект сакуры",
-	[Key.effectsSettings]: "Настройки эффектов",
-
 	// Макет списка сообщений
 	[Key.postListLayout]: "Макет списка сообщений",
 	[Key.postListLayoutList]: "Список",

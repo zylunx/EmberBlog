@@ -7,7 +7,6 @@ import PostMetadata from "@/components/layout/PostMeta.astro";
 import { siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-import { getApiUrlList, processCoverImageSync } from "@/utils/image-utils";
 import { getFileDirFromPath, getTagUrl } from "@/utils/url-utils";
 
 interface Props {
@@ -44,9 +43,7 @@ const {
 } = Astro.props;
 const className = Astro.props.class;
 
-// 处理随机图：如果image为"api"，则从配置的API获取随机图
-const processedImage = processCoverImageSync(image, entry.id);
-const apiUrls = getApiUrlList(image, entry.id);
+const processedImage = image;
 const hasCover =
 	processedImage !== undefined &&
 	processedImage !== null &&
@@ -210,7 +207,6 @@ function formatCardDate(date: Date): string {
           class="w-full h-full transition-transform duration-300 group-hover:scale-[1.015] group-active:scale-[1.02]"
           preview={true}
           loading={loading}
-          apiUrls={apiUrls}
         />
       </a>
     )

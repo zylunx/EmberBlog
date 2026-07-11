@@ -1,7 +1,4 @@
 ---
-import Live2DWidget from "@components/features/Live2DWidget.astro";
-
-import SpineModel from "@components/features/SpineModel.astro";
 import Footer from "@components/layout/Footer.astro";
 import Navbar from "@components/layout/Navbar.astro";
 import SideBar from "@components/layout/SideBar.astro";
@@ -10,12 +7,7 @@ import FloatingControls from "@/components/controls/FloatingControls.astro";
 import Banner from "@/components/layout/Banner.astro";
 import CategoryBar from "@/components/layout/CategoryBar.astro";
 import PostBannerMeta from "@/components/layout/PostBannerMeta.astro";
-import {
-	backgroundWallpaper,
-	live2dWidgetConfig,
-	sidebarLayoutConfig,
-	siteConfig,
-} from "@/config";
+import { backgroundWallpaper, sidebarLayoutConfig, siteConfig } from "@/config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
@@ -276,10 +268,12 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 </div>
 )}
 
-{showBannerPostMeta && bannerPostMeta && (
+{showBannerPostMeta && bannerPostMeta ? (
 	<div id="post-banner-meta-overlay" class="absolute inset-x-0 top-0 z-40 h-(--banner-height-home) transition-swup-fade">
 		<PostBannerMeta category={postCategory} tags={postTags} meta={bannerPostMeta} />
 	</div>
+) : (
+	<div id="post-banner-meta-overlay" class="hidden"></div>
 )}
 
 {/* 当壁纸未渲染时，添加空的 Swup 占位容器，避免 Swup 找不到容器而回退为整页加载 */}
@@ -410,8 +404,6 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
             </div>
         </div>
 
-        <SpineModel></SpineModel>
-        {live2dWidgetConfig.enable && <Live2DWidget config={live2dWidgetConfig} />}
     </div>
 </div>
 
@@ -439,6 +431,39 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
   /* 有评论区时，侧栏仅与正文行对齐，不跨入页脚行。 */
   @media (min-width: 768px) {
     #main-grid:has(#post-comments) :is(#left-sidebar, #right-sidebar) {
+      grid-row-end: 2 !important;
+    }
+  }
+
+  /* ── 无 category bar、无评论区的右侧栏页面（分类/标签/关于/友链等非文章页）──
+     右侧栏默认 md:row-end-3 会比内容多占一行（那一行本是留给首页/归档页 category bar 的）；
+     没有 category bar 时该行空在内容卡正下方，表现为「侧栏比内容长出一截、卡片下方一大片空白」。
+     让内容单元与右侧栏占相同的 grid 行，并把 #content-wrapper 拉伸到同高，
+     使 content-wrapper 的高度与右侧栏齐平；卡片本身不放大，其下方为卡片外的页面留白，
+     滚动时侧栏 sticky 底组自然停在这条齐平线上。 */
+  @media (min-width: 768px) {
+    #main-grid[data-sidebar-position="right"]:not(:has(#category-bar-wrapper:not(.hidden))):not(:has(#post-comments))
+      > div:has(> #swup-container:not([data-is-post-page="true"])) {
+      grid-row: 1 / 3;
+    }
+    #main-grid[data-sidebar-position="right"]:not(:has(#category-bar-wrapper:not(.hidden))):not(:has(#post-comments))
+      > div:has(> #swup-container:not([data-is-post-page="true"])) > #swup-container {
+      height: 100%;
+    }
+    #main-grid[data-sidebar-position="right"]:not(:has(#category-bar-wrapper:not(.hidden))):not(:has(#post-comments))
+      #swup-container:not([data-is-post-page="true"]) > #content-wrapper {
+      height: 100%;
+    }
+
+    /* 文章页关闭评论时，侧栏与正文内容行对齐，不延伸到页脚行。 */
+    #main-grid:has(> div > #swup-container[data-is-post-page="true"]):not(:has(#post-comments))
+      > div:has(> #swup-container[data-is-post-page="true"]) {
+      grid-row: 1 !important;
+      align-self: start;
+      height: fit-content;
+    }
+    #main-grid:has(> div > #swup-container[data-is-post-page="true"]):not(:has(#post-comments))
+      :is(#left-sidebar, #right-sidebar) {
       grid-row-end: 2 !important;
     }
   }
