@@ -14,7 +14,12 @@ import { url } from "@/utils/url-utils";
 import DropdownMenu from "./DropdownMenu.astro";
 import NavMenuPanel from "./NavMenuPanel.astro";
 
-const className = Astro.props.class;
+interface Props {
+	class?: string;
+	pageTitle?: string;
+}
+
+const { class: className, pageTitle } = Astro.props;
 
 const navbarTransparentMode = "semi";
 const navbarEnableBlur = false;
@@ -79,13 +84,21 @@ let links: NavBarLink[] = navBarConfig.links
                     })}
                 </div>
                 <button id="navbar-center-title-button" class="navbar-glass-section navbar-center-title absolute left-1/2 top-1/2 flex h-13 max-w-[min(24rem,70vw)] items-center justify-center px-5 text-center" aria-label="Back to top" type="button">
-                    <span class="navbar-center-title-main" style="font-family: var(--font-navbar-title, inherit)">
-                        {siteConfig.title}
-                    </span>
-                    <span class="navbar-center-title-separator">-</span>
-                    <span class="navbar-center-title-sub">
-                        {siteConfig.subtitle}
-                    </span>
+                    {pageTitle ? (
+                        <span class="navbar-center-title-main max-w-[min(20rem,60vw)] overflow-hidden text-ellipsis" style="font-family: var(--font-navbar-title, inherit)">
+                            {pageTitle}
+                        </span>
+                    ) : (
+                        <>
+                            <span class="navbar-center-title-main" style="font-family: var(--font-navbar-title, inherit)">
+                                {siteConfig.title}
+                            </span>
+                            <span class="navbar-center-title-separator">-</span>
+                            <span class="navbar-center-title-sub">
+                                {siteConfig.subtitle}
+                            </span>
+                        </>
+                    )}
                 </button>
             </div>
             <div class="navbar-glass-section navbar-glass-right flex">

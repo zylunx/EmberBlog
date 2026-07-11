@@ -1,0 +1,53 @@
+---
+import { Icon } from "astro-icon/components";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { getCategoryUrl, getTagUrl } from "@/utils/url-utils";
+
+interface Props {
+	category?: string;
+	tags?: string[];
+	meta: {
+		title: string;
+		published: Date;
+		updated?: Date;
+		words?: number;
+		minutes?: number;
+	};
+}
+
+const { category, meta, tags = [] } = Astro.props;
+---
+
+<div class="absolute inset-0 hidden lg:flex items-center">
+	<div class="w-4/5 lg:w-[52%] lg:ml-[10%] text-left mb-0">
+		<div class="flex flex-col items-start gap-4">
+			{(category || tags.length > 0) && (
+				<div class="flex flex-wrap items-center gap-3 text-sm font-medium text-white">
+					{category && (
+						<a href={getCategoryUrl(category)} class="btn-regular banner-post-meta-item inline-flex cursor-pointer select-none items-center rounded-(--radius-large) px-2 py-1 font-bold active:scale-95">
+							{category}
+						</a>
+					)}
+					<div class="ml-1 flex flex-wrap items-center gap-x-4 gap-y-2">
+						{tags.map((tag) => (
+							<a href={getTagUrl(tag)} class="inline-flex cursor-pointer select-none items-center gap-1 rounded-(--radius-large) px-2 py-1 font-bold text-white transition-colors hover:bg-white/10 active:scale-95">
+								<span class="text-white/60">#</span>
+								<span>{tag}</span>
+							</a>
+						))}
+					</div>
+				</div>
+			)}
+			<div class="banner-post-title font-bold text-white leading-tight">{meta.title}</div>
+			<div class="banner-post-meta-list mt-4 flex flex-wrap items-center gap-2 text-sm md:text-base">
+				<span class="btn-regular banner-post-meta-item inline-flex cursor-pointer select-none items-center gap-1.5 rounded-(--radius-large) px-2 py-1 font-bold active:scale-95">
+					<Icon is:inline name="material-symbols:calendar-month-outline-rounded" class="text-[1.05em]" />
+					<span>{formatDateToYYYYMMDD(meta.published)}</span>
+				</span>
+				{meta.updated && meta.updated.getTime() !== meta.published.getTime() && <span class="btn-regular banner-post-meta-item inline-flex cursor-pointer select-none items-center gap-1.5 rounded-(--radius-large) px-2 py-1 font-bold active:scale-95"><Icon is:inline name="material-symbols:update-rounded" class="text-[1.05em]" /><span>{formatDateToYYYYMMDD(meta.updated)}</span></span>}
+				{typeof meta.words === "number" && <span class="btn-regular banner-post-meta-item inline-flex cursor-pointer select-none items-center gap-1.5 rounded-(--radius-large) px-2 py-1 font-bold active:scale-95"><Icon is:inline name="material-symbols:ink-pen-outline-rounded" class="text-[1.05em]" /><span>{meta.words}</span></span>}
+				{typeof meta.minutes === "number" && <span class="btn-regular banner-post-meta-item inline-flex cursor-pointer select-none items-center gap-1.5 rounded-(--radius-large) px-2 py-1 font-bold active:scale-95"><Icon is:inline name="material-symbols:schedule-outline-rounded" class="text-[1.05em]" /><span>{meta.minutes}</span></span>}
+			</div>
+		</div>
+	</div>
+</div>

@@ -597,6 +597,7 @@ function disableAnimation() {
 
   const bannerEnabled = !!document.getElementById("wallpaper-wrapper");
   const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
+  const configHue = siteConfig.themeColor.hue;
 
   function syncPageLayoutState() {
     const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
@@ -604,6 +605,11 @@ function disableAnimation() {
     const pageBannerEnabled = swupContainer?.dataset.pageBannerEnabled !== "false";
     const wrapper = document.getElementById("wallpaper-wrapper") as HTMLElement | null;
     const mainEl = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
+    const postBannerMetaOverlay = document.getElementById("post-banner-meta-overlay");
+
+    if (!isPostPage) {
+      postBannerMetaOverlay?.remove();
+    }
 
     document.body.classList.remove("enable-banner", "wallpaper-transparent");
 
@@ -794,6 +800,9 @@ function disableAnimation() {
       const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
       const isPostPage = swupContainer?.dataset.isPostPage === "true";
       const pageHue = swupContainer?.dataset.pageHue;
+      if (!isPostPage) {
+        document.getElementById("post-banner-meta-overlay")?.remove();
+      }
       if (pageHue) {
         document.documentElement.style.setProperty("--hue", pageHue, "important");
       } else {

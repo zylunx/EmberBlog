@@ -30,6 +30,22 @@
     @apply navbar-surface-transition;
 }
 
+/* 文章详情页的导航栏位于 Banner 之上，统一使用白色前景。 */
+body.post-page-banner #navbar:not(.navbar-sticky-shadow) .navbar-inner-frame,
+body.post-page-banner #navbar:not(.navbar-sticky-shadow) .navbar-inner-frame :where(a, button, span, svg) {
+    color: white !important;
+}
+
+body.post-page-banner #navbar:not(.navbar-sticky-shadow) .navbar-glass-left,
+body.post-page-banner #navbar:not(.navbar-sticky-shadow) .navbar-glass-left > div {
+    color: white !important;
+}
+
+/* 二级菜单沿用日夜间主题前景色。 */
+body.post-page-banner #navbar:not(.navbar-sticky-shadow) .dropdown-menu :where(a, span, svg) {
+    color: var(--btn-content) !important;
+}
+
 /* 悬浮导航栏：与顶部/底部保持间距，营造悬浮感（仅在非固定导航栏模式下生效） */
 body:not(.sticky-navbar) #navbar>div {
     margin-top: 1.25rem;

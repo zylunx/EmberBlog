@@ -10,18 +10,16 @@
 }
 
 #post-banner-image .post-banner-cover-frame {
-	top: 14%;
+	top: 25%;
 	right: 9%;
-	bottom: 14%;
-	width: min(36vw, 34rem);
+	bottom: 25%;
+	width: min(22vw, 20rem);
 	overflow: hidden;
 	border: 1px solid color-mix(in srgb, white 45%, transparent);
 	border-radius: 1.25rem;
 	box-shadow:
 		1.5rem 1.75rem 2.5rem color-mix(in srgb, black 34%, transparent),
 		-0.5rem -0.5rem 1.25rem color-mix(in srgb, white 20%, transparent);
-	transform: perspective(1000px) rotateY(-8deg) rotateX(2deg);
-	transform-origin: center right;
 }
 
 #post-banner-image .post-banner-cover {
@@ -34,9 +32,20 @@
 }
 
 .banner-post-title {
-	font-size: clamp(2.75rem, 4.8vw, 5.5rem);
-	letter-spacing: -0.045em;
+	font-size: clamp(2rem, 3.2vw, 3.75rem);
+	letter-spacing: 0;
 	text-shadow: 0 0.25rem 0.75rem color-mix(in srgb, black 28%, transparent);
+}
+
+#post-banner-meta-overlay .banner-post-meta-item {
+	background-color: rgb(255 255 255 / 10%) !important;
+	color: white !important;
+}
+
+#post-banner-meta-overlay .banner-post-meta-item:hover {
+	background-color: white !important;
+	color: var(--primary) !important;
+	border-radius: var(--radius-large);
 }
 
 @media (max-width: 1023px) {

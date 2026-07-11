@@ -9,6 +9,7 @@ import type { MarkdownHeading } from "astro";
 import FloatingControls from "@/components/controls/FloatingControls.astro";
 import Banner from "@/components/layout/Banner.astro";
 import CategoryBar from "@/components/layout/CategoryBar.astro";
+import PostBannerMeta from "@/components/layout/PostBannerMeta.astro";
 import {
 	backgroundWallpaper,
 	live2dWidgetConfig,
@@ -44,6 +45,7 @@ interface Props {
 	postSlug?: string;
 	hue?: number;
 	postCategory?: string;
+	postTags?: string[];
 	headings?: MarkdownHeading[];
 	bannerPostMeta?: {
 		title: string;
@@ -68,6 +70,7 @@ const {
 	postSlug,
 	hue,
 	postCategory,
+	postTags,
 	headings = [],
 	bannerPostMeta,
 	postImage,
@@ -124,6 +127,11 @@ const finalMainPanelTop =
 
 // 文章页使用独立的 post-page-banner 类（由 Layout.astro 添加），不加 no-banner-layout
 const isPostPageBannerLayout = isPostPage && effectiveBackgroundEnabled;
+const showBannerPostMeta =
+	effectiveBackgroundEnabled &&
+	isPostPage &&
+	bannerConfig?.showPostMeta !== false &&
+	!!bannerPostMeta;
 const mainContentLayoutClass = isPostPageBannerLayout
 	? ""
 	: isBannerMode && effectiveBackgroundEnabled
@@ -240,7 +248,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
             stickyNavbar ? "" : "sticky top-0",
         ]}
     >
-        <Navbar></Navbar>
+        <Navbar pageTitle={isPostPage ? title : undefined}></Navbar>
     </div>
 </div>
 
@@ -266,6 +274,12 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     wavesEnabledOnMobile={wavesEnabledOnMobile}
 />
 </div>
+)}
+
+{showBannerPostMeta && bannerPostMeta && (
+	<div id="post-banner-meta-overlay" class="absolute inset-x-0 top-0 z-40 h-(--banner-height-home) transition-swup-fade">
+		<PostBannerMeta category={postCategory} tags={postTags} meta={bannerPostMeta} />
+	</div>
 )}
 
 {/* 当壁纸未渲染时，添加空的 Swup 占位容器，避免 Swup 找不到容器而回退为整页加载 */}
@@ -420,6 +434,13 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
   #main-grid:has(#category-bar-wrapper:not(.hidden)) #right-sidebar {
     grid-row-start: 2 !important;
     grid-row-end: 3 !important;
+  }
+
+  /* 有评论区时，侧栏仅与正文行对齐，不跨入页脚行。 */
+  @media (min-width: 768px) {
+    #main-grid:has(#post-comments) :is(#left-sidebar, #right-sidebar) {
+      grid-row-end: 2 !important;
+    }
   }
 
   #category-bar-wrapper.category-bar-compact #category-bar {
