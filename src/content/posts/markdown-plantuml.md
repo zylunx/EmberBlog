@@ -7,7 +7,7 @@ tags:
   - Firefly
   - Markdown
 category: 文章示例
-draft: false
+draft: true
 ai: >-
   PlantUML
   是一种纯文本语法工具，可生成时序图、类图、用例图、活动图等工程图表，特别适合技术博客和项目文档：图表与正文统一版本管理，便于协作与迭代；修改只需改文本，且能无缝嵌入

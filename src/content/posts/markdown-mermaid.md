@@ -9,7 +9,7 @@ tags:
   - Mermaid
   - Firefly
 category: 文章示例
-draft: false
+draft: true
 ai: >-
   Mermaid 是 Markdown 中创建图表的强大工具，通过代码块指定 `mermaid` 语言，使用简洁文本语法描述图表，Mermaid
   会自动渲染成美观可视化图表。

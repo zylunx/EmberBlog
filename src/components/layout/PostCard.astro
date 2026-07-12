@@ -52,6 +52,13 @@ const hasCover =
 const coverWidth = "30%";
 
 const showTags = siteConfig.postListLayout.showTags;
+// 主页卡片最多显示的 tag 数，0 表示不限制
+const maxCardTags = Math.max(
+	0,
+	Math.trunc(siteConfig.postListLayout.maxTags ?? 3),
+);
+const allTags = Array.isArray(tags) ? tags : [];
+const displayTags = maxCardTags > 0 ? allTags.slice(0, maxCardTags) : allTags;
 const showDescriptionOnHome = siteConfig.card.showDescriptionOnHome;
 const descriptionLines = Math.max(
 	0,
@@ -161,9 +168,8 @@ function formatCardDate(date: Date): string {
       {
         showTags && (
           <div class="text-sm text-black/30 dark:text-white/30 flex flex-wrap gap-2 transition stats min-w-0">
-            {tags &&
-              tags.length > 0 &&
-              tags.map((tag, _i) => (
+            {displayTags.length > 0 &&
+              displayTags.map((tag, _i) => (
                 <a
                   href={getTagUrl(tag)}
                   aria-label={`View all posts with the ${tag.trim()} tag`}
@@ -172,7 +178,7 @@ function formatCardDate(date: Date): string {
                   {tag.trim()}
                 </a>
               ))}
-            {!(tags && tags.length > 0) && (
+            {allTags.length === 0 && (
               <span class="text-(--content-meta) text-xs">
                 #{i18n(I18nKey.noTags)}
               </span>

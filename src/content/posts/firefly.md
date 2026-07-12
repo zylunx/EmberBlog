@@ -12,7 +12,7 @@ tags:
   - 主题
   - 模板
 category: 文章示例
-draft: false
+draft: true
 image: ./images/firefly2.avif
 ai: >-
   Firefly 是一款基于 Astro 框架和 Fuwari 模板开发的现代个人博客主题模板，专为技术爱好者和内容创作者设计，融合 TypeScript

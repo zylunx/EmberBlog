@@ -7,7 +7,7 @@ tags:
   - Math
   - 示例
 category: 文章示例
-draft: false
+draft: true
 image: ""
 ai: >-
   Firefly 主题全面支持 KaTeX 数学公式渲染，行内公式用单 $ 包裹（如 $e^{i\pi} = 0$ 和 $E = mc^2$），块级公式用双

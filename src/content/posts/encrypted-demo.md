@@ -7,6 +7,7 @@ tags:
   - 密码保护
 category: 文章示例
 password: '123456'
+draft: true
 passwordHint: 示例文章密码123456
 ai: >-
   成功解锁文章！密码输入正确，内容已解密。
