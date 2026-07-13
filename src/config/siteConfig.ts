@@ -64,10 +64,6 @@ export const siteConfig: SiteConfig = {
 		title: "EMBER",
 		// 全宽导航栏，导航栏是否占满屏幕宽度
 		widthFull: false,
-		// 导航菜单对齐方式，left：左对齐，center：居中   无用去掉
-		menuAlign: "center",
-		// 导航栏图标和标题是否跟随主题色
-		followTheme: false,
 		// 导航栏是否固定在顶部并始终可见
 		stickyNavbar: true,
 	},
