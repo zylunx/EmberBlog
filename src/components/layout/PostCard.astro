@@ -59,7 +59,7 @@ const maxCardTags = Math.max(
 );
 const allTags = Array.isArray(tags) ? tags : [];
 const displayTags = maxCardTags > 0 ? allTags.slice(0, maxCardTags) : allTags;
-const showDescriptionOnHome = siteConfig.card.showDescriptionOnHome;
+const showDescription = siteConfig.postListLayout.showDescription;
 const descriptionLines = Math.max(
 	0,
 	Math.trunc(siteConfig.postListLayout.descriptionLines ?? 2),
@@ -150,7 +150,7 @@ function formatCardDate(date: Date): string {
     </a>
 
     {
-      showDescriptionOnHome && (
+      showDescription && (
         <div
           class:list={[
             "transition text-75 md:pr-4 description grow",

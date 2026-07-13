@@ -401,7 +401,7 @@ const siteLang = lang.replace("_", "-");
     <FontSetup />
   </head>
   <body
-    class="min-h-screen"
+    class="min-h-screen enable-card-border"
     class:list={[
       {
         "is-home": isHomePageCheck,
@@ -409,8 +409,6 @@ const siteLang = lang.replace("_", "-");
         "enable-banner": enableBanner,
         "post-page-banner": forceArticleBanner,
         "sticky-navbar": siteConfig.navbar.stickyNavbar ?? false,
-        "enable-card-border": siteConfig.card?.border,
-        "card-follow-theme-hue": siteConfig.card?.followTheme,
       },
     ]}
   >

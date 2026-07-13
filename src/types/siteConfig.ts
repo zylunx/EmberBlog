@@ -33,16 +33,6 @@ export type SiteConfig = {
 	// 页面整体宽度（单位：rem）
 	pageWidth?: number;
 
-	// 卡片样式配置
-	card: {
-		// 是否开启卡片边框和阴影立体效果
-		border: boolean;
-		// 是否让卡片风格跟随主题色相
-		followTheme?: boolean;
-		// 是否在主页文章卡片上显示文章简介
-		showDescriptionOnHome: boolean;
-	};
-
 	// 站点开始日期，用于计算运行天数
 	siteStartDate?: string; // 格式: "YYYY-MM-DD"
 
@@ -91,6 +81,7 @@ export type SiteConfig = {
 		mobileDefaultMode?: "list" | "grid"; // 移动端默认布局模式（视口宽度<780px时使用），不设置则跟随 defaultMode
 		showTags: boolean; // 是否在文章列表中显示标签
 		maxTags?: number; // 卡片最多显示的标签数，设为 0 则不限制，默认 3
+		showDescription: boolean; // 是否在文章列表卡片显示简介
 		descriptionLines?: number; // 文章简介显示行数，设为 0 则不截断，默认 2
 		allowSwitch: boolean; // 是否允许用户切换布局
 		grid: {

@@ -35,16 +35,6 @@ export const siteConfig: SiteConfig = {
 	// 在使用单侧栏边栏时，建议调低一些宽度以获得更好的视觉效果。
 	pageWidth: 85,
 
-	// 网站Card样式配置
-	card: {
-		// 是否开启卡片边框和阴影，开启后让网站更有立体感
-		border: true,
-		// 是否让卡片风格跟随主题色相
-		followTheme: false,
-		// 是否在主页文章卡片上显示文章简介 移动到postListLayout
-		showDescriptionOnHome: false,
-	},
-
 	// Favicon 配置
 	favicon: [
 		{
@@ -121,6 +111,8 @@ export const siteConfig: SiteConfig = {
 		showTags: true,
 		// 卡片最多显示的标签数，设为 0 则不限制
 		maxTags: 3,
+		// 是否在文章列表卡片显示简介
+		showDescription: false,
 		// 文章简介显示行数，设为 0 则不截断
 		descriptionLines: 2,
 		// 是否允许用户切换布局
