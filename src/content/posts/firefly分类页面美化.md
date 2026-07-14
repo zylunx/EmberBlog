@@ -8,10 +8,9 @@ tags:
   - 教程
   - 分类
 category: 技术分享
-color: "hsl(218 39% 21%)"
 draft: false
 slug: firefly-category-beautify
-image: https://img.laplace.de5.net/file/blog/dcaq5pYz.webp
+image: https://img.zylun.de5.net/file/blog/1784032900107.avif?quality
 ai: >-
   本文记录了对 Firefly 主题的 /categories/ 页面进行改造的全过程。新增了 PageTitle、CategoryRose（ECharts
   南丁格尔玫瑰图）、TagGraph（ECharts 力导向图）三大组件，配合标签图数据工具、专属样式与多语言文案，将原本简易的卡片列表升级为带可视化图表的现代分类聚合页。亮点是 CDN 延迟加载

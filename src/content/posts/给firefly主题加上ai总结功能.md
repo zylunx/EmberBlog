@@ -2,13 +2,12 @@
 title: 给 Firefly 主题加上 AI 总结功能
 published: 2026-07-01T00:00:00.000Z
 description: 本文介绍了如何为 Firefly 博客主题添加 AI 文章总结功能，包括自动化脚本生成、环境变量配置和 UI 展示。
-image: 'https://img.laplace.de5.net/file/blog/cXW6zl1G.webp'
+image: 'https://img.zylun.de5.net/file/blog/1784033281250.avif?quality'
 tags:
   - Firefly
   - AI
   - 教程
 category: 技术分享
-color: "hsl(220 27% 83%)"
 draft: false
 slug: firefly-ai-post-summary
 ai: >-

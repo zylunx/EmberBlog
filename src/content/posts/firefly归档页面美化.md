@@ -8,10 +8,9 @@ tags:
   - 教程
   - 归档
 category: 技术分享
-color: "hsl(218 39% 21%)"
 slug: firefly-archive-beautify
 draft: false
-image: https://img.laplace.de5.net/file/blog/4dyPmol2.webp
+image: https://img.zylun.de5.net/file/blog/1784032909144.avif?quality
 ai: >-
   对 Firefly 归档页面（/archive）进行美化。修改了 archive.astro 去掉双层 card-base 嵌套；将
   ArchivePanel.svelte 中的强色（oklch 0.15/0.9、white、#0d0d0d）替换为项目 --primary / --card-bg
