@@ -1,0 +1,189 @@
+media:
+  - name: post_images
+    label: 文章图片
+    input: public/uploads/posts
+    output: /uploads/posts
+    rename: safe
+    categories: [image]
+    extensions: [png, jpg, jpeg, webp, avif]
+
+content:
+  - name: posts
+    label: 博客文章
+    type: collection
+    path: src/content/posts
+    format: yaml-frontmatter
+    subfolders: true
+    filename:
+      template: "{primary}.md"
+      field: create
+    view:
+      fields: [title, published, draft, category]
+      primary: title
+      sort: [published, title]
+      default:
+        sort: published
+        order: desc
+    operations:
+      rename: false
+    fields:
+      - name: title
+        label: 标题
+        type: string
+        required: true
+        options:
+          maxlength: 120
+
+      - name: published
+        label: 发布时间
+        type: date
+        required: true
+        options:
+          time: true
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+
+      - name: updated
+        label: 更新时间
+        type: date
+        default: ""
+        description: 留空时使用发布时间。
+        options:
+          time: true
+          format: "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+
+      - name: draft
+        label: 草稿
+        type: boolean
+        default: false
+
+      - name: description
+        label: 摘要
+        type: text
+        default: ""
+        options:
+          maxlength: 500
+
+      - name: image
+        label: 封面图片
+        type: image
+        default: ""
+        description: 可选择上传的图片，也可保留现有相对路径或远程 URL。
+        options:
+          media: post_images
+          extensions: [png, jpg, jpeg, webp, avif]
+          rename: safe
+
+      - name: color
+        label: 主题色
+        type: string
+        default: ""
+        description: CSS 颜色值，例如 hsl(220 27% 83%)。
+
+      - name: tags
+        label: 标签
+        type: string
+        list: true
+
+      - name: category
+        label: 分类
+        type: string
+        default: ""
+
+      - name: lang
+        label: 语言
+        type: string
+        default: ""
+        description: 语言代码，例如 zh_CN、zh_TW、en、ja 或 ru。
+
+      - name: pinned
+        label: 置顶
+        type: boolean
+        default: false
+
+      - name: author
+        label: 作者
+        type: string
+        default: ""
+
+      - name: sourceLink
+        label: 原文链接
+        type: string
+        default: ""
+
+      - name: licenseName
+        label: 许可证名称
+        type: string
+        default: ""
+
+      - name: licenseUrl
+        label: 许可证链接
+        type: string
+        default: ""
+
+      - name: comment
+        label: 开启评论
+        type: boolean
+        default: true
+
+      - name: password
+        label: 访问密码
+        type: string
+        default: ""
+        description: 密码会以明文写入仓库，请仅在确认仓库权限后使用。
+
+      - name: passwordHint
+        label: 密码提示
+        type: string
+        default: ""
+
+      - name: ai
+        label: AI 总结
+        type: text
+        default: ""
+        description: 留空表示不手动设置，可由现有生成脚本补充。
+
+      - name: slug
+        label: 旧版 Slug
+        type: string
+        hidden: true
+        description: 仅用于保留已有 Frontmatter；当前路由仍由文件名决定。
+
+      - name: body
+        label: 正文
+        type: rich-text
+        required: true
+        options:
+          media: post_images
+          rename: safe
+          switcher: true
+
+  - name: special_pages
+    label: 特殊页面
+    type: group
+    items:
+      - name: about
+        label: 关于页
+        type: file
+        path: src/content/spec/about.md
+        format: code
+        operations:
+          create: false
+          delete: false
+
+      - name: friends
+        label: 友链页说明（MDX）
+        type: file
+        path: src/content/spec/friends.mdx
+        format: code
+        operations:
+          create: false
+          delete: false
+
+      - name: guestbook
+        label: 留言板说明
+        type: file
+        path: src/content/spec/guestbook.md
+        format: code
+        operations:
+          create: false
+          delete: false
