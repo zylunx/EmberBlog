@@ -9,7 +9,6 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 负责整体页面框架和布局结构的组件。
 
 - `CategoryBar.astro` - 分类栏组件
-- `ConfigCarrier.astro` - 配置载体组件
 - `DropdownMenu.astro` - 下拉菜单组件
 - `Footer.astro` - 页脚组件
 - `Navbar.astro` - 导航栏组件
@@ -33,8 +32,7 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 
 **交互组件**
 - `ArchivePanel.svelte` - 归档面板组件
-- `DisplaySettings.svelte` - 显示设置组件
-- `DisplaySettingsIntegrated.svelte` - 集成显示设置组件
+- `DisplaySettingsIntegrated.svelte` - 文章列表布局设置组件
 - `LayoutSwitchButton.svelte` - 布局切换按钮
 - `LightDarkSwitch.svelte` - 主题切换组件
 - `Search.svelte` - 搜索功能组件

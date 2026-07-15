@@ -35,6 +35,7 @@ yarn.lock
 
 # docs
 Firefly-docs/
+docs/
 
 cache/
 package/

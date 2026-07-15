@@ -68,8 +68,6 @@ export const ja: Translation = {
 	[Key.tagsCount]: "タグ",
 	[Key.noData]: "データなし",
 
-	[Key.themeColor]: "テーマカラー",
-
 	[Key.lightMode]: "ライト",
 	[Key.darkMode]: "ダーク",
 	[Key.systemMode]: "システム",

@@ -19,20 +19,8 @@ declare global {
 	}
 }
 
-export function getDefaultHue(): number {
-	const fallback = "250";
-	// 检查是否在浏览器环境中
-	if (typeof document === "undefined") {
-		return Number.parseInt(fallback, 10);
-	}
-	const configCarrier = document.getElementById("config-carrier");
-	return Number.parseInt(configCarrier?.dataset.hue || fallback, 10);
-}
-
 export function getDefaultTheme(): LIGHT_DARK_MODE {
-	// 如果配置文件中设置了 defaultMode，使用配置的值
-	// 否则使用 DEFAULT_THEME（向后兼容）
-	return siteConfig.themeColor.defaultMode ?? DEFAULT_THEME;
+	return siteConfig.theme.defaultMode ?? DEFAULT_THEME;
 }
 
 // 获取系统主题
@@ -51,36 +39,6 @@ export function resolveTheme(theme: LIGHT_DARK_MODE): LIGHT_DARK_MODE {
 		return getSystemTheme();
 	}
 	return theme;
-}
-
-export function getHue(): number {
-	// 先检查全局对象
-	if (typeof window === "undefined" || !window.localStorage) {
-		return getDefaultHue();
-	}
-	const pageHue = document.getElementById("swup-container")?.dataset.pageHue;
-	if (pageHue) {
-		return Number.parseInt(pageHue, 10);
-	}
-	const stored = localStorage.getItem("hue");
-	return stored ? Number.parseInt(stored, 10) : getDefaultHue();
-}
-
-export function setHue(hue: number): void {
-	// 先检查是否在浏览器环境
-	if (
-		typeof window === "undefined" ||
-		!window.localStorage ||
-		typeof document === "undefined"
-	) {
-		return;
-	}
-	localStorage.setItem("hue", String(hue));
-	const r = document.querySelector(":root") as HTMLElement;
-	if (!r) {
-		return;
-	}
-	r.style.setProperty("--hue", String(hue));
 }
 
 export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {

@@ -20,12 +20,18 @@ export const siteConfig: SiteConfig = {
 	// 站点关键词
 	keywords: ["Firefly", "Fuwari", "Astro", "ACGN", "博客", "Ember", "静态博客"],
 
-	// 主题色
-	themeColor: {
-		// 主题色的默认色相，范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345
-		hue: 290,
-		// 是否对访问者隐藏主题色选择器
-		fixed: false,
+	// 主题样式
+	style: {
+		color: {
+			// 浅色模式主题色，仅支持 #RGB / #RRGGBB
+			main: "#576690",
+			// 深色模式主题色，仅支持 #RGB / #RRGGBB
+			dark: "#7A8FAA",
+		},
+	},
+
+	// 深浅模式
+	theme: {
 		// 默认模式："light" 亮色，"dark" 暗色，"system" 跟随系统
 		defaultMode: "system",
 	},

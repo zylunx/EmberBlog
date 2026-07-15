@@ -66,8 +66,6 @@ export const zh_CN: Translation = {
 	[Key.tagsCount]: "个标签",
 	[Key.noData]: "暂无数据",
 
-	[Key.themeColor]: "主题色相",
-
 	[Key.lightMode]: "亮色",
 	[Key.darkMode]: "暗色",
 	[Key.systemMode]: "跟随系统",

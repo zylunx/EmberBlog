@@ -4,7 +4,7 @@ export const img2colorConfig: Img2ColorConfig = {
 	enable: true,
 	apiUrl: "https://img2color-go-jade.vercel.app/api",
 	params: {
-		format: "hsl",
+		format: "hex",
 		colors: 1,
 		maxWidth: 400,
 		skipBackground: false,

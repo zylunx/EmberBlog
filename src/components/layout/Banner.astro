@@ -54,7 +54,7 @@ const showBannerPostMeta =
 <div
 	id="post-banner-image"
 	class:list={[
-		"absolute inset-0 pointer-events-none overflow-hidden bg-(--page-bg)",
+		"absolute inset-0 pointer-events-none overflow-hidden bg-(--banner-bg)",
 		{ "post-banner-surface": isPostBanner },
 	]}
 	style="z-index: 6"
@@ -188,25 +188,25 @@ const showBannerPostMeta =
 					xlink:href="#gentle-wave"
 					x="48"
 					y="0"
-					class="opacity-25 fill-(--page-bg)"
+					style="fill: color-mix(in oklch, var(--article-color, var(--primary)) 45%, var(--page-bg));"
 				></use>
 				<use
 					xlink:href="#gentle-wave"
 					x="48"
 					y="3"
-					class="opacity-50 fill-(--page-bg)"
+					style="fill: color-mix(in oklch, var(--article-color, var(--primary)) 30%, var(--page-bg));"
 				></use>
 				<use
 					xlink:href="#gentle-wave"
 					x="48"
 					y="5"
-					class="opacity-75 fill-(--page-bg)"
+					style="fill: color-mix(in oklch, var(--article-color, var(--primary)) 15%, var(--page-bg));"
 				></use>
 				<use
 					xlink:href="#gentle-wave"
 					x="48"
 					y="7"
-					class="fill-(--page-bg)"
+					style="fill: color-mix(in oklch, var(--article-color, var(--primary)) 0%, var(--page-bg));"
 				></use>
 			</g>
 		</svg>

@@ -10,13 +10,14 @@ tags:
 category: 技术分享
 slug: firefly-archive-beautify
 draft: false
-image: https://img.zylun.de5.net/file/blog/1784032909144.avif?quality
+image: https://img.zylun.de5.net/file/blog/1784032909144.avif?
 ai: >-
   对 Firefly 归档页面（/archive）进行美化。修改了 archive.astro 去掉双层 card-base 嵌套；将
   ArchivePanel.svelte 中的强色（oklch 0.15/0.9、white、#0d0d0d）替换为项目 --primary / --card-bg
   / --line-color / --meta-divider 主题变量，实现明暗模式与 hue 色相自动适配；调整 panel
   padding、年月块间距、链接行高提升宽松度；删除造成色块溢出的 translateX 悬停位移；修复 overflow:hidden
   裁断文章横线、以及 bottom 偏移导致的虚线断裂问题。
+color: "#806548"
 ---
 
 ## 📖 概述

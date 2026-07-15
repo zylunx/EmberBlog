@@ -20,22 +20,15 @@ type Img2ColorResponse = {
 	message?: string;
 };
 
-type HslColor = {
-	h: number;
-	s: number;
-	l: number;
-};
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const POSTS_DIR = path.resolve(__dirname, "../src/content/posts");
 const COLOR_FIELD = "color";
 const IMAGE_FIELD = "image";
 
-function isBlankColor(value: unknown): boolean {
+function isHexColor(value: unknown): value is string {
 	return (
-		value === undefined ||
-		value === null ||
-		(typeof value === "string" && value.trim() === "")
+		typeof value === "string" &&
+		/^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(value.trim())
 	);
 }
 
@@ -43,50 +36,26 @@ function isRemoteImageUrl(value: unknown): value is string {
 	return typeof value === "string" && /^https?:\/\//i.test(value);
 }
 
-function isHslColor(value: unknown): value is HslColor {
-	if (typeof value !== "object" || value === null || Array.isArray(value)) {
-		return false;
-	}
-
-	const { h, s, l } = value as Record<string, unknown>;
-	return (
-		typeof h === "number" &&
-		Number.isFinite(h) &&
-		h >= 0 &&
-		h <= 360 &&
-		typeof s === "number" &&
-		Number.isFinite(s) &&
-		s >= 0 &&
-		s <= 100 &&
-		typeof l === "number" &&
-		Number.isFinite(l) &&
-		l >= 0 &&
-		l <= 100
-	);
-}
-
 function normalizeDominantColor(value: unknown): string | undefined {
-	if (typeof value === "string" && value.trim() !== "") {
+	if (isHexColor(value)) {
 		return value.trim();
-	}
-
-	if (isHslColor(value)) {
-		return `hsl(${value.h} ${value.s}% ${value.l}%)`;
 	}
 }
 
 function quoteColorInFrontmatter(source: string, color: string): string {
-	const frontmatterEnd = source.indexOf("\n---\n");
-	if (frontmatterEnd === -1) {
+	const frontmatterEndMatch = /\r?\n---\r?\n/.exec(source);
+	if (!frontmatterEndMatch) {
 		throw new Error("Unable to find frontmatter end delimiter");
 	}
+	const frontmatterEnd = frontmatterEndMatch.index;
+	const newline = source.includes("\r\n") ? "\r\n" : "\n";
 
 	const frontmatter = source.slice(0, frontmatterEnd);
-	if (!/^color:.*$/m.test(frontmatter)) {
-		throw new Error("Unable to find frontmatter color field");
+	if (/^color:.*$/m.test(frontmatter)) {
+		return `${frontmatter.replace(/^color:.*$/m, `color: ${JSON.stringify(color)}`)}${source.slice(frontmatterEnd)}`;
 	}
 
-	return `${frontmatter.replace(/^color:.*$/m, `color: ${JSON.stringify(color)}`)}${source.slice(frontmatterEnd)}`;
+	return `${frontmatter}${newline}color: ${JSON.stringify(color)}${source.slice(frontmatterEnd)}`;
 }
 
 function buildApiUrl(imageUrl: string): string {
@@ -137,7 +106,7 @@ async function processPost(filePath: string): Promise<ProcessResult> {
 		const raw = await fs.readFile(filePath, "utf-8");
 		const parsed = matter(raw);
 
-		if (!isBlankColor(parsed.data[COLOR_FIELD])) {
+		if (isHexColor(parsed.data[COLOR_FIELD])) {
 			return {
 				file: relativePath,
 				status: "skipped",
@@ -156,11 +125,7 @@ async function processPost(filePath: string): Promise<ProcessResult> {
 		}
 
 		const color = await fetchDominantColor(image);
-		parsed.data[COLOR_FIELD] = color;
-		const output = quoteColorInFrontmatter(
-			matter.stringify(parsed.content, parsed.data),
-			color,
-		);
+		const output = quoteColorInFrontmatter(raw, color);
 		await fs.writeFile(filePath, output, "utf-8");
 
 		return { file: relativePath, status: "updated", reason: color };

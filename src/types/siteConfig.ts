@@ -9,6 +9,8 @@ export type LIGHT_DARK_MODE =
 	| typeof DARK_MODE
 	| typeof SYSTEM_MODE;
 
+export type HexColor = `#${string}`;
+
 export type Favicon = {
 	src: string;
 	theme?: "light" | "dark";
@@ -24,9 +26,14 @@ export type SiteConfig = {
 
 	lang: "en" | "zh_CN" | "zh_TW" | "ja" | "ru";
 
-	themeColor: {
-		hue: number;
-		fixed: boolean;
+	style: {
+		color: {
+			main: HexColor; // 浅色模式主题色，仅支持 #RGB / #RRGGBB
+			dark: HexColor; // 深色模式主题色，仅支持 #RGB / #RRGGBB
+		};
+	};
+
+	theme: {
 		defaultMode?: LIGHT_DARK_MODE; // 默认模式：浅色、深色或跟随系统
 	};
 

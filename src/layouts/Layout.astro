@@ -5,7 +5,6 @@ import MicrosoftClarity from "@components/analytics/MicrosoftClarity.astro";
 import UmamiAnalytics from "@components/analytics/UmamiAnalytics.astro";
 import FancyboxManager from "@components/features/FancyboxManager.astro";
 import FontSetup from "@components/features/FontSetup.astro";
-import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
 
 import {
 	analyticsConfig,
@@ -21,6 +20,7 @@ import {
 } from "@/constants/constants";
 import { defaultFavicons } from "@/constants/icon";
 import type { Favicon } from "@/types/config";
+import { deriveThemeColorTokens, onAccentFg } from "@/utils/color-utils";
 import { isHomePage } from "@/utils/layout-utils";
 import { url } from "@/utils/url-utils";
 
@@ -38,7 +38,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
-	hue?: number;
+	color?: string;
 	bannerEnabled?: boolean;
 }
 
@@ -48,7 +48,7 @@ let {
 	lang,
 	setOGTypeArticle,
 	postSlug,
-	hue,
+	color,
 	bannerEnabled,
 } = Astro.props;
 
@@ -57,9 +57,13 @@ let {
 // so use Swup hooks instead to change the height immediately when a link is clicked
 const isHomePageCheck = isHomePage(Astro.url.pathname);
 
-// defines global css variables
-// why doing this in Layout instead of GlobalStyles: https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
-const configHue = siteConfig.themeColor.hue;
+const themeColorTokens = deriveThemeColorTokens(
+	siteConfig.style.color.main,
+	siteConfig.style.color.dark,
+);
+
+// 文章主图取色 HEX 直接作为强调色，不再丢弃其亮度和彩度。
+const articleOnAccent = color ? onAccentFg(color) : undefined;
 
 const shouldShowTopHighlight = false;
 
@@ -243,9 +247,13 @@ const siteLang = lang.replace("_", "-");
       define:vars={{
         BANNER_HEIGHT_EXTEND,
         PAGE_WIDTH,
-        configHue,
-        articleHue: hue,
-        defaultMode: siteConfig.themeColor.defaultMode ?? "light",
+        themeColorMain: themeColorTokens.main,
+        themeColorDark: themeColorTokens.dark,
+        themeOnMain: themeColorTokens.onMain,
+        themeOnDark: themeColorTokens.onDark,
+        articleColor: color,
+        articleOnAccent,
+        defaultMode: siteConfig.theme.defaultMode ?? "light",
         forceArticleBanner,
         darkTheme: expressiveCodeConfig.darkTheme,
         lightTheme: expressiveCodeConfig.lightTheme,
@@ -256,6 +264,22 @@ const siteLang = lang.replace("_", "-");
       const LIGHT_MODE = "light";
       const DARK_MODE = "dark";
       const SYSTEM_MODE = "system";
+
+      const rootStyle = document.documentElement.style;
+      rootStyle.setProperty("--config-accent-light", themeColorMain);
+      rootStyle.setProperty("--config-accent-dark", themeColorDark);
+      rootStyle.setProperty("--config-on-accent-light", themeOnMain);
+      rootStyle.setProperty("--config-on-accent-dark", themeOnDark);
+
+      // 旧版访客配色已废弃，仅保留独立的深浅模式偏好。
+      for (const storageKey of [
+        "accentLight",
+        "accentDark",
+        "onAccentLight",
+        "onAccentDark",
+      ]) {
+        localStorage.removeItem(storageKey);
+      }
 
       // 获取存储的主题，如果没有则使用默认值
       const theme = localStorage.getItem("theme") || defaultMode;
@@ -291,13 +315,14 @@ const siteLang = lang.replace("_", "-");
         isDark ? darkTheme : lightTheme
       );
 
-      // Load the hue from local storage
-      const hue = articleHue ?? (localStorage.getItem("hue") || configHue);
-      document.documentElement.style.setProperty(
-        "--hue",
-        String(hue),
-        articleHue === undefined ? "" : "important",
-      );
+      // 文章页 color 在首屏覆盖全局配置色。
+      if (articleColor) {
+        rootStyle.setProperty("--article-color", articleColor, "important");
+        rootStyle.setProperty("--accent-light", articleColor, "important");
+        rootStyle.setProperty("--accent-dark", articleColor, "important");
+        rootStyle.setProperty("--on-accent-light", articleOnAccent, "important");
+        rootStyle.setProperty("--on-accent-dark", articleOnAccent, "important");
+      }
 
       // calculate the --banner-height-extend, which needs to be a multiple of 4 to avoid blurry text
       // 使用更准确的窗口高度计算
@@ -382,7 +407,6 @@ const siteLang = lang.replace("_", "-");
     </script>
     <style
       define:vars={{
-        configHue,
         "page-width": `${siteConfig.pageWidth ?? PAGE_WIDTH}rem`,
       }}
     ></style>
@@ -417,7 +441,6 @@ const siteLang = lang.replace("_", "-");
 
     <!-- 页面顶部渐变高光效果 - 只在full和semifull模式下显示 -->
     {shouldShowTopHighlight && <div class="top-gradient-highlight" />}
-    <ConfigCarrier />
     <slot />
     <!-- Fancybox Manager -->
     <FancyboxManager />
@@ -586,7 +609,6 @@ function disableAnimation() {
 
   const bannerEnabled = !!document.getElementById("wallpaper-wrapper");
   const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
-  const configHue = siteConfig.themeColor.hue;
 
   function syncPageLayoutState() {
     const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
@@ -788,18 +810,31 @@ function disableAnimation() {
       const mainEl = document.querySelector(".w-full.z-30.pointer-events-none") as HTMLElement | null;
       const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
       const isPostPage = swupContainer?.dataset.isPostPage === "true";
-      const pageHue = swupContainer?.dataset.pageHue;
       if (!isPostPage) {
         document.getElementById("post-banner-meta-overlay")?.remove();
       }
-      if (pageHue) {
-        document.documentElement.style.setProperty("--hue", pageHue, "important");
+      // 文章 HEX 随导航切换：文章页覆盖，离开文章页恢复配置色。
+      const rootStyleNav = document.documentElement.style;
+      const pageColor = swupContainer?.dataset.pageColor;
+      if (pageColor) {
+        rootStyleNav.setProperty("--article-color", pageColor, "important");
+        rootStyleNav.setProperty("--accent-light", pageColor, "important");
+        rootStyleNav.setProperty("--accent-dark", pageColor, "important");
+        const pageOnAccent = swupContainer?.dataset.pageOnAccent;
+        if (pageOnAccent) {
+          rootStyleNav.setProperty("--on-accent-light", pageOnAccent, "important");
+          rootStyleNav.setProperty("--on-accent-dark", pageOnAccent, "important");
+        }
       } else {
-        document.documentElement.style.removeProperty("--hue");
-        document.documentElement.style.setProperty(
-          "--hue",
-          localStorage.getItem("hue") || String(configHue),
-        );
+        for (const cssVar of [
+          "--article-color",
+          "--accent-light",
+          "--accent-dark",
+          "--on-accent-light",
+          "--on-accent-dark",
+        ]) {
+          rootStyleNav.removeProperty(cssVar);
+        }
       }
 
       if (mainEl && !isPostPage) {
@@ -937,7 +972,7 @@ function disableAnimation() {
       }
 
       // 同步主题状态 - 解决从首页进入文章页面时代码块渲染问题
-      const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "light";
+      const storedTheme = localStorage.getItem("theme") || siteConfig.theme.defaultMode || "light";
       let isDark = false;
       
       // 处理 system 模式

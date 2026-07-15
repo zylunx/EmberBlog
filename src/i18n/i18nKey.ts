@@ -52,8 +52,6 @@ enum I18nKey {
 	tagsCount = "tagsCount",
 	noData = "noData",
 
-	themeColor = "themeColor",
-
 	lightMode = "lightMode",
 	darkMode = "darkMode",
 	systemMode = "systemMode",

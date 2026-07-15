@@ -4,6 +4,7 @@ import * as fs from "node:fs";
 import type { APIContext, GetStaticPaths } from "astro";
 import satori from "satori";
 import { removeFileExtension } from "@/utils/url-utils";
+import { deriveThemeColorTokens } from "@/utils/color-utils";
 
 import { profileConfig } from "../../config/profileConfig";
 import { siteConfig } from "../../config/siteConfig";
@@ -125,12 +126,15 @@ export async function GET({
 	const iconBuffer = fs.readFileSync(iconPath);
 	const iconBase64 = `data:image/png;base64,${iconBuffer.toString("base64")}`;
 
-	const hue = siteConfig.themeColor.hue;
-	const primaryColor = `hsl(${hue}, 90%, 65%)`;
+	const themeColorTokens = deriveThemeColorTokens(
+		siteConfig.style.color.main,
+		siteConfig.style.color.dark,
+	);
+	const primaryColor = themeColorTokens.dark;
 	const textColor = "hsl(0, 0%, 95%)";
 
-	const subtleTextColor = `hsl(${hue}, 10%, 75%)`;
-	const backgroundColor = `hsl(${hue}, 15%, 12%)`;
+	const subtleTextColor = "#b8bcc6";
+	const backgroundColor = "#171717";
 
 	const pubDate = post.data.published.toLocaleDateString("en-US", {
 		year: "numeric",

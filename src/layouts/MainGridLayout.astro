@@ -14,6 +14,7 @@ import {
 	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
 } from "@/constants/constants";
 import type { BannerConfig } from "@/types/bannerConfig";
+import { onAccentFg } from "@/utils/color-utils";
 import { isHomePage } from "@/utils/layout-utils";
 import {
 	generateGridClasses,
@@ -35,7 +36,7 @@ interface Props {
 	lang?: string;
 	setOGTypeArticle?: boolean;
 	postSlug?: string;
-	hue?: number;
+	color?: string;
 	postCategory?: string;
 	postTags?: string[];
 	headings?: MarkdownHeading[];
@@ -60,7 +61,7 @@ const {
 	lang,
 	setOGTypeArticle,
 	postSlug,
-	hue,
+	color,
 	postCategory,
 	postTags,
 	headings = [],
@@ -71,6 +72,9 @@ const {
 } = Astro.props;
 
 const isPostPage = !!postSlug;
+
+// 文章主图取色 HEX 直接作为文章强调色，切页时通过 data 属性同步。
+const pageOnAccent = color ? onAccentFg(color) : undefined;
 
 // 仅文章详情页保留顶部视觉区域和水波纹，非文章页固定为 none 模式。
 const isBannerMode = isPostPage;
@@ -221,7 +225,7 @@ const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 ---
 
-<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} hue={hue} bannerEnabled={effectiveBackgroundEnabled}>
+<Layout title={title} banner={banner} description={description} lang={lang} setOGTypeArticle={setOGTypeArticle} postSlug={postSlug} color={color} bannerEnabled={effectiveBackgroundEnabled}>
 
 <!-- Navbar -->
 <slot slot="head" name="head"></slot>
@@ -351,7 +355,8 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
                     class="transition-main"
                     data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
                     data-is-post-page={isPostPage ? "true" : "false"}
-                    data-page-hue={hue}
+                    data-page-color={color}
+                    data-page-on-accent={pageOnAccent}
                     data-current-post-category={postCategory || ""}
                 >
                 {/* 携带网格布局类名，用于JS更新父容器 */}

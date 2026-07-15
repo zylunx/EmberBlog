@@ -13,7 +13,14 @@ const postSchema = z
 		draft: z.boolean().optional().default(false),
 		description: z.string().optional().default(""),
 		image: z.string().optional().default(""),
-		color: z.string().optional().default(""),
+		color: z
+			.string()
+			.refine(
+				(value) => value === "" || /^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(value),
+				"color 必须是 #RGB 或 #RRGGBB",
+			)
+			.optional()
+			.default(""),
 		tags: z.array(z.string()).optional().default([]),
 		category: z.string().optional().nullable().default(""),
 		lang: z.string().optional().default(""),

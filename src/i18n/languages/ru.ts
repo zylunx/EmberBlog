@@ -68,8 +68,6 @@ export const ru: Translation = {
 	[Key.tagsCount]: "тегов",
 	[Key.noData]: "Нет данных",
 
-	[Key.themeColor]: "Цвет темы",
-
 	[Key.lightMode]: "Светлая",
 	[Key.darkMode]: "Тёмная",
 	[Key.systemMode]: "Система",

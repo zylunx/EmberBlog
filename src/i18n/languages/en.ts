@@ -68,8 +68,6 @@ export const en: Translation = {
 	[Key.tagsCount]: "tags",
 	[Key.noData]: "No data yet",
 
-	[Key.themeColor]: "Theme Color",
-
 	[Key.lightMode]: "Light",
 	[Key.darkMode]: "Dark",
 	[Key.systemMode]: "System",
