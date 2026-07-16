@@ -10,8 +10,11 @@ export const BANNER_HEIGHT = 35;
 export const BANNER_HEIGHT_EXTEND = 30;
 export const BANNER_HEIGHT_HOME = BANNER_HEIGHT + BANNER_HEIGHT_EXTEND;
 
-// The height the main panel overlaps the banner, unit: rem
-export const MAIN_PANEL_OVERLAPS_BANNER_HEIGHT = 3.5;
+// Gap between banner bottom and main panel top on post pages, unit: rem
+export const MAIN_PANEL_BANNER_GAP = 1;
+
+// Top corner radius of the full-width post content sheet; also how far it overlaps the banner, unit: rem
+export const POST_CONTENT_SHEET_RADIUS = 1;
 
 // Page width: rem
 export const PAGE_WIDTH = 100;

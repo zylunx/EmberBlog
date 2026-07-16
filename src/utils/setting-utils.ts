@@ -2,6 +2,7 @@ import {
 	DARK_MODE,
 	DEFAULT_THEME,
 	LIGHT_MODE,
+	MAIN_PANEL_BANNER_GAP,
 	SYSTEM_MODE,
 } from "@constants/constants";
 import type { LIGHT_DARK_MODE } from "@/types/config";
@@ -268,7 +269,7 @@ export function applyWallpaperModeToDocument(): void {
 			mainContent.classList.remove("no-banner-layout", "mobile-main-no-banner");
 			mainContent.style.setProperty(
 				"top",
-				"calc(var(--banner-height) - 3.5rem)",
+				`calc(var(--banner-height) + ${MAIN_PANEL_BANNER_GAP}rem)`,
 				"important",
 			);
 			mainContent.style.setProperty("margin-top", "0", "important");

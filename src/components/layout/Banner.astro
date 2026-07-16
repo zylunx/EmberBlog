@@ -64,7 +64,7 @@ const showBannerPostMeta =
 			<div class="absolute inset-0 block lg:hidden">
 				<ImageWrapper
 					alt="Post banner image"
-					class="object-cover h-full w-full post-banner-cover"
+					class="object-contain h-full w-full post-banner-cover"
 					src={effectivePostImage}
 					basePath={effectivePostImageBasePath}
 					position="center"
@@ -78,12 +78,12 @@ const showBannerPostMeta =
 			<div class="post-banner-cover-frame absolute hidden lg:block">
 				<ImageWrapper
 					alt="Post banner image"
-					class="object-cover h-full w-full post-banner-cover"
+					class="post-banner-cover"
 					src={effectivePostImage}
 					basePath={effectivePostImageBasePath}
 					position="center"
-					widths={[1280, 1920, 2560]}
-					sizes="100vw"
+					widths={[640, 960, 1280]}
+					sizes="min(22vw, 20rem)"
 					loading="eager"
 					fetchpriority="high"
 					quality={configQuality}

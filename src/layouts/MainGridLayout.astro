@@ -11,7 +11,7 @@ import { backgroundWallpaper, sidebarLayoutConfig, siteConfig } from "@/config";
 import {
 	BANNER_HEIGHT,
 	BANNER_HEIGHT_EXTEND,
-	MAIN_PANEL_OVERLAPS_BANNER_HEIGHT,
+	MAIN_PANEL_BANNER_GAP,
 } from "@/constants/constants";
 import type { BannerConfig } from "@/types/bannerConfig";
 import { onAccentFg } from "@/utils/color-utils";
@@ -108,10 +108,10 @@ const mobileNonHomeBannerClass =
 
 const navbarContentOffset = "var(--navbar-content-offset, 4.5rem)";
 
-// 计算主内容区域位置，考虑手机端非首页时banner被隐藏
+// 计算主内容区域位置：文章 banner 下方留固定间距（正文+侧栏一起下移）
 const mainPanelTop =
 	isBannerMode && effectiveBackgroundEnabled
-		? `calc(${BANNER_HEIGHT}vh - ${MAIN_PANEL_OVERLAPS_BANNER_HEIGHT}rem)`
+		? `calc(${BANNER_HEIGHT}vh + ${MAIN_PANEL_BANNER_GAP}rem)`
 		: navbarContentOffset;
 
 // 当banner模式被禁用时，主内容区域应该始终从顶栏下面开始
@@ -287,8 +287,11 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 
 <!-- Main content -->
 <div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${mainContentLayoutClass}`} style={isFullscreenMode && effectiveBackgroundEnabled ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
+	    {isPostPageBannerLayout && (
+	      <div id="post-content-sheet" class="post-content-sheet" aria-hidden="true"></div>
+	    )}
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
-    <div class="relative w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
+    <div class="relative z-10 w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
           class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-2 px-1 md:px-2 ${!sidebarConfig.mobileShowSidebar ? 'mobile-no-sidebar' : ''}`}
           data-sidebar-enable={sidebarLayoutConfig.enable ? "true" : "false"}

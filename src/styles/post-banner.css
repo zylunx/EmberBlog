@@ -4,27 +4,58 @@
 }
 
 #post-banner-image.post-banner-surface {
+	container-type: size;
+	container-name: post-banner;
 	background:
 		radial-gradient(circle at 78% 28%, color-mix(in oklch, white 28%, transparent), transparent 30%),
 		linear-gradient(120deg, color-mix(in oklch, var(--primary) 88%, black), var(--primary));
 }
 
+/* 边框/阴影贴着图片本身，按比例完整显示、不裁切不留边 */
 #post-banner-image .post-banner-cover-frame {
-	top: 25%;
+	top: 50%;
 	right: 9%;
-	bottom: 25%;
-	width: min(22vw, 20rem);
+	bottom: auto;
+	left: auto;
+	width: fit-content;
+	height: fit-content;
+	max-width: min(22vw, 20rem);
+	max-height: 50cqh;
+	transform: translateY(-50%);
 	overflow: hidden;
 	border: 1px solid color-mix(in srgb, white 45%, transparent);
 	border-radius: 1.25rem;
+	line-height: 0;
 	box-shadow:
 		1.5rem 1.75rem 2.5rem color-mix(in srgb, black 34%, transparent),
 		-0.5rem -0.5rem 1.25rem color-mix(in srgb, white 20%, transparent);
 }
 
 #post-banner-image .post-banner-cover {
+	display: block;
+	position: relative;
+	width: fit-content !important;
+	height: fit-content !important;
+	max-width: min(22vw, 20rem);
+	max-height: 50cqh;
+	overflow: hidden;
+	border-radius: inherit;
 	filter: none;
-	transform: scale(1.02);
+	transform: none;
+}
+
+#post-banner-image .post-banner-cover picture {
+	display: contents;
+}
+
+#post-banner-image .post-banner-cover img {
+	display: block;
+	width: auto !important;
+	height: auto !important;
+	max-width: min(22vw, 20rem);
+	max-height: 50cqh;
+	object-fit: contain;
+	object-position: center;
 }
 
 #banner-dim-container .post-banner-dim-overlay {
@@ -55,5 +86,29 @@
 
 	#post-banner-image.post-banner-surface > div {
 		display: none;
+	}
+}
+
+
+/* 文章页全宽内容底板：顶左右大圆角，向上压住 banner 约一个圆角高度 */
+.post-content-sheet {
+	position: absolute;
+	inset-inline: 0;
+	top: calc(
+		-1 * (var(--main-panel-banner-gap, 1rem) + var(--post-content-sheet-radius, 1rem))
+	);
+	bottom: 0;
+	min-height: calc(100vh - var(--banner-height, 35vh) + var(--post-content-sheet-radius, 1rem));
+	z-index: 0;
+	pointer-events: none;
+	border-radius: var(--post-content-sheet-radius, 1rem) var(--post-content-sheet-radius, 1rem) 0 0;
+	background-color: var(--page-bg);
+	/* 与 #main-grid 同步：桌面端跟随 banner-height-extend 下移 */
+	transform: translateY(var(--banner-height-extend, 0px));
+}
+
+@media (max-width: 1023px) {
+	body.post-page-banner:not(.lg\:is-home) .post-content-sheet {
+		transform: none;
 	}
 }
