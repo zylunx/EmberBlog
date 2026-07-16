@@ -8,6 +8,7 @@ import LightDarkSwitch from "@/components/controls/LightDarkSwitch.svelte";
 import Search from "@/components/controls/Search.svelte";
 import { navBarConfig, siteConfig } from "@/config";
 import type { NavBarLink } from "@/types/config";
+import { getTagList } from "@/utils/content-utils";
 import { getFallbackFormat, getImageFormats } from "@/utils/image-utils";
 import { isHomePage } from "@/utils/layout-utils";
 import { getEffectiveSearchProvider } from "@/utils/search";
@@ -39,6 +40,10 @@ const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 const isHomePageCheck = isHomePage(Astro.url.pathname);
 
 const allowLayoutSwitch = siteConfig.postListLayout.allowSwitch;
+const popularTags = (await getTagList())
+	.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+	.slice(0, 6)
+	.map((tag) => tag.name);
 
 // 根据 siteConfig.pages 过滤导航栏链接
 const pages = siteConfig.pages;
@@ -144,6 +149,7 @@ if (isLocalSrcLogo) {
                 <!--<SearchPanel client:load>-->
                 <Search
                     client:load
+                    popularTags={popularTags}
                 />
                 {allowLayoutSwitch && (
                         <button aria-label="Layout Settings" class="btn-plain scale-animation rounded-lg h-11 w-11 active:scale-90" id="display-settings-switch">
