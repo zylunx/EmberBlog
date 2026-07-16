@@ -2,7 +2,7 @@
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import { navigateToPage } from "@utils/navigation-utils";
-import { onDestroy, onMount, tick } from "svelte";
+import { onMount, tick } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
 import {
 	getAlgoliaPublicConfig,
@@ -172,13 +172,13 @@ onMount(() => {
 	};
 
 	initialize();
-});
 
-onDestroy(() => {
-	window.clearTimeout(debounceTimer);
-	window.clearTimeout(closeTimer);
-	if (dialog?.open) dialog.close();
-	document.body.style.overflow = previousBodyOverflow;
+	return () => {
+		window.clearTimeout(debounceTimer);
+		window.clearTimeout(closeTimer);
+		if (dialog?.open) dialog.close();
+		document.body.style.overflow = previousBodyOverflow;
+	};
 });
 </script>
 
