@@ -4,34 +4,30 @@ import { i18n } from "@i18n/translation";
 import { navigateToPage } from "@utils/navigation-utils";
 import { onMount, tick } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
-import type { SearchResult } from "@/global";
-import { url as formatUrl, getSearchUrl } from "@/utils/url-utils";
+import {
+	getAlgoliaPublicConfig,
+	getEffectiveSearchProvider,
+	getSearchClient,
+	initAlgoliaInsights,
+	trackSearchHitClick,
+	type UnifiedSearchHit,
+} from "@/utils/search";
+import { getSearchUrl } from "@/utils/url-utils";
 
 // --- State ---
 let keywordDesktop = "";
 let keywordMobile = "";
-let result: SearchResult[] = [];
+let result: UnifiedSearchHit[] = [];
 let isSearching = false;
 let initialized = false;
-let debounceTimer: NodeJS.Timeout;
+let debounceTimer: ReturnType<typeof setTimeout>;
 let isDesktopSearchOpen = false;
 let desktopInput: HTMLInputElement;
 let desktopSearchCloseTimer: number;
+let searchError = "";
 
-// --- Mocks for Dev Mode ---
-const fakeResult: SearchResult[] = [
-	{
-		url: formatUrl("/"),
-		meta: { title: "This Is a Fake Search Result" },
-		excerpt:
-			"Because Pagefind cannot work in the <mark>dev</mark> environment.",
-	},
-	{
-		url: formatUrl("/"),
-		meta: { title: "If You Want to Test the Search" },
-		excerpt: "Try running <mark>npm build && npm preview</mark> instead.",
-	},
-];
+const provider = getEffectiveSearchProvider();
+const algoliaCfg = provider === "algolia" ? getAlgoliaPublicConfig() : null;
 
 // --- UI Logic ---
 const togglePanel = () => {
@@ -82,12 +78,21 @@ const closeSearchPanel = (): void => {
 	keywordMobile = "";
 	isDesktopSearchOpen = false;
 	result = [];
+	searchError = "";
 };
 
-const handleResultClick = (event: Event, url: string): void => {
+const handleResultClick = (event: Event, hit: UnifiedSearchHit): void => {
 	event.preventDefault();
+	if (provider === "algolia" && algoliaCfg) {
+		trackSearchHitClick({
+			indexName: algoliaCfg.indexName,
+			objectID: hit.objectID,
+			position: hit.position ?? 1,
+			queryID: hit.queryID,
+		});
+	}
 	closeSearchPanel();
-	navigateToPage(url);
+	navigateToPage(hit.url);
 };
 
 // --- Core Search Logic ---
@@ -95,63 +100,50 @@ const search = async (keyword: string, isDesktop: boolean): Promise<void> => {
 	if (!keyword) {
 		setPanelVisibility(false, isDesktop);
 		result = [];
+		searchError = "";
 		return;
 	}
 	if (!initialized) return;
 
 	isSearching = true;
+	searchError = "";
 
 	clearTimeout(debounceTimer);
 	debounceTimer = setTimeout(async () => {
 		try {
-			let searchResults: SearchResult[] = [];
-
-			if (import.meta.env.PROD && window.pagefind) {
-				const response = await window.pagefind.search(keyword);
-				searchResults = await Promise.all(
-					response.results.map((item) => item.data()),
-				);
-			} else if (import.meta.env.DEV) {
-				searchResults = fakeResult;
-			}
-
+			const client = getSearchClient();
+			await client.ready();
+			const searchResults = await client.search(keyword, { limit: 20 });
 			result = searchResults;
 			setPanelVisibility(true, isDesktop);
 		} catch (error) {
 			console.error("Search error:", error);
 			result = [];
-			setPanelVisibility(false, isDesktop);
+			searchError =
+				provider === "algolia"
+					? i18n(I18nKey.searchError)
+					: i18n(I18nKey.searchNoResults);
+			setPanelVisibility(true, isDesktop);
 		} finally {
 			isSearching = false;
 		}
-	}, 300); // 300ms debounce
+	}, 300);
 };
 
 // --- Initialization onMount ---
 onMount(() => {
-	const initializePagefind = () => {
+	const initialize = async () => {
+		if (provider === "algolia") {
+			initAlgoliaInsights(algoliaCfg);
+		}
+		const client = getSearchClient();
+		await client.ready();
 		initialized = true;
 		if (keywordDesktop) search(keywordDesktop, true);
 		if (keywordMobile) search(keywordMobile, false);
 	};
 
-	if (import.meta.env.DEV) {
-		console.log("Pagefind mock enabled in development mode.");
-		initializePagefind();
-	} else {
-		if (window.pagefind) {
-			// If script already loaded
-			initializePagefind();
-		} else {
-			// Listen for the event
-			document.addEventListener("pagefindready", initializePagefind, {
-				once: true,
-			});
-			document.addEventListener("pagefindloaderror", initializePagefind, {
-				once: true,
-			});
-		}
-	}
+	initialize();
 });
 
 // --- Reactive Statements ---
@@ -224,14 +216,18 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchLoading)}
         </div>
+    {:else if searchError}
+        <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
+            {searchError}
+        </div>
     {:else if result.length > 0}
         {#each result.slice(0, 5) as item}
             <a href={item.url}
-               on:click={(e) => handleResultClick(e, item.url)}
+               on:click={(e) => handleResultClick(e, item)}
                class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block
            rounded-xl text-lg px-3 py-2 hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active)">
                 <div class="transition text-90 inline-flex font-bold group-hover:text-(--primary)">
-                    {@html item.meta.title}
+                    {@html item.title}
                     <Icon icon="fa7-solid:chevron-right"
                           class="transition text-[0.75rem] translate-x-1 my-auto text-(--primary)"></Icon>
                 </div>
@@ -242,22 +238,16 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
                         </div>
                     </div>
                 {/if}
-
-                {#if item.content && item.content.includes('<mark>')}
-                    <div class="transition text-sm text-30" style="display: flex; align-items: flex-start; margin-top: 0.1rem">
-                        <span style="display: inline-block; background-color: var(--btn-plain-bg-active); color: var(--primary); padding: 0.1em 0.4em; border-radius: 5px; font-size: 0.75em; font-weight: 600; margin-right: 0.5em; shrink: 0;">
-                            {i18n(I18nKey.searchContent)}
-                        </span>
-                        <div>
-                            {@html item.content}
-                        </div>
-                    </div>
-                {/if}
             </a>
         {/each}
         {#if result.length > 5}
             <a href={getSearchUrl(keywordDesktop || keywordMobile)}
-               on:click={(e) => handleResultClick(e, getSearchUrl(keywordDesktop || keywordMobile))}
+               on:click={(e) => {
+                   e.preventDefault();
+                   const url = getSearchUrl(keywordDesktop || keywordMobile);
+                   closeSearchPanel();
+                   navigateToPage(url);
+               }}
                class="transition first-of-type:mt-2 lg:first-of-type:mt-0 group block rounded-xl text-lg px-3 py-2 hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active) text-(--primary) font-bold text-center">
                 <span class="inline-flex items-center">
                     {i18n(I18nKey.searchViewMore).replace('{count}', (result.length - 5).toString())}
@@ -265,11 +255,11 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
                 </span>
             </a>
         {/if}
-    {:else if result.length === 0}
+    {:else if keywordDesktop || keywordMobile}
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchNoResults)}
         </div>
-    {:else if keywordDesktop || keywordMobile}
+    {:else}
         <div class="transition first-of-type:mt-2 lg:first-of-type:mt-0 block rounded-xl text-lg px-3 py-2 text-50">
             {i18n(I18nKey.searchTypeSomething)}
         </div>
@@ -284,5 +274,12 @@ top-20 left-4 md:left-[unset] right-4 shadow-2xl rounded-2xl p-2">
     .search-panel {
         max-height: calc(100vh - 100px);
         overflow-y: auto;
+    }
+
+    :global(.search-panel mark) {
+        background: transparent;
+        color: var(--primary);
+        font-weight: 600;
+        padding: 0 0.1em;
     }
 </style>

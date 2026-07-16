@@ -13,6 +13,9 @@ export const en: Translation = {
 	[Key.searchContent]: "Content",
 	[Key.aiSummary]: "AI Summary",
 	[Key.searchViewMore]: "View more results ({count} more)",
+	[Key.searchError]: "Search is temporarily unavailable. Please try again later.",
+	[Key.searchSortRelevance]: "Relevance",
+	[Key.searchSortDate]: "Newest",
 	[Key.other]: "Other",
 	[Key.all]: "All",
 

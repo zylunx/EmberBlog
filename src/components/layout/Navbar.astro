@@ -10,6 +10,7 @@ import { navBarConfig, siteConfig } from "@/config";
 import type { NavBarLink } from "@/types/config";
 import { getFallbackFormat, getImageFormats } from "@/utils/image-utils";
 import { isHomePage } from "@/utils/layout-utils";
+import { getEffectiveSearchProvider } from "@/utils/search";
 import { url } from "@/utils/url-utils";
 import DropdownMenu from "./DropdownMenu.astro";
 import NavMenuPanel from "./NavMenuPanel.astro";
@@ -20,6 +21,9 @@ interface Props {
 }
 
 const { class: className, pageTitle } = Astro.props;
+
+const effectiveSearchProvider = getEffectiveSearchProvider();
+const loadPagefind = import.meta.env.PROD && effectiveSearchProvider === "pagefind";
 
 const navbarTransparentMode = "semi";
 const navbarEnableBlur = false;
@@ -288,9 +292,8 @@ if (document.readyState === 'loading') {
 </script>
 
 {
-    import.meta.env.PROD && (
+    loadPagefind && (
         <script is:inline data-swup-ignore-script define:vars={{ scriptUrl: url('/pagefind/pagefind.js') }}>
-            {/* 你的 loadPagefind 函数的完整内容放在这里 */}
             async function loadPagefind() {
                 try {
                     const response = await fetch(scriptUrl, { method: 'HEAD' });

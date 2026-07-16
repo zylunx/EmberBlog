@@ -38,6 +38,18 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       
       - name: Build site
+        env:
+          # Public Algolia config (safe in frontend bundle)
+          PUBLIC_ALGOLIA_APP_ID: ${{ secrets.PUBLIC_ALGOLIA_APP_ID }}
+          PUBLIC_ALGOLIA_SEARCH_KEY: ${{ secrets.PUBLIC_ALGOLIA_SEARCH_KEY }}
+          # Admin key for index push (never expose to client)
+          ALGOLIA_ADMIN_API_KEY: ${{ secrets.ALGOLIA_ADMIN_API_KEY }}
+          ALGOLIA_INDEX_ENV: prod
+          ALGOLIA_INDEX_FORCE: "1"
+          # Optional AI summary keys (existing)
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
         run: pnpm run build
 
       - name: Create .nojekyll file

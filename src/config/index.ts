@@ -31,6 +31,12 @@ export type {
 	FontDefinition,
 	FontSelectionConfig,
 } from "../types/fontConfig"; // 字体类型定义
+export type {
+	AlgoliaIndexNames,
+	AlgoliaSearchConfig,
+	SearchConfig,
+	SearchProvider,
+} from "../types/searchConfig";
 export { analyticsConfig } from "./analyticsConfig"; // 统计分析配置
 export { announcementConfig } from "./announcementConfig"; // 公告配置
 // 样式配置
@@ -52,4 +58,5 @@ export { profileConfig } from "./profileConfig"; // 用户资料配置
 export { sidebarLayoutConfig } from "./sidebarConfig"; // 侧边栏布局配置
 // 核心配置
 export { siteConfig } from "./siteConfig"; // 站点基础配置
+export { searchConfig } from "./searchConfig"; // 搜索（Pagefind / Algolia）
 export { sponsorConfig } from "./sponsorConfig"; // 打赏配置

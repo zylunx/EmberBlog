@@ -10,6 +10,9 @@ enum I18nKey {
 	searchContent = "searchContent",
 	aiSummary = "aiSummary",
 	searchViewMore = "searchViewMore",
+	searchError = "searchError",
+	searchSortRelevance = "searchSortRelevance",
+	searchSortDate = "searchSortDate",
 	other = "other",
 
 	tags = "tags",

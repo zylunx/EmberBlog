@@ -3,10 +3,13 @@ import AdvancedSearch from "@components/pages/AdvancedSearch.svelte";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import { getEffectiveSearchProvider } from "@/utils/search";
 import { url } from "@/utils/url-utils";
 
 const title = i18n(I18nKey.search);
 const description = "";
+const loadPagefind =
+	import.meta.env.PROD && getEffectiveSearchProvider() === "pagefind";
 ---
 
 <MainGridLayout title={title} description={description}>
@@ -15,7 +18,7 @@ const description = "";
     </div>
 </MainGridLayout>
 
-{import.meta.env.PROD && (
+{loadPagefind && (
 <script is:inline define:vars={{ scriptUrl: url('/pagefind/pagefind.js') }}>
     if (!window.pagefind) {
         async function loadPagefind() {

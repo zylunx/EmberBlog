@@ -13,6 +13,9 @@ export const ru: Translation = {
 	[Key.searchContent]: "Содержание",
 	[Key.aiSummary]: "AI Резюме",
 	[Key.searchViewMore]: "Показать еще ({count} шт)",
+	[Key.searchError]: "Поиск временно недоступен. Попробуйте позже.",
+	[Key.searchSortRelevance]: "Релевантность",
+	[Key.searchSortDate]: "Сначала новые",
 	[Key.other]: "Прочее",
 	[Key.all]: "Все",
 
