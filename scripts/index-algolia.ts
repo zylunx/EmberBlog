@@ -87,6 +87,67 @@ function resolveIndexName(env: CliOptions["env"]): {
 	};
 }
 
+// Algolia 免费版单条记录上限为 10000 字节，这里留出安全余量。
+const MAX_RECORD_BYTES = 9500;
+
+function byteLength(value: string): number {
+	return Buffer.byteLength(value, "utf-8");
+}
+
+/**
+ * 按 UTF-8 字节数把文本截断到 maxBytes 以内，避免把多字节字符切一半。
+ */
+function truncateToByteLimit(text: string, maxBytes: number): string {
+	if (byteLength(text) <= maxBytes) return text;
+	// 逐字符累加字节，超出即停，保证不会截断多字节字符。
+	let bytes = 0;
+	let end = 0;
+	for (const ch of text) {
+		const chBytes = byteLength(ch);
+		if (bytes + chBytes > maxBytes) break;
+		bytes += chBytes;
+		end += ch.length;
+	}
+	return text.slice(0, end).trimEnd();
+}
+
+/**
+ * 若整条记录超过 Algolia 记录大小上限，则收缩 content 字段以适配。
+ * 其他字段（title/description/tags 等）保持完整，只截断正文。
+ */
+function fitRecordSize(record: PostRecord): PostRecord {
+	if (byteLength(JSON.stringify(record)) <= MAX_RECORD_BYTES) return record;
+
+	// 除 content 外其他字段占用的字节数（content 置空测量）。
+	const overheadBytes = byteLength(
+		JSON.stringify({ ...record, content: "" }),
+	);
+	let contentBudget = MAX_RECORD_BYTES - overheadBytes;
+
+	if (contentBudget <= 0) {
+		// 极端情况下其他字段已超限，只能丢弃正文。
+		return { ...record, content: "" };
+	}
+
+	// JSON 序列化会转义换行/引号等字符导致体积膨胀，按整条记录实测再收缩，
+	// 直到确实落在上限之内。
+	let fitted: PostRecord = {
+		...record,
+		content: truncateToByteLimit(record.content, contentBudget),
+	};
+	while (
+		fitted.content.length > 0 &&
+		byteLength(JSON.stringify(fitted)) > MAX_RECORD_BYTES
+	) {
+		contentBudget = Math.floor(contentBudget * 0.9);
+		fitted = {
+			...record,
+			content: truncateToByteLimit(record.content, contentBudget),
+		};
+	}
+	return fitted;
+}
+
 function removeFileExtension(id: string): string {
 	return id.replace(/\.(md|mdx|markdown)$/i, "");
 }
@@ -182,17 +243,19 @@ async function collectRecords(): Promise<PostRecord[]> {
 		const body = stripMarkdownToIndexText(content);
 		const objectID = removeFileExtension(rel).replace(/\\/g, "/");
 
-		records.push({
-			objectID,
-			url: toPostUrl(rel),
-			title,
-			description,
-			content: body,
-			tags,
-			categories,
-			date,
-			published: publishedDate.toISOString(),
-		});
+		records.push(
+			fitRecordSize({
+				objectID,
+				url: toPostUrl(rel),
+				title,
+				description,
+				content: body,
+				tags,
+				categories,
+				date,
+				published: publishedDate.toISOString(),
+			}),
+		);
 	}
 
 	return records;
