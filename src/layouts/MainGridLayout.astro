@@ -248,29 +248,34 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     </div>
 </div>
 
-<!-- Article header visual area -->
-{effectiveBackgroundEnabled && (
-<div id="wallpaper-wrapper" class:list={[
-	`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`,
-	!effectiveBackgroundEnabled ? "page-banner-disabled" : "",
-]} style={`top: -${BANNER_HEIGHT_EXTEND}vh`}>
-    <Banner
-    title={title}
-    isBannerMode={isBannerMode}
-    isFullscreenMode={isFullscreenMode}
-    isBackgroundEnabled={effectiveBackgroundEnabled}
-    isHomePage={isHomePageCheck}
-    isPostPage={isPostPage}
-    bannerConfig={bannerConfig}
-    bannerPostMeta={bannerPostMeta}
-    postImage={postImage}
-    postImageBasePath={postImageBasePath}
-    shouldRenderWaves={shouldRenderWaves}
-    wavesEnabledOnDesktop={wavesEnabledOnDesktop}
-    wavesEnabledOnMobile={wavesEnabledOnMobile}
-/>
+<!-- Article header visual area
+     始终渲染 #wallpaper-wrapper 及其内部 Swup 容器，保证从非文章页切到文章页时
+     结构一致；非文章页仅隐藏，避免 Swup 替换后缺父层导致布局跳动。 -->
+<div
+	id="wallpaper-wrapper"
+	class:list={[
+		`absolute z-10 w-full transition duration-700 overflow-hidden ${mobileNonHomeBannerClass}`,
+		!effectiveBackgroundEnabled && "page-banner-disabled",
+	]}
+	style={`top: -${BANNER_HEIGHT_EXTEND}vh;${effectiveBackgroundEnabled ? "" : "display:none;"}`}
+	aria-hidden={effectiveBackgroundEnabled ? "false" : "true"}
+>
+	<Banner
+		title={title}
+		isBannerMode={isBannerMode}
+		isFullscreenMode={isFullscreenMode}
+		isBackgroundEnabled={effectiveBackgroundEnabled}
+		isHomePage={isHomePageCheck}
+		isPostPage={isPostPage}
+		bannerConfig={bannerConfig}
+		bannerPostMeta={bannerPostMeta}
+		postImage={postImage}
+		postImageBasePath={postImageBasePath}
+		shouldRenderWaves={shouldRenderWaves}
+		wavesEnabledOnDesktop={wavesEnabledOnDesktop}
+		wavesEnabledOnMobile={wavesEnabledOnMobile}
+	/>
 </div>
-)}
 
 {showBannerPostMeta && bannerPostMeta ? (
 	<div id="post-banner-meta-overlay" class="absolute inset-x-0 top-0 z-40 h-(--banner-height-home) transition-swup-fade">
@@ -278,15 +283,6 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 	</div>
 ) : (
 	<div id="post-banner-meta-overlay" class="hidden"></div>
-)}
-
-{/* 当壁纸未渲染时，添加空的 Swup 占位容器，避免 Swup 找不到容器而回退为整页加载 */}
-{!effectiveBackgroundEnabled && (
-<>
-    <div id="banner-overlay-container" class="hidden"></div>
-    <div id="banner-dim-container" class="hidden"></div>
-    <div id="post-banner-image" class="hidden"></div>
-</>
 )}
 
 <!-- Main content -->

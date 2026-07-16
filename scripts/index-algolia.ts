@@ -152,8 +152,29 @@ function removeFileExtension(id: string): string {
 	return id.replace(/\.(md|mdx|markdown)$/i, "");
 }
 
-function toPostUrl(relId: string): string {
-	const slug = removeFileExtension(relId).replace(/\\/g, "/");
+/**
+ * 解析文章的 URL slug，与站点路由 / Astro content entry.id 对齐：
+ * 1. frontmatter 有 slug → 直接用（如 `slug: hello-world` → `/posts/hello-world/`）
+ * 2. 否则用相对路径去扩展名（`guide/index.md` → `guide`）
+ */
+function resolvePostSlug(
+	relPath: string,
+	data: Record<string, unknown>,
+): string {
+	const fmSlug = typeof data.slug === "string" ? data.slug.trim() : "";
+	if (fmSlug) {
+		// 去掉首尾斜杠，避免生成 // 或空段
+		return fmSlug.replace(/^\/+|\/+$/g, "");
+	}
+
+	let id = removeFileExtension(relPath).replace(/\\/g, "/");
+	// 与 Astro glob 默认 id 一致：目录下的 index 文档用父路径
+	if (id === "index") return "";
+	if (id.endsWith("/index")) id = id.slice(0, -"/index".length);
+	return id;
+}
+
+function toPostUrl(slug: string): string {
 	// Match site trailingSlash: always
 	return `/posts/${slug}/`;
 }
@@ -241,12 +262,18 @@ async function collectRecords(): Promise<PostRecord[]> {
 			: publishedDate.getTime();
 
 		const body = stripMarkdownToIndexText(content);
-		const objectID = removeFileExtension(rel).replace(/\\/g, "/");
+		const objectID = resolvePostSlug(rel, data as Record<string, unknown>);
+		if (!objectID) {
+			console.warn(
+				`[algolia:index] Skip post with empty slug: ${rel}`,
+			);
+			continue;
+		}
 
 		records.push(
 			fitRecordSize({
 				objectID,
-				url: toPostUrl(rel),
+				url: toPostUrl(objectID),
 				title,
 				description,
 				content: body,

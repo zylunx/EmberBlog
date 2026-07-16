@@ -242,22 +242,59 @@ function isCurrentPostPage(): boolean {
 export function applyWallpaperModeToDocument(): void {
 	if (typeof document === "undefined") return;
 	document.body.classList.remove("enable-banner", "wallpaper-transparent");
-	document.body.classList.add("no-banner-layout", "wallpaper-initialized");
 
+	const isPost = isCurrentPostPage();
 	const mainContent = document.querySelector(
 		".w-full.z-30.pointer-events-none",
 	) as HTMLElement | null;
-	if (mainContent && !isCurrentPostPage()) {
-		mainContent.classList.add("no-banner-layout");
-		mainContent.style.setProperty(
-			"top",
-			"var(--navbar-content-offset, 4.5rem)",
-			"important",
-		);
-		mainContent.style.setProperty("margin-top", "0", "important");
-		mainContent.style.position = "";
-		mainContent.style.minHeight = "";
-		mainContent.style.visibility = "visible";
+	const wrapper = document.getElementById(
+		"wallpaper-wrapper",
+	) as HTMLElement | null;
+
+	if (isPost) {
+		// 文章详情页保持 banner 布局，切勿被「无壁纸模式」覆盖成列表布局
+		document.body.classList.add("post-page-banner", "wallpaper-initialized");
+		document.body.classList.remove("no-banner-layout");
+		if (wrapper) {
+			wrapper.style.display = "block";
+			wrapper.classList.remove(
+				"page-banner-disabled",
+				"mobile-hide-banner",
+				"hidden",
+				"opacity-0",
+			);
+		}
+		if (mainContent) {
+			mainContent.classList.remove("no-banner-layout", "mobile-main-no-banner");
+			mainContent.style.setProperty(
+				"top",
+				"calc(var(--banner-height) - 3.5rem)",
+				"important",
+			);
+			mainContent.style.setProperty("margin-top", "0", "important");
+			mainContent.style.position = "";
+			mainContent.style.minHeight = "";
+			mainContent.style.visibility = "visible";
+		}
+	} else {
+		document.body.classList.add("no-banner-layout", "wallpaper-initialized");
+		document.body.classList.remove("post-page-banner");
+		if (wrapper) {
+			wrapper.style.display = "none";
+			wrapper.classList.add("page-banner-disabled", "mobile-hide-banner");
+		}
+		if (mainContent) {
+			mainContent.classList.add("no-banner-layout");
+			mainContent.style.setProperty(
+				"top",
+				"var(--navbar-content-offset, 4.5rem)",
+				"important",
+			);
+			mainContent.style.setProperty("margin-top", "0", "important");
+			mainContent.style.position = "";
+			mainContent.style.minHeight = "";
+			mainContent.style.visibility = "visible";
+		}
 	}
 
 	const navbar = document.getElementById("navbar");
