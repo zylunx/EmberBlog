@@ -263,8 +263,7 @@ async function main() {
 		customRanking: ["desc(date)"],
 		highlightPreTag: "<mark>",
 		highlightPostTag: "</mark>",
-		// Click Analytics for Insights
-		clickAnalytics: true,
+		// clickAnalytics 是搜索请求参数，不是索引 settings，不要写在这里
 		replicas: [dateIndexName],
 	};
 
