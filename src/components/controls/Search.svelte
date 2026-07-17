@@ -12,18 +12,24 @@ import {
 	trackSearchHitClick,
 	type UnifiedSearchHit,
 } from "@/utils/search";
-import { getSearchUrl } from "@/utils/url-utils";
 
 export let popularTags: string[] = [];
 
+const RESULTS_PER_PAGE = 5;
+const CLOSE_ANIMATION_MS = 220;
+
 let keyword = "";
 let result: UnifiedSearchHit[] = [];
+let currentPage = 1;
+let totalPages = 0;
 let isSearching = false;
 let initialized = false;
 let debounceTimer: ReturnType<typeof setTimeout>;
 let closeTimer: ReturnType<typeof setTimeout>;
+let openAnimationFrame = 0;
 let dialog: HTMLDialogElement;
 let searchInput: HTMLInputElement;
+let searchContent: HTMLDivElement;
 let triggerButton: HTMLButtonElement;
 let searchError = "";
 let searchSequence = 0;
@@ -32,11 +38,21 @@ let previousBodyOverflow = "";
 const provider = getEffectiveSearchProvider();
 const algoliaCfg = provider === "algolia" ? getAlgoliaPublicConfig() : null;
 
+const prefersReducedMotion = (): boolean =>
+	window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const cancelOpenAnimation = (): void => {
+	window.cancelAnimationFrame(openAnimationFrame);
+	openAnimationFrame = 0;
+};
+
 const resetSearch = (): void => {
 	window.clearTimeout(debounceTimer);
 	searchSequence += 1;
 	keyword = "";
 	result = [];
+	currentPage = 1;
+	totalPages = 0;
 	isSearching = false;
 	searchError = "";
 };
@@ -50,10 +66,20 @@ const openSearch = async (): Promise<void> => {
 	dialog.showModal();
 	await tick();
 	searchInput?.focus();
-	requestAnimationFrame(() => dialog.classList.remove("is-opening"));
+	if (prefersReducedMotion()) {
+		dialog.classList.remove("is-opening");
+		return;
+	}
+	openAnimationFrame = window.requestAnimationFrame(() => {
+		openAnimationFrame = window.requestAnimationFrame(() => {
+			dialog.classList.remove("is-opening");
+			openAnimationFrame = 0;
+		});
+	});
 };
 
 const finishClose = (): void => {
+	cancelOpenAnimation();
 	if (dialog?.open) dialog.close();
 	document.body.style.overflow = previousBodyOverflow;
 	resetSearch();
@@ -63,16 +89,17 @@ const finishClose = (): void => {
 const closeSearch = (): void => {
 	if (!dialog?.open || dialog.classList.contains("is-closing")) return;
 
-	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+	if (prefersReducedMotion()) {
 		finishClose();
 		return;
 	}
 
+	cancelOpenAnimation();
 	dialog.classList.add("is-closing");
 	closeTimer = window.setTimeout(() => {
 		dialog.classList.remove("is-closing");
 		finishClose();
-	}, 180);
+	}, CLOSE_ANIMATION_MS);
 };
 
 const handleBackdropClick = (event: MouseEvent): void => {
@@ -85,6 +112,7 @@ const handleDialogCancel = (event: Event): void => {
 };
 
 const handleDialogClose = (): void => {
+	cancelOpenAnimation();
 	dialog.classList.remove("is-opening", "is-closing");
 	document.body.style.overflow = previousBodyOverflow;
 };
@@ -103,13 +131,20 @@ const handleResultClick = (event: Event, hit: UnifiedSearchHit): void => {
 	navigateToPage(hit.url);
 };
 
-const search = (value: string): void => {
+const search = (
+	value: string,
+	page = 1,
+	scrollToTop = false,
+	delay = 300,
+): void => {
 	window.clearTimeout(debounceTimer);
 	const normalizedKeyword = value.trim();
 	const sequence = ++searchSequence;
 
 	if (!normalizedKeyword) {
 		result = [];
+		currentPage = 1;
+		totalPages = 0;
 		isSearching = false;
 		searchError = "";
 		return;
@@ -124,14 +159,24 @@ const search = (value: string): void => {
 		try {
 			const client = getSearchClient();
 			await client.ready();
-			const searchResults = await client.search(normalizedKeyword, {
-				limit: 20,
+			const searchResults = await client.searchPage(normalizedKeyword, {
+				page,
+				pageSize: RESULTS_PER_PAGE,
 			});
-			if (sequence === searchSequence) result = searchResults;
+			if (sequence !== searchSequence) return;
+			result = searchResults.hits;
+			currentPage = searchResults.page;
+			totalPages = searchResults.totalPages;
+			if (scrollToTop) {
+				await tick();
+				searchContent.scrollTop = 0;
+			}
 		} catch (error) {
 			if (sequence !== searchSequence) return;
 			console.error("Search error:", error);
 			result = [];
+			currentPage = 1;
+			totalPages = 0;
 			searchError =
 				provider === "algolia"
 					? i18n(I18nKey.searchError)
@@ -139,7 +184,7 @@ const search = (value: string): void => {
 		} finally {
 			if (sequence === searchSequence) isSearching = false;
 		}
-	}, 300);
+	}, delay);
 };
 
 const searchPopularTag = async (tag: string): Promise<void> => {
@@ -155,11 +200,9 @@ const openFirstResult = (event: KeyboardEvent): void => {
 	handleResultClick(event, result[0]);
 };
 
-const viewMore = (event: Event): void => {
-	event.preventDefault();
-	const searchUrl = getSearchUrl(keyword);
-	finishClose();
-	navigateToPage(searchUrl);
+const changePage = (page: number): void => {
+	if (page < 1 || page > totalPages || page === currentPage) return;
+	search(keyword, page, true, 0);
 };
 
 onMount(() => {
@@ -176,6 +219,7 @@ onMount(() => {
 	return () => {
 		window.clearTimeout(debounceTimer);
 		window.clearTimeout(closeTimer);
+		cancelOpenAnimation();
 		if (dialog?.open) dialog.close();
 		document.body.style.overflow = previousBodyOverflow;
 	};
@@ -214,10 +258,6 @@ onMount(() => {
 		</header>
 
 		<div class="search-dialog__input-wrap">
-			<Icon
-				icon="material-symbols:search"
-				class="search-dialog__input-icon text-[1.35rem]"
-			></Icon>
 			<input
 				bind:this={searchInput}
 				bind:value={keyword}
@@ -230,7 +270,7 @@ onMount(() => {
 			>
 		</div>
 
-		<div class="search-dialog__content" aria-live="polite">
+		<div bind:this={searchContent} class="search-dialog__content" aria-live="polite">
 			{#if !keyword.trim()}
 				{#if popularTags.length > 0}
 					<div class="search-dialog__tags">
@@ -247,7 +287,7 @@ onMount(() => {
 				<div class="search-dialog__message">{searchError}</div>
 			{:else if result.length > 0}
 				<div class="search-dialog__results">
-					{#each result.slice(0, 5) as item}
+					{#each result as item}
 						<a href={item.url} on:click={(event) => handleResultClick(event, item)}>
 							<div class="search-dialog__result-title">
 								<span>{@html item.title}</span>
@@ -258,14 +298,29 @@ onMount(() => {
 							{/if}
 						</a>
 					{/each}
-					{#if result.length > 5}
-						<a href={getSearchUrl(keyword)} on:click={viewMore} class="search-dialog__more">
-							{i18n(I18nKey.searchViewMore).replace(
-								"{count}",
-								(result.length - 5).toString(),
-							)}
-							<Icon icon="fa7-solid:arrow-right" class="text-[0.7rem]"></Icon>
-						</a>
+					{#if totalPages > 1}
+						<nav
+							class="search-dialog__pagination"
+							aria-label={`${i18n(I18nKey.search)} ${i18n(I18nKey.paginationPage)}`}
+						>
+							<button
+								type="button"
+								on:click={() => changePage(currentPage - 1)}
+								disabled={currentPage === 1}
+								aria-label={i18n(I18nKey.paginationPrev)}
+							>
+								<Icon icon="material-symbols:chevron-left-rounded" class="text-[1.4rem]"></Icon>
+							</button>
+							<span aria-live="off">{currentPage} / {totalPages}</span>
+							<button
+								type="button"
+								on:click={() => changePage(currentPage + 1)}
+								disabled={currentPage === totalPages}
+								aria-label={i18n(I18nKey.paginationNext)}
+							>
+								<Icon icon="material-symbols:chevron-right-rounded" class="text-[1.4rem]"></Icon>
+							</button>
+						</nav>
 					{/if}
 				</div>
 			{:else}
@@ -277,7 +332,7 @@ onMount(() => {
 
 <style>
 	.search-dialog {
-		width: min(720px, calc(100vw - 32px));
+		width: min(640px, calc(100vw - 32px));
 		max-width: none;
 		max-height: min(78vh, 720px);
 		margin: auto;
@@ -288,31 +343,37 @@ onMount(() => {
 		color: var(--btn-content);
 		overflow: visible;
 		opacity: 0;
-		transform: translateY(calc(-4vh + 10px)) scale(0.97);
+		transform: translate3d(0, calc(-4vh + 10px), 0) scale(0.985);
 		transition:
-			opacity 180ms ease,
-			transform 180ms ease;
+			opacity 240ms cubic-bezier(0.22, 1, 0.36, 1),
+			transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
 	.search-dialog[open] {
 		opacity: 1;
-		transform: translateY(-4vh) scale(1);
+		transform: translate3d(0, -4vh, 0) scale(1);
+		will-change: opacity, transform;
 	}
 
 	.search-dialog.is-opening,
 	.search-dialog.is-closing {
 		opacity: 0;
-		transform: translateY(calc(-4vh + 10px)) scale(0.97);
+		transform: translate3d(0, calc(-4vh + 10px), 0) scale(0.985);
+	}
+
+	.search-dialog.is-closing {
+		transition-duration: 180ms, 220ms;
+		transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 	}
 
 	.search-dialog::backdrop {
 		background: rgb(255 255 255 / 0.2);
-		backdrop-filter: blur(12px);
-		animation: search-backdrop-in 180ms ease both;
+		backdrop-filter: blur(6px);
+		animation: search-backdrop-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.search-dialog.is-closing::backdrop {
-		animation: search-backdrop-out 180ms ease both;
+		animation: search-backdrop-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
 	}
 
 	:global(:root.dark) .search-dialog::backdrop {
@@ -326,9 +387,9 @@ onMount(() => {
 		padding: 1.5rem;
 		border: 1px solid color-mix(in srgb, var(--primary) 32%, var(--line-divider));
 		border-radius: 1rem;
-		background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+		background: color-mix(in srgb, var(--card-bg) 96%, transparent);
 		box-shadow: 0 24px 70px color-mix(in srgb, var(--primary) 22%, rgb(0 0 0 / 0.16));
-		backdrop-filter: blur(24px) saturate(1.2);
+		backdrop-filter: blur(12px) saturate(1.1);
 	}
 
 	.search-dialog__header {
@@ -361,19 +422,10 @@ onMount(() => {
 		flex: none;
 	}
 
-	.search-dialog__input-icon {
-		position: absolute;
-		top: 50%;
-		left: 1rem;
-		color: var(--primary);
-		transform: translateY(-50%);
-		pointer-events: none;
-	}
-
 	.search-dialog__input {
 		width: 100%;
 		height: 3.5rem;
-		padding: 0 1rem 0 3rem;
+		padding: 0 1rem;
 		border: 1.5px solid color-mix(in srgb, var(--primary) 72%, var(--line-color));
 		border-radius: 1rem;
 		background: color-mix(in srgb, var(--primary) 4%, transparent);
@@ -479,11 +531,52 @@ onMount(() => {
 		font-size: 0.875rem;
 	}
 
-	.search-dialog__more {
-		display: flex !important;
+	.search-dialog__pagination {
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.4rem;
+		gap: 0.75rem;
+		padding-top: 0.75rem;
+	}
+
+	.search-dialog__pagination button,
+	.search-dialog__pagination span {
+		display: flex;
+		width: 2.5rem;
+		height: 2.5rem;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line-divider));
+		border-radius: 0.75rem;
+		background: color-mix(in srgb, var(--primary) 6%, transparent);
+		color: var(--btn-content);
+	}
+
+	.search-dialog__pagination button {
+		cursor: pointer;
+		transition:
+			color 160ms ease,
+			border-color 160ms ease,
+			background-color 160ms ease;
+	}
+
+	.search-dialog__pagination button:hover:not(:disabled),
+	.search-dialog__pagination button:focus-visible {
+		border-color: var(--primary);
+		background: color-mix(in srgb, var(--primary) 14%, transparent);
+		color: var(--primary);
+		outline: none;
+	}
+
+	.search-dialog__pagination button:disabled {
+		cursor: not-allowed;
+		opacity: 0.4;
+	}
+
+	.search-dialog__pagination span {
+		width: auto;
+		min-width: 4.5rem;
+		padding: 0 0.75rem;
 		color: var(--primary);
 		font-weight: 700;
 	}
@@ -516,16 +609,16 @@ onMount(() => {
 	@media (max-width: 640px) {
 		.search-dialog {
 			max-height: calc(100vh - 32px);
-			transform: translateY(4px) scale(0.97);
+			transform: translate3d(0, 6px, 0) scale(0.985);
 		}
 
 		.search-dialog[open] {
-			transform: translateY(0) scale(1);
+			transform: translate3d(0, 0, 0) scale(1);
 		}
 
 		.search-dialog.is-opening,
 		.search-dialog.is-closing {
-			transform: translateY(4px) scale(0.97);
+			transform: translate3d(0, 6px, 0) scale(0.985);
 		}
 
 		.search-dialog__surface {

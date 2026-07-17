@@ -45,6 +45,7 @@ function mapHit(
 	hit: AlgoliaHit,
 	index: number,
 	queryID?: string,
+	positionOffset = 0,
 ): UnifiedSearchHit {
 	const title = hit._highlightResult?.title?.value || hit.title || hit.objectID;
 	return {
@@ -55,7 +56,7 @@ function mapHit(
 		tags: hit.tags,
 		categories: hit.categories,
 		queryID,
-		position: index + 1,
+		position: positionOffset + index + 1,
 	};
 }
 
@@ -107,6 +108,54 @@ export function createAlgoliaClient(
 			const hits = result?.hits ?? [];
 			const queryID = result?.queryID;
 			return hits.map((hit, i) => mapHit(hit, i, queryID));
+		},
+		searchPage: async (query, options) => {
+			const q = query.trim();
+			const pageSize = Math.max(1, Math.floor(options.pageSize));
+			const requestedPage = Math.max(1, Math.floor(options.page));
+			if (!q) {
+				return { hits: [], page: 1, totalHits: 0, totalPages: 0 };
+			}
+
+			const response = await client.search({
+				requests: [
+					{
+						indexName: cfg.indexName,
+						query: q,
+						page: requestedPage - 1,
+						hitsPerPage: pageSize,
+						attributesToRetrieve: [
+							"url",
+							"title",
+							"description",
+							"tags",
+							"categories",
+						],
+						attributesToHighlight: ["title", "description", "content"],
+						attributesToSnippet: ["content:20", "description:20"],
+						highlightPreTag: "<mark>",
+						highlightPostTag: "</mark>",
+					},
+				],
+			});
+
+			const result = response.results[0] as {
+				hits?: AlgoliaHit[];
+				nbHits?: number;
+				nbPages?: number;
+				page?: number;
+				queryID?: string;
+			};
+			const hits = result?.hits ?? [];
+			const page = (result?.page ?? requestedPage - 1) + 1;
+			return {
+				hits: hits.map((hit, index) =>
+					mapHit(hit, index, result?.queryID, (page - 1) * pageSize),
+				),
+				page,
+				totalHits: result?.nbHits ?? hits.length,
+				totalPages: result?.nbPages ?? (hits.length > 0 ? 1 : 0),
+			};
 		},
 	};
 }

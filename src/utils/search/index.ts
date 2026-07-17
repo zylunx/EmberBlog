@@ -14,7 +14,12 @@ export {
 	initAlgoliaInsights,
 	trackSearchHitClick,
 } from "./insights";
-export type { SearchProviderClient, UnifiedSearchHit } from "./types";
+export type {
+	SearchPageOptions,
+	SearchPageResult,
+	SearchProviderClient,
+	UnifiedSearchHit,
+} from "./types";
 
 let cached: SearchProviderClient | null = null;
 let cachedName: string | null = null;

@@ -1,5 +1,9 @@
 import type { SearchResult } from "@/global";
-import type { SearchProviderClient, UnifiedSearchHit } from "./types";
+import type {
+	SearchPageResult,
+	SearchProviderClient,
+	UnifiedSearchHit,
+} from "./types";
 
 function mapPagefindHit(item: SearchResult, index: number): UnifiedSearchHit {
 	return {
@@ -40,6 +44,13 @@ const fakeDevResults: SearchResult[] = [
 export function createPagefindClient(): SearchProviderClient {
 	let readyPromise: Promise<void> | null = null;
 
+	const emptyPage = (): SearchPageResult => ({
+		hits: [],
+		page: 1,
+		totalHits: 0,
+		totalPages: 0,
+	});
+
 	return {
 		name: "pagefind",
 		ready: async () => {
@@ -71,6 +82,57 @@ export function createPagefindClient(): SearchProviderClient {
 			const limit = options?.limit;
 			const sliced = typeof limit === "number" ? raw.slice(0, limit) : raw;
 			return sliced.map(mapPagefindHit);
+		},
+		searchPage: async (query, options) => {
+			const q = query.trim();
+			const pageSize = Math.max(1, Math.floor(options.pageSize));
+			if (!q) return emptyPage();
+
+			if (import.meta.env.DEV) {
+				const matches = fakeDevResults.filter(
+					(item) =>
+						item.excerpt.toLowerCase().includes(q.toLowerCase()) ||
+						item.meta.title.toLowerCase().includes(q.toLowerCase()),
+				);
+				const totalPages = Math.ceil(matches.length / pageSize);
+				const page = Math.min(
+					Math.max(1, Math.floor(options.page)),
+					totalPages || 1,
+				);
+				const offset = (page - 1) * pageSize;
+				return {
+					hits: matches
+						.slice(offset, offset + pageSize)
+						.map((item, index) => mapPagefindHit(item, offset + index)),
+					page,
+					totalHits: matches.length,
+					totalPages,
+				};
+			}
+
+			await waitForPagefind();
+			if (!window.pagefind) return emptyPage();
+
+			const response = await window.pagefind.search(q);
+			const totalHits = response.results.length;
+			const totalPages = Math.ceil(totalHits / pageSize);
+			const page = Math.min(
+				Math.max(1, Math.floor(options.page)),
+				totalPages || 1,
+			);
+			const offset = (page - 1) * pageSize;
+			const raw = await Promise.all(
+				response.results
+					.slice(offset, offset + pageSize)
+					.map((item) => item.data()),
+			);
+
+			return {
+				hits: raw.map((item, index) => mapPagefindHit(item, offset + index)),
+				page,
+				totalHits,
+				totalPages,
+			};
 		},
 	};
 }

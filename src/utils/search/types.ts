@@ -18,11 +18,28 @@ export type SearchQueryOptions = {
 	limit?: number;
 };
 
+export type SearchPageOptions = {
+	/** 1-based page number */
+	page: number;
+	pageSize: number;
+};
+
+export type SearchPageResult = {
+	hits: UnifiedSearchHit[];
+	page: number;
+	totalHits: number;
+	totalPages: number;
+};
+
 export type SearchProviderClient = {
 	readonly name: "pagefind" | "algolia";
 	search: (
 		query: string,
 		options?: SearchQueryOptions,
 	) => Promise<UnifiedSearchHit[]>;
+	searchPage: (
+		query: string,
+		options: SearchPageOptions,
+	) => Promise<SearchPageResult>;
 	ready: () => Promise<void>;
 };
