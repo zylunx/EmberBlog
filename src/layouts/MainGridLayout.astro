@@ -354,6 +354,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
                     class="transition-main"
                     data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
                     data-is-post-page={isPostPage ? "true" : "false"}
+                    data-page-title={isPostPage ? title : undefined}
                     data-page-color={color}
                     data-page-on-accent={pageOnAccent}
                     data-current-post-category={postCategory || ""}

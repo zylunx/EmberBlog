@@ -705,6 +705,22 @@ function disableAnimation() {
     }
   }
 
+  function syncNavbarCenterTitle() {
+    const swupContainer = document.getElementById("swup-container") as HTMLElement | null;
+    const title = document.querySelector<HTMLElement>(".navbar-center-title-main");
+    const separator = document.querySelector<HTMLElement>(".navbar-center-title-separator");
+    const subtitle = document.querySelector<HTMLElement>(".navbar-center-title-sub");
+    const pageTitle = swupContainer?.dataset.pageTitle?.trim();
+    const showPageTitle =
+      swupContainer?.dataset.isPostPage === "true" && !!pageTitle;
+
+    if (title) {
+      title.textContent = showPageTitle ? pageTitle : siteConfig.title;
+    }
+    separator?.classList.toggle("hidden", showPageTitle);
+    subtitle?.classList.toggle("hidden", showPageTitle);
+  }
+
   function setClickOutsideToClose(panel: string, ignores: string[]) {
       document.addEventListener("click", (event) => {
           let panelDom = document.getElementById(panel);
@@ -857,6 +873,7 @@ function disableAnimation() {
     window.swup.hooks.on("content:replace", () => {
       // 内容已替换：用新 DOM 的 data 属性做最终布局对齐
       syncPageLayoutState();
+      syncNavbarCenterTitle();
 
       // 文章 HEX 随导航切换：文章页覆盖，离开文章页恢复配置色。
       const swupContainer = document.getElementById("swup-container") as HTMLElement | null;

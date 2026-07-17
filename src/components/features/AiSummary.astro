@@ -31,145 +31,14 @@ const { summary } = Astro.props;
 	</div>
 
 	<div class="pl-4 border-l-3 border-(--primary)/30 relative">
-		<p
-			class="text-sm leading-relaxed text-black/75 dark:text-white/75 ai-summary-text"
-			data-summary={JSON.stringify(summary)}
-			aria-label={summary}
-		>
-			<span class="ai-typewriter"></span><span class="ai-cursor" aria-hidden="true"></span>
+		<p class="text-sm leading-relaxed text-black/75 dark:text-white/75 ai-summary-text">
+			{summary}
 		</p>
 		<p class="text-xs text-black/40 dark:text-white/40 mt-2 ai-disclaimer">
 			总结由AI生成，仅供阅览
 		</p>
 	</div>
 </div>
-
-<script>
-  class AiSummaryTypewriter {
-    private element: HTMLElement;
-    private fullText: string;
-    private segments: string[] = [];
-    private currentIndex: number = 0;
-    private speed: number = 28;
-    private timeoutId: number | null = null;
-    private started: boolean = false;
-
-    constructor(element: HTMLElement) {
-      this.element = element;
-      const raw = element.dataset.summary || '""';
-      try {
-        this.fullText = JSON.parse(raw);
-      } catch {
-        this.fullText = "";
-      }
-      if (!this.fullText) {
-        this.element.textContent = "";
-        return;
-      }
-      const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
-      this.segments = Array.from(segmenter.segment(this.fullText), (s) => s.segment);
-    }
-
-    start() {
-      if (this.started || this.segments.length === 0) return;
-      this.started = true;
-      this.type();
-    }
-
-    // 直接展示完整文本（用于 prefers-reduced-motion）
-    showAll() {
-      if (this.segments.length === 0) return;
-      this.started = true;
-      this.currentIndex = this.segments.length;
-      this.element.textContent = this.fullText;
-      const card = this.element.closest(".ai-summary-card");
-      card?.classList.add("ai-typing-done");
-    }
-
-    private type() {
-      if (this.currentIndex < this.segments.length) {
-        this.currentIndex++;
-        this.element.textContent = this.segments.slice(0, this.currentIndex).join("");
-        // 动态调速：标点符号后稍微停顿
-        const last = this.segments[this.currentIndex - 1];
-        const delay = /[。，、；：！？.,!?;:]/.test(last) ? this.speed * 4 : this.speed;
-        this.timeoutId = window.setTimeout(() => this.type(), delay);
-      } else {
-        const card = this.element.closest(".ai-summary-card");
-        card?.classList.add("ai-typing-done");
-      }
-    }
-
-    destroy() {
-      if (this.timeoutId) clearTimeout(this.timeoutId);
-    }
-  }
-
-  function prefersReducedMotion(): boolean {
-    return (
-      typeof window !== "undefined" &&
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    );
-  }
-
-  function initAiSummaryTypewriters() {
-    const elements = document.querySelectorAll<HTMLElement>(".ai-typewriter");
-    elements.forEach((el) => {
-      const host = el.parentElement as HTMLElement | null;
-      if (!host) return;
-      const existing = (host as any).__aiTypewriter as AiSummaryTypewriter | undefined;
-      if (existing) existing.destroy();
-      el.textContent = "";
-      const card = host.closest(".ai-summary-card");
-      card?.classList.remove("ai-typing-done");
-      const instance = new AiSummaryTypewriter(host);
-      (host as any).__aiTypewriter = instance;
-
-      // 尊重用户的减少动效偏好：直接显示完整文本
-      if (prefersReducedMotion()) {
-        instance.showAll();
-        return;
-      }
-
-      if ("IntersectionObserver" in window) {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                instance.start();
-                observer.disconnect();
-              }
-            });
-          },
-          { threshold: 0.15 }
-        );
-        observer.observe(host);
-      } else {
-        instance.start();
-      }
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAiSummaryTypewriters);
-  } else {
-    initAiSummaryTypewriters();
-  }
-
-  // 支持 swup 页面切换时重新初始化
-  document.addEventListener("swup:contentReplaced", initAiSummaryTypewriters);
-  document.addEventListener("swup:content:replace", initAiSummaryTypewriters);
-  document.addEventListener("swup:page:view", initAiSummaryTypewriters);
-
-  if (typeof window !== "undefined" && (window as any).swup?.hooks) {
-    (window as any).swup.hooks.on("content:replace", initAiSummaryTypewriters);
-    (window as any).swup.hooks.on("page:view", initAiSummaryTypewriters);
-  }
-
-  // 加密文章解密后重新初始化（AiSummary 在加密内容中，需等待解密注入 DOM）
-  document.addEventListener("password:decrypted", initAiSummaryTypewriters);
-</script>
 
 <style>
 	.ai-summary-card {
@@ -259,34 +128,9 @@ const { summary } = Astro.props;
 		}
 	}
 
-	.ai-typewriter {
+	.ai-summary-text {
 		white-space: pre-wrap;
 		word-break: break-word;
-	}
-
-	.ai-cursor {
-		display: inline-block;
-		width: 2px;
-		height: 1.1em;
-		margin-left: 2px;
-		background: var(--primary);
-		vertical-align: text-bottom;
-		border-radius: 1px;
-		animation: ai-cursor-blink 1s step-end infinite;
-	}
-
-	.ai-summary-card.ai-typing-done .ai-cursor {
-		animation: none;
-		opacity: 0;
-	}
-
-	@keyframes ai-cursor-blink {
-		0%, 50% {
-			opacity: 1;
-		}
-		51%, 100% {
-			opacity: 0;
-		}
 	}
 
 	.ai-disclaimer {
@@ -295,13 +139,9 @@ const { summary } = Astro.props;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.ai-cursor,
 		.ai-model-dot,
 		.ai-icon-wrap {
 			animation: none !important;
-		}
-		.ai-cursor {
-			opacity: 0;
 		}
 	}
 </style>
