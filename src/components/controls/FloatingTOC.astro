@@ -9,9 +9,10 @@ import "@/styles/toc.css";
 
 interface Props {
 	headings: MarkdownHeading[];
+	sidebarEnabled?: boolean;
 }
 
-let { headings: _ = [] } = Astro.props;
+let { headings: _ = [], sidebarEnabled } = Astro.props;
 // ... (保留之前的逻辑)
 // 检查侧边栏目录组件是否启用
 const sidebarTocComponent = sidebarLayoutConfig.rightComponents?.find(
@@ -20,7 +21,9 @@ const sidebarTocComponent = sidebarLayoutConfig.rightComponents?.find(
 const isSidebarTocEnabled = sidebarTocComponent?.enable ?? false;
 const sidebarPosition = sidebarLayoutConfig.position;
 const hideSidebarOnPostPage =
-	sidebarLayoutConfig.hideSidebarOnPostPage === true;
+	sidebarEnabled === false ||
+	(sidebarEnabled === undefined &&
+		sidebarLayoutConfig.hideSidebarOnPostPage === true);
 ---
 
 <!-- 悬浮TOC按钮 -->

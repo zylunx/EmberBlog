@@ -30,6 +30,7 @@ const postSchema = z
 		licenseName: z.string().optional().default(""),
 		licenseUrl: z.string().optional().default(""),
 		comment: z.boolean().optional().default(true),
+		sidebar: z.boolean().optional(),
 		password: z.string().optional().default(""),
 		passwordHint: z.string().optional().default(""),
 		// ai 字段支持 string（总结文本）或 boolean（false 表示禁用 AI 总结）

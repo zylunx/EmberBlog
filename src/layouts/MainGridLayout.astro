@@ -52,6 +52,8 @@ interface Props {
 	// 文章图片的基础路径，用于解析本地相对路径图片
 	postImageBasePath?: string;
 	bannerConfig?: BannerConfig;
+	// 当前页面是否显示侧边栏；未设置时继承全局配置
+	sidebar?: boolean;
 }
 
 const {
@@ -69,6 +71,7 @@ const {
 	postImage,
 	postImageBasePath = "/",
 	bannerConfig,
+	sidebar,
 } = Astro.props;
 
 const isPostPage = !!postSlug;
@@ -134,16 +137,21 @@ const mainContentLayoutClass = isPostPageBannerLayout
 		? ""
 		: "no-banner-layout";
 
-// 获取响应式侧边栏配置
-const sidebarConfig = getResponsiveSidebarConfig();
-
-// 侧边栏是否在文章详情页显示（默认 true）
+// 页面显式配置优先于文章页和全局配置
 const hideSidebarOnPostPage =
+	sidebar === undefined &&
+	isPostPage &&
 	sidebarLayoutConfig.hideSidebarOnPostPage === true;
+const sidebarEnabled = sidebar ?? sidebarLayoutConfig.enable;
+const pageSidebarEnabled = sidebarEnabled && !hideSidebarOnPostPage;
+
+// 静态侧栏在 Swup 切页时不会替换，因此布局类始终按已启用状态生成
+const configuredSidebarConfig = getResponsiveSidebarConfig(true);
+const sidebarConfig = getResponsiveSidebarConfig(pageSidebarEnabled);
 
 // 在文章页面且启用了showBothSidebarsOnPostPage时，确保对侧组件参与网格计算
 const shouldShowBothSidebarsOnPostPage: boolean =
-	sidebarLayoutConfig.enable &&
+	pageSidebarEnabled &&
 	!hideSidebarOnPostPage &&
 	isPostPage &&
 	sidebarLayoutConfig.position !== "both" &&
@@ -181,11 +189,17 @@ const updatedGridConfig: ResponsiveSidebarConfig = {
 };
 
 const { gridCols } = generateGridClasses(updatedGridConfig);
-const sidebarClass = generateSidebarClasses(updatedGridConfig);
+const sidebarClass = generateSidebarClasses(
+	sidebarLayoutConfig.position === "right"
+		? updatedGridConfig
+		: configuredSidebarConfig,
+);
 const rightSidebarClass =
-	effectiveIsBothSidebars || sidebarLayoutConfig.position === "right"
-		? generateRightSidebarClasses(updatedGridConfig)
-		: "";
+	sidebarLayoutConfig.position === "left"
+		? effectiveIsBothSidebars
+			? generateRightSidebarClasses(updatedGridConfig)
+			: ""
+		: generateRightSidebarClasses(configuredSidebarConfig);
 const mainContentClass = generateMainContentClasses(updatedGridConfig);
 const staticBarClass = mainContentClass.replace("transition-main", "").trim();
 const categoryBarClass = ["col-span-1"];
@@ -294,8 +308,6 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     <div class="relative z-10 w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
           class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-2 px-1 md:px-2 ${!sidebarConfig.mobileShowSidebar ? 'mobile-no-sidebar' : ''}`}
-          data-sidebar-enable={sidebarLayoutConfig.enable ? "true" : "false"}
-          data-grid-hide-sidebar-on-post={hideSidebarOnPostPage ? "true" : "false"}
           data-sidebar-position={sidebarLayoutConfig.position}
           data-tablet-sidebar={sidebarLayoutConfig.tabletSidebar ?? "left"}
           data-show-both-sidebars-on-post={sidebarLayoutConfig.showBothSidebarsOnPostPage ? "true" : "false"}
@@ -309,23 +321,24 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
             */}
             {sidebarLayoutConfig.position !== "right" ? (
                 <>
-                    {sidebarLayoutConfig.enable ? (
-                        <div id="left-sidebar-wrapper" class="contents" data-hide-sidebar-on-post={hideSidebarOnPostPage ? "true" : "false"} style="contain: layout style paint;">
-                            {effectiveHasLeftComponents && (
+                    <div
+                        id="left-sidebar-wrapper"
+                        class="contents"
+                        data-sidebar-container
+                        style={pageSidebarEnabled ? "contain: layout style paint;" : "display: none !important; contain: layout style paint;"}
+                    >
+                            {configuredSidebarConfig.hasLeftComponents && (
                                 <SideBar
-                                    side={effectiveIsBothSidebars ? "left" : undefined}
+                                    side={configuredSidebarConfig.isBothSidebars ? "left" : undefined}
                                     class={sidebarClass}
                                     headings={headings}
                                 />
                             )}
-                        </div>
-                    ) : (
-                        <div id="left-sidebar-wrapper" class="hidden"></div>
-                    )}
+                    </div>
                     <div id="left-sidebar-dynamic" class="hidden transition-swup-fade"></div>
                 </>
             ) : (
-                <div id="left-sidebar-dynamic" class="contents transition-swup-fade">
+                <div id="left-sidebar-dynamic" class="contents transition-swup-fade" data-sidebar-container>
                     {effectiveIsBothSidebars && effectiveHasLeftComponents && (
 						<SideBar side="left" class={sidebarClass} headings={headings}></SideBar>
                     )}
@@ -354,6 +367,9 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
                     class="transition-main"
                     data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
                     data-is-post-page={isPostPage ? "true" : "false"}
+                    data-page-sidebar-enabled={pageSidebarEnabled ? "true" : "false"}
+                    data-main-content-class={staticBarClass}
+                    data-category-bar-class={categoryBarClassName}
                     data-page-title={isPostPage ? title : undefined}
                     data-page-color={color}
                     data-page-on-accent={pageOnAccent}
@@ -378,19 +394,20 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
             */}
             {(sidebarLayoutConfig.position === "both" || sidebarLayoutConfig.position === "right") ? (
                 <>
-                    {sidebarLayoutConfig.enable ? (
-                        <div id="right-sidebar-static" class="contents" data-hide-sidebar-on-post={hideSidebarOnPostPage ? "true" : "false"}>
-                            {(effectiveIsBothSidebars || sidebarLayoutConfig.position === "right") && effectiveHasRightComponents && (
+                    <div
+                        id="right-sidebar-static"
+                        class="contents"
+                        data-sidebar-container
+                        style={pageSidebarEnabled ? undefined : "display: none !important;"}
+                    >
+                            {configuredSidebarConfig.hasRightComponents && (
 								<SideBar side="right" class={rightSidebarClass} headings={headings}></SideBar>
                             )}
-                        </div>
-                    ) : (
-                        <div id="right-sidebar-static" class="hidden"></div>
-                    )}
+                    </div>
                     <div id="right-sidebar-dynamic" class="hidden transition-swup-fade"></div>
                 </>
             ) : (
-                <div id="right-sidebar-dynamic" class="contents transition-swup-fade">
+                <div id="right-sidebar-dynamic" class="contents transition-swup-fade" data-sidebar-container>
                     {effectiveIsBothSidebars && effectiveHasRightComponents && (
 						<SideBar side="right" class={rightSidebarClass} headings={headings}></SideBar>
                     )}
@@ -399,7 +416,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 
             {/* 移动端底部组件 - 768px及以下显示 */}
             {sidebarLayoutConfig.mobileBottomComponents && sidebarLayoutConfig.mobileBottomComponents.length > 0 && (
-                <div id="mobile-bottom-sidebar" class="col-span-1 block md:hidden mt-4">
+                <div id="mobile-bottom-sidebar" class="col-span-1 block md:hidden mt-4" data-sidebar-container style={pageSidebarEnabled ? undefined : "display: none !important;"}>
 					<SideBar side="bottom" headings={headings}></SideBar>
                 </div>
             )}
@@ -412,7 +429,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     </div>
 </div>
 
-<FloatingControls headings={headings} />
+<FloatingControls headings={headings} sidebarEnabled={pageSidebarEnabled} />
 
 
 </Layout>

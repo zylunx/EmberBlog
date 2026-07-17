@@ -1251,7 +1251,7 @@ function disableAnimation() {
   const MULTI_COL_POS_CLASSES = [
     "md:col-start-1", "md:col-start-2",
     "xl:col-start-1", "xl:col-start-2", "xl:col-start-3",
-    "xl:col-end-3",
+    "md:col-end-3", "xl:col-end-3", "xl:col-end-4",
     "md:col-span-1", "xl:col-span-1",
   ];
 
@@ -1268,7 +1268,19 @@ function disableAnimation() {
     for (const cls of GRID_COL_CLASSES) mainGrid.classList.remove(cls);
     mainGrid.classList.add("grid-cols-1");
     const swupContainer = document.getElementById("swup-container");
-    clearColPositioning(swupContainer, swupContainer?.parentElement, mainGrid.querySelector('.footer'));
+    clearColPositioning(
+      swupContainer,
+      swupContainer?.parentElement,
+      mainGrid.querySelector(".footer"),
+      document.getElementById("category-bar-wrapper"),
+    );
+  }
+
+  function applyCarriedPositioning(element: Element | null | undefined, classes?: string) {
+    if (!element || !classes) return;
+    for (const cls of classes.split(" ")) {
+      if (MULTI_COL_POS_CLASSES.includes(cls)) element.classList.add(cls);
+    }
   }
 
   // 更新主网格的网格列数
@@ -1276,15 +1288,15 @@ function disableAnimation() {
     const mainGrid = document.getElementById("main-grid");
     if (!mainGrid) return;
 
-    const sidebarEnabled = mainGrid.getAttribute("data-sidebar-enable") !== "false";
-    const sidebarHideOnPost = mainGrid.getAttribute("data-grid-hide-sidebar-on-post") === "true";
+    const sidebarEnabled =
+      document.getElementById("swup-container")?.getAttribute("data-page-sidebar-enabled") !== "false";
     const isPostPage = isCurrentPagePost();
     const sidebarPosition = mainGrid.getAttribute("data-sidebar-position") || "left";
     const tabletSidebar = mainGrid.getAttribute("data-tablet-sidebar") || "left";
     const showBothSidebarsOnPostPage = mainGrid.getAttribute("data-show-both-sidebars-on-post") === "true";
 
-    // 侧边栏禁用 或 文章详情页隐藏侧边栏时，保持单列布局
-    if (!sidebarEnabled || (isPostPage && sidebarHideOnPost)) {
+    // 当前页面禁用侧边栏时保持单列布局
+    if (!sidebarEnabled) {
       applySingleColLayout(mainGrid);
       return;
     }
@@ -1307,12 +1319,22 @@ function disableAnimation() {
     for (const cls of GRID_COL_CLASSES) mainGrid.classList.remove(cls);
     for (const cls of newGridClasses.split(" ")) if (cls) mainGrid.classList.add(cls);
 
+    const swupContainer = document.getElementById("swup-container");
+    const swupWrapper = swupContainer?.parentElement;
+    const footer = mainGrid.querySelector(".footer");
+    const categoryBar = document.getElementById("category-bar-wrapper");
+
+    clearColPositioning(categoryBar);
+    applyCarriedPositioning(categoryBar, swupContainer?.dataset.categoryBarClass);
+
+    if (sidebarPosition !== "right") {
+      clearColPositioning(swupContainer, swupWrapper, footer);
+      applyCarriedPositioning(swupWrapper, swupContainer?.dataset.mainContentClass);
+    }
+
     // position为right时，swup导航不会替换静态元素的class，需手动更新列定位
     if (sidebarPosition === "right") {
       const rightSidebar = document.getElementById("right-sidebar");
-      const swupContainer = document.getElementById("swup-container");
-      const swupWrapper = swupContainer?.parentElement;
-      const footer = mainGrid.querySelector('.footer');
 
       if (shouldBothSidebars) {
         // 文章页临时双侧栏：主内容移到第2列，右侧栏移到第3列，页脚居中
@@ -1335,14 +1357,14 @@ function disableAnimation() {
   // 更新侧边栏组件的可见性
   function updateSidebarComponentsVisibility() {
     const isPostPage = isCurrentPagePost();
+    const sidebarEnabled =
+      document.getElementById("swup-container")?.getAttribute("data-page-sidebar-enabled") !== "false";
 
-    // 处理侧边栏级别的 hideSidebarOnPostPage 配置
-    document.querySelectorAll<HTMLElement>("[data-hide-sidebar-on-post]").forEach((wrapper) => {
-      const hideOnPost = wrapper.getAttribute("data-hide-sidebar-on-post") === "true";
-      if (isPostPage && hideOnPost) {
-        wrapper.style.setProperty("display", "none", "important");
+    document.querySelectorAll<HTMLElement>("[data-sidebar-container]").forEach((container) => {
+      if (sidebarEnabled) {
+        container.style.removeProperty("display");
       } else {
-        wrapper.style.removeProperty("display");
+        container.style.setProperty("display", "none", "important");
       }
     });
 

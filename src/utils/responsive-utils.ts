@@ -19,28 +19,30 @@ export interface ResponsiveSidebarConfig {
  * - 769px-1279px: 根据position和tabletSidebar配置显示侧栏
  * - 1280px及以上: 根据position配置显示侧栏
  */
-export function getResponsiveSidebarConfig(): ResponsiveSidebarConfig {
+export function getResponsiveSidebarConfig(
+	enable = sidebarLayoutConfig.enable,
+): ResponsiveSidebarConfig {
 	const position = sidebarLayoutConfig.position;
 	const tabletSidebar = sidebarLayoutConfig.tabletSidebar ?? "left";
 
-	const isBothSidebars = sidebarLayoutConfig.enable && position === "both";
+	const isBothSidebars = enable && position === "both";
 
 	// position为right时，左侧组件不参与布局计算
 	const hasLeftComponents =
-		sidebarLayoutConfig.enable &&
+		enable &&
 		position !== "right" &&
 		sidebarLayoutConfig.leftComponents.some((comp) => comp.enable);
 
 	// position为left时，右侧组件不参与布局计算（即使启用也会被CSS隐藏）
 	const hasRightComponents =
-		sidebarLayoutConfig.enable &&
+		enable &&
 		position !== "left" &&
 		sidebarLayoutConfig.rightComponents.some((comp) => comp.enable);
 
 	// 响应式布局由 CSS 处理，这里仅用于判断是否有组件
 	const mobileShowSidebar = false; // 768px及以下不显示侧边栏
-	const tabletShowSidebar = sidebarLayoutConfig.enable; // 769px及以上显示
-	const desktopShowSidebar = sidebarLayoutConfig.enable; // 1280px及以上显示
+	const tabletShowSidebar = enable; // 769px及以上显示
+	const desktopShowSidebar = enable; // 1280px及以上显示
 
 	return {
 		isBothSidebars,

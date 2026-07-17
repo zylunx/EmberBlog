@@ -140,6 +140,7 @@ const relatedPosts = await getRelatedPosts(entry, 5);
   color={postColor}
   postCategory={entry.data.category || undefined}
   postTags={entry.data.tags}
+  sidebar={entry.data.sidebar}
   headings={headings}
   bannerPostMeta={bannerPostMeta}
   postImage={processedImage}
