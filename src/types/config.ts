@@ -24,8 +24,10 @@ export type { ProfileConfig } from "./profileConfig";
 export type {
 	AdConfig,
 	CalendarConfig,
-	MobileBottomComponentConfig,
+	SidebarAreaLayout,
 	SidebarLayoutConfig,
+	SidebarPageConfig,
+	SidebarPageLayout,
 	SiteInfoConfig,
 	WidgetComponentConfig,
 	WidgetComponentType,

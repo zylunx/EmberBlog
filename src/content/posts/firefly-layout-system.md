@@ -38,15 +38,15 @@ Firefly 提供了灵活的布局系统，允许您根据内容需求和个人喜
 
 ## 一、侧边栏布局系统
 
-侧边栏是博客页面的重要组成部分，用于展示导航、分类、标签、统计信息等辅助内容。Firefly 支持两种侧边栏布局模式。
+侧边栏是博客页面的重要组成部分，用于展示导航、分类、标签、统计信息等辅助内容。Firefly 会根据页面最终布局中的 `left` 和 `right` 组件自动选择单侧栏或双侧栏模式。
 
 ### 1.1 单侧边栏模式
 
-#### 左侧边栏 (position: "left")
+#### 左侧边栏
 
 ![左侧边栏布局](./images/left-list.avif)
 
-#### 右侧边栏 (position: "right")
+#### 右侧边栏
 
 ![右侧边栏布局](./images/right-grid2.avif)
 
@@ -64,11 +64,7 @@ Firefly 提供了灵活的布局系统，允许您根据内容需求和个人喜
 - 内容为主，辅助信息次之的场景
 
 :::tip
-可以通过showBothSidebarsOnPostPage配置是否在文章详情页显示双侧边栏
-
-当position为left或right时开启此项后，文章详情页将显示双侧边栏，主页等其他页面保持单侧边栏
-
-适用在只想用单侧栏，但在文章详情页想用对侧栏的目录等组件的场景
+`default` 定义默认布局，`pages` 可以按路径覆盖其中一侧。页面规则未填写的区域继承默认布局，空数组表示关闭该区域。
 :::
 
 
@@ -78,14 +74,24 @@ Firefly 提供了灵活的布局系统，允许您根据内容需求和个人喜
 // src/config/sidebarConfig.ts
 export const sidebarLayoutConfig: SidebarLayoutConfig = {
   enable: true,
-  position: "left", // 左侧边栏
-  showBothSidebarsOnPostPage: true, // 是否在文章详情页显示双侧边栏
+  components: {
+    profile: { type: "profile", position: "top" },
+    tags: { type: "tags", position: "sticky" },
+  },
+  default: {
+    left: ["profile", "tags"],
+    right: [],
+    mobileBottom: ["tags"],
+  },
+  pages: {
+    "/about": false,
+  },
 };
 ```
 
 ---
 
-### 1.2 双侧边栏模式 (position: "both")
+### 1.2 双侧边栏模式
 
 #### 特点
 
@@ -114,7 +120,16 @@ export const sidebarLayoutConfig: SidebarLayoutConfig = {
 // src/config/sidebarConfig.ts
 export const sidebarLayoutConfig: SidebarLayoutConfig = {
   enable: true,
-  position: "both", // 双侧边栏
+  components: {
+    profile: { type: "profile", position: "top" },
+    tags: { type: "tags", position: "sticky" },
+  },
+  default: {
+    left: ["profile"],
+    right: ["tags"],
+    mobileBottom: ["tags"],
+  },
+};
 ```
 
 ---

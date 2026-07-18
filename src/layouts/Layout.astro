@@ -1235,10 +1235,6 @@ function disableAnimation() {
     scheduleContentOverflowEnhancements();
   }
 
-  // 检查当前页面是否为文章详情页
-  const isCurrentPagePost = () =>
-    window.location.pathname.includes("/posts/") || window.location.pathname.includes("/post/");
-
   // Grid 列类常量
   const GRID_COL_CLASSES = [
     "grid-cols-1",
@@ -1253,6 +1249,16 @@ function disableAnimation() {
     "xl:col-start-1", "xl:col-start-2", "xl:col-start-3",
     "md:col-end-3", "xl:col-end-3", "xl:col-end-4",
     "md:col-span-1", "xl:col-span-1",
+  ];
+
+  const SIDEBAR_LAYOUT_CLASSES = [
+    "md:block", "xl:block",
+    "md:row-start-1", "xl:row-start-1",
+    "md:row-end-3", "xl:row-end-3",
+    "md:col-start-1", "md:col-start-2",
+    "xl:col-start-3",
+    "md:col-span-1", "xl:col-span-1",
+    "md:max-w-70", "xl:max-w-70",
   ];
 
   // 清除元素上的多列定位类
@@ -1283,34 +1289,55 @@ function disableAnimation() {
     }
   }
 
+  function applySidebarLayoutClasses() {
+    const swupContainer = document.getElementById("swup-container");
+    (["left", "right"] as const).forEach((side) => {
+      const sidebar = document.getElementById(`${side}-sidebar`);
+      const classes = swupContainer?.getAttribute(`data-${side}-sidebar-class`);
+      if (!sidebar || classes === null || classes === undefined) return;
+
+      for (const cls of SIDEBAR_LAYOUT_CLASSES) sidebar.classList.remove(cls);
+      for (const cls of classes.split(" ")) {
+        if (SIDEBAR_LAYOUT_CLASSES.includes(cls)) sidebar.classList.add(cls);
+      }
+    });
+  }
+
   // 更新主网格的网格列数
   function updateMainGridCols() {
     const mainGrid = document.getElementById("main-grid");
     if (!mainGrid) return;
 
+    const swupContainer = document.getElementById("swup-container");
     const sidebarEnabled =
-      document.getElementById("swup-container")?.getAttribute("data-page-sidebar-enabled") !== "false";
-    const isPostPage = isCurrentPagePost();
-    const sidebarPosition = mainGrid.getAttribute("data-sidebar-position") || "left";
+      swupContainer?.getAttribute("data-page-sidebar-enabled") !== "false";
+    const hasLeftSidebar =
+      sidebarEnabled && swupContainer?.getAttribute("data-page-sidebar-has-left") !== "false";
+    const hasRightSidebar =
+      sidebarEnabled && swupContainer?.getAttribute("data-page-sidebar-has-right") !== "false";
     const tabletSidebar = mainGrid.getAttribute("data-tablet-sidebar") || "left";
-    const showBothSidebarsOnPostPage = mainGrid.getAttribute("data-show-both-sidebars-on-post") === "true";
+    let sidebarPosition = "none";
+    if (hasLeftSidebar && hasRightSidebar) sidebarPosition = "both";
+    else if (hasLeftSidebar) sidebarPosition = "left";
+    else if (hasRightSidebar) sidebarPosition = "right";
+    mainGrid.setAttribute("data-sidebar-position", sidebarPosition);
 
-    // 当前页面禁用侧边栏时保持单列布局
-    if (!sidebarEnabled) {
+    applySidebarLayoutClasses();
+
+    if (!sidebarEnabled || (!hasLeftSidebar && !hasRightSidebar)) {
       applySingleColLayout(mainGrid);
       return;
     }
 
-    const shouldBothSidebars = isPostPage && sidebarPosition !== "both" && showBothSidebarsOnPostPage;
+    const shouldBothSidebars = hasLeftSidebar && hasRightSidebar;
 
     let newGridClasses: string;
 
-    if (sidebarPosition === "both" || shouldBothSidebars) {
-      const effectiveTabletSidebar = (shouldBothSidebars && sidebarPosition === "right") ? "right" : tabletSidebar;
-      newGridClasses = effectiveTabletSidebar === "right"
+    if (shouldBothSidebars) {
+      newGridClasses = tabletSidebar === "right"
         ? "grid-cols-1 md:grid-cols-[1fr_17.5rem] xl:grid-cols-[17.5rem_1fr_17.5rem]"
         : "grid-cols-1 md:grid-cols-[17.5rem_1fr] xl:grid-cols-[17.5rem_1fr_17.5rem]";
-    } else if (sidebarPosition === "right") {
+    } else if (hasRightSidebar) {
       newGridClasses = "grid-cols-1 md:grid-cols-[1fr_17.5rem]";
     } else {
       newGridClasses = "grid-cols-1 md:grid-cols-[17.5rem_1fr]";
@@ -1319,66 +1346,40 @@ function disableAnimation() {
     for (const cls of GRID_COL_CLASSES) mainGrid.classList.remove(cls);
     for (const cls of newGridClasses.split(" ")) if (cls) mainGrid.classList.add(cls);
 
-    const swupContainer = document.getElementById("swup-container");
     const swupWrapper = swupContainer?.parentElement;
     const footer = mainGrid.querySelector(".footer");
     const categoryBar = document.getElementById("category-bar-wrapper");
 
-    clearColPositioning(categoryBar);
+    clearColPositioning(swupContainer, swupWrapper, footer, categoryBar);
     applyCarriedPositioning(categoryBar, swupContainer?.dataset.categoryBarClass);
-
-    if (sidebarPosition !== "right") {
-      clearColPositioning(swupContainer, swupWrapper, footer);
-      applyCarriedPositioning(swupWrapper, swupContainer?.dataset.mainContentClass);
-    }
-
-    // position为right时，swup导航不会替换静态元素的class，需手动更新列定位
-    if (sidebarPosition === "right") {
-      const rightSidebar = document.getElementById("right-sidebar");
-
-      if (shouldBothSidebars) {
-        // 文章页临时双侧栏：主内容移到第2列，右侧栏移到第3列，页脚居中
-        clearColPositioning(swupContainer, swupWrapper, footer);
-        swupContainer?.classList.add("md:col-start-2", "xl:col-start-2", "xl:col-end-3");
-        swupWrapper?.classList.add("md:col-start-2");
-        rightSidebar?.classList.add("xl:col-start-3");
-        footer?.classList.add("md:col-start-2", "xl:col-start-2");
-      } else {
-        // 非文章页：恢复2列布局定位（右侧栏保持 md:col-start-2 不变）
-        clearColPositioning(swupContainer, swupWrapper, footer);
-        rightSidebar?.classList.remove("xl:col-start-3");
-        swupContainer?.classList.add("md:col-start-1");
-        swupWrapper?.classList.add("md:col-start-1");
-        footer?.classList.add("md:col-start-1", "xl:col-start-1");
-      }
-    }
+    applyCarriedPositioning(swupWrapper, swupContainer?.dataset.mainContentClass);
   }
 
-  // 更新侧边栏组件的可见性
+  // 更新侧边栏区域的可见性
   function updateSidebarComponentsVisibility() {
-    const isPostPage = isCurrentPagePost();
-    const sidebarEnabled =
-      document.getElementById("swup-container")?.getAttribute("data-page-sidebar-enabled") !== "false";
+    const swupContainer = document.getElementById("swup-container");
+    const sidebarEnabled = swupContainer?.getAttribute("data-page-sidebar-enabled") !== "false";
+
+    const areaEnabled = {
+      left: sidebarEnabled && swupContainer?.getAttribute("data-page-sidebar-has-left") !== "false",
+      right: sidebarEnabled && swupContainer?.getAttribute("data-page-sidebar-has-right") !== "false",
+      bottom: sidebarEnabled && swupContainer?.getAttribute("data-page-sidebar-has-bottom") !== "false",
+    };
 
     document.querySelectorAll<HTMLElement>("[data-sidebar-container]").forEach((container) => {
-      if (sidebarEnabled) {
+      const area = container.id.startsWith("left")
+        ? "left"
+        : container.id.startsWith("right")
+          ? "right"
+          : "bottom";
+      if (areaEnabled[area]) {
         container.style.removeProperty("display");
       } else {
         container.style.setProperty("display", "none", "important");
       }
     });
 
-    // 处理组件级别的 showOnPostPage 配置
-    document.querySelectorAll(".widget-hide-on-post").forEach((widget) => {
-      isPostPage ? widget.classList.add("hidden") : widget.classList.remove("hidden");
-    });
-
-    // 处理 hideOnNonPostPage === true 的组件
-    document.querySelectorAll(".widget-hide-on-non-post").forEach((widget) => {
-      !isPostPage ? widget.classList.add("hidden") : widget.classList.remove("hidden");
-    });
-
-    // 组件可见性变化后，立即重算 sticky 间距，避免 swup 切页后残留旧间距
+    // 容器替换后立即重算 sticky 间距
     updateSidebarStickySpacing();
   }
 

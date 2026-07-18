@@ -2,32 +2,19 @@
 import type { MarkdownHeading } from "astro";
 import { Icon } from "astro-icon/components";
 import FloatingButton from "@/components/common/FloatingButton.astro";
-import { sidebarLayoutConfig } from "@/config/sidebarConfig";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import "@/styles/toc.css";
 
 interface Props {
 	headings: MarkdownHeading[];
-	sidebarEnabled?: boolean;
 }
 
-let { headings: _ = [], sidebarEnabled } = Astro.props;
-// ... (保留之前的逻辑)
-// 检查侧边栏目录组件是否启用
-const sidebarTocComponent = sidebarLayoutConfig.rightComponents?.find(
-	(c) => c.type === "sidebarToc",
-);
-const isSidebarTocEnabled = sidebarTocComponent?.enable ?? false;
-const sidebarPosition = sidebarLayoutConfig.position;
-const hideSidebarOnPostPage =
-	sidebarEnabled === false ||
-	(sidebarEnabled === undefined &&
-		sidebarLayoutConfig.hideSidebarOnPostPage === true);
+const { headings: _ = [] } = Astro.props;
 ---
 
 <!-- 悬浮TOC按钮 -->
-<div id="floating-toc-wrapper" class="floating-toc-wrapper" data-is-sidebar-toc-enabled={String(isSidebarTocEnabled)} data-sidebar-position={sidebarPosition} data-show-both-sidebars-on-post={String(sidebarLayoutConfig.showBothSidebarsOnPostPage ?? false)} data-hide-sidebar-on-post={String(hideSidebarOnPostPage)}>
+<div id="floating-toc-wrapper" class="floating-toc-wrapper">
   <FloatingButton
     id="floating-toc-btn"
     icon="material-symbols:format-list-bulleted"
@@ -137,10 +124,6 @@ const hideSidebarOnPostPage =
 <script>
   import { TOCManager, isPostPage } from "@/utils/toc-utils";
 
-  // 从 data 属性读取配置
-  const wrapper = document.querySelector('.floating-toc-wrapper');
-  const isSidebarTocEnabled = wrapper?.getAttribute('data-is-sidebar-toc-enabled') === 'true';
-
   if (typeof window.FloatingTOC === "undefined") {
     window.FloatingTOC = {
       btn: null,
@@ -236,21 +219,21 @@ const hideSidebarOnPostPage =
       return false;
     }
 
-    const wrapper = document.querySelector('.floating-toc-wrapper');
-    const sidebarPosition = wrapper?.getAttribute('data-sidebar-position') || 'left';
-    const showBothSidebarsOnPost = wrapper?.getAttribute('data-show-both-sidebars-on-post') === 'true';
-    const hideSidebarOnPost = wrapper?.getAttribute('data-hide-sidebar-on-post') === 'true';
+    const swupContainer = document.getElementById('swup-container');
+    const pageSidebarEnabled = swupContainer?.getAttribute('data-page-sidebar-enabled') !== 'false';
+    const hasLeftSidebar = swupContainer?.getAttribute('data-page-sidebar-has-left') !== 'false';
+    const hasRightSidebar = swupContainer?.getAttribute('data-page-sidebar-has-right') !== 'false';
+    const sidebarTocEnabled = swupContainer?.getAttribute('data-page-sidebar-has-toc') === 'true';
 
-    // 侧边栏在文章页隐藏时，始终显示悬浮目录
-    if (hideSidebarOnPost) {
+    if (!pageSidebarEnabled) {
       return true;
     }
 
-    // 双侧边栏模式（含文章页临时双侧栏）：小屏幕或侧边栏目录未启用时显示悬浮目录
-    const effectiveIsBothSidebars = sidebarPosition === 'both' || showBothSidebarsOnPost;
+    // 双侧栏在桌面端可直接使用右侧目录；其他布局保持原有悬浮目录行为。
+    const effectiveIsBothSidebars = hasLeftSidebar && hasRightSidebar;
     if (effectiveIsBothSidebars) {
       const isSmallScreen = window.innerWidth < 1280;
-      return isSmallScreen || !isSidebarTocEnabled;
+      return isSmallScreen || !sidebarTocEnabled;
     }
 
     // 单侧边栏模式（left或right），对侧没有侧边栏目录，始终显示悬浮目录

@@ -22,8 +22,8 @@ import {
 	generateRightSidebarClasses,
 	generateSidebarClasses,
 	getResponsiveSidebarConfig,
-	type ResponsiveSidebarConfig,
 } from "@/utils/responsive-utils";
+import { resolveSidebarConfig } from "@/utils/sidebar-utils";
 import Layout from "./Layout.astro";
 
 import "@/styles/markdown.css";
@@ -52,7 +52,7 @@ interface Props {
 	// 文章图片的基础路径，用于解析本地相对路径图片
 	postImageBasePath?: string;
 	bannerConfig?: BannerConfig;
-	// 当前页面是否显示侧边栏；未设置时继承全局配置
+	// 文章 frontmatter 的关闭开关；false 关闭当前文章侧栏，不能覆盖全局或页面关闭规则
 	sidebar?: boolean;
 }
 
@@ -137,79 +137,41 @@ const mainContentLayoutClass = isPostPageBannerLayout
 		? ""
 		: "no-banner-layout";
 
-// 页面显式配置优先于文章页和全局配置
-const hideSidebarOnPostPage =
-	sidebar === undefined &&
-	isPostPage &&
-	sidebarLayoutConfig.hideSidebarOnPostPage === true;
-const sidebarEnabled = sidebar ?? sidebarLayoutConfig.enable;
-const pageSidebarEnabled = sidebarEnabled && !hideSidebarOnPostPage;
-
-// 静态侧栏在 Swup 切页时不会替换，因此布局类始终按已启用状态生成
-const configuredSidebarConfig = getResponsiveSidebarConfig(true);
-const sidebarConfig = getResponsiveSidebarConfig(pageSidebarEnabled);
-
-// 在文章页面且启用了showBothSidebarsOnPostPage时，确保对侧组件参与网格计算
-const shouldShowBothSidebarsOnPostPage: boolean =
-	pageSidebarEnabled &&
-	!hideSidebarOnPostPage &&
-	isPostPage &&
-	sidebarLayoutConfig.position !== "both" &&
-	!!sidebarLayoutConfig.showBothSidebarsOnPostPage;
-
-// position为left时，对侧为右侧；position为right时，对侧为左侧
-const shouldAddRightSidebar: boolean =
-	shouldShowBothSidebarsOnPostPage && sidebarLayoutConfig.position === "left";
-const shouldAddLeftSidebar: boolean =
-	shouldShowBothSidebarsOnPostPage && sidebarLayoutConfig.position === "right";
-
-const effectiveIsBothSidebars: boolean =
-	sidebarConfig.isBothSidebars || shouldShowBothSidebarsOnPostPage;
-const effectiveHasRightComponents: boolean =
-	sidebarConfig.hasRightComponents ||
-	(shouldAddRightSidebar &&
-		sidebarLayoutConfig.rightComponents.some((comp) => comp.enable));
-const effectiveHasLeftComponents: boolean =
-	sidebarConfig.hasLeftComponents ||
-	(shouldAddLeftSidebar &&
-		sidebarLayoutConfig.leftComponents.some((comp) => comp.enable));
-
-// 使用effective值重新生成网格类
-// 当position为right且文章页临时显示左侧栏时，tabletSidebar应为right（保持显示主侧栏）
-const effectiveTabletSidebar = shouldAddLeftSidebar
-	? ("right" as const)
-	: sidebarConfig.tabletSidebar;
-
-const updatedGridConfig: ResponsiveSidebarConfig = {
-	...sidebarConfig,
-	isBothSidebars: effectiveIsBothSidebars,
-	hasLeftComponents: effectiveHasLeftComponents,
-	hasRightComponents: effectiveHasRightComponents,
-	tabletSidebar: effectiveTabletSidebar,
-};
-
-const { gridCols } = generateGridClasses(updatedGridConfig);
-const sidebarClass = generateSidebarClasses(
-	sidebarLayoutConfig.position === "right"
-		? updatedGridConfig
-		: configuredSidebarConfig,
+const resolvedSidebar = resolveSidebarConfig(Astro.url.pathname, sidebar);
+const pageSidebarEnabled = resolvedSidebar.enabled;
+const pageSidebarLayout = resolvedSidebar.layout;
+const sidebarConfig = getResponsiveSidebarConfig(
+	pageSidebarEnabled,
+	pageSidebarLayout,
 );
-const rightSidebarClass =
-	sidebarLayoutConfig.position === "left"
-		? effectiveIsBothSidebars
-			? generateRightSidebarClasses(updatedGridConfig)
-			: ""
-		: generateRightSidebarClasses(configuredSidebarConfig);
-const mainContentClass = generateMainContentClasses(updatedGridConfig);
+const effectiveHasLeftComponents = sidebarConfig.hasLeftComponents;
+const effectiveHasRightComponents = sidebarConfig.hasRightComponents;
+const effectiveHasMobileBottomComponents =
+	pageSidebarEnabled && pageSidebarLayout.mobileBottom.length > 0;
+const derivedSidebarPosition = effectiveHasLeftComponents
+	? effectiveHasRightComponents
+		? "both"
+		: "left"
+	: effectiveHasRightComponents
+		? "right"
+		: "none";
+const hasSidebarToc = pageSidebarLayout.right.some(
+	(id) => sidebarLayoutConfig.components[id].type === "sidebarToc",
+);
+
+const { gridCols } = generateGridClasses(sidebarConfig);
+const sidebarClass = generateSidebarClasses(sidebarConfig);
+const rightSidebarClass = generateRightSidebarClasses(sidebarConfig);
+const mainContentClass = generateMainContentClasses(sidebarConfig);
 const staticBarClass = mainContentClass.replace("transition-main", "").trim();
 const categoryBarClass = ["col-span-1"];
 
 if (
-	updatedGridConfig.isBothSidebars &&
-	updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
+	sidebarConfig.isBothSidebars &&
+	sidebarConfig.hasLeftComponents &&
+	sidebarConfig.hasRightComponents
 ) {
-	if (updatedGridConfig.tabletSidebar === "right") {
+	if (sidebarConfig.tabletSidebar === "right") {
 		categoryBarClass.push(
 			"md:col-start-1",
 			"md:col-end-3",
@@ -220,13 +182,13 @@ if (
 		categoryBarClass.push("md:col-start-2", "xl:col-start-2", "xl:col-end-4");
 	}
 } else if (
-	updatedGridConfig.hasLeftComponents &&
-	!updatedGridConfig.hasRightComponents
+	sidebarConfig.hasLeftComponents &&
+	!sidebarConfig.hasRightComponents
 ) {
 	categoryBarClass.push("md:col-start-2");
 } else if (
-	!updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
+	!sidebarConfig.hasLeftComponents &&
+	sidebarConfig.hasRightComponents
 ) {
 	categoryBarClass.push("md:col-start-1", "md:col-end-3");
 }
@@ -308,42 +270,19 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     <div class="relative z-10 w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"
           class={`transition duration-700 w-full left-0 right-0 grid ${gridCols} grid-rows-[auto_1fr_auto] lg:grid-rows-[auto] mx-auto gap-2 px-1 md:px-2 ${!sidebarConfig.mobileShowSidebar ? 'mobile-no-sidebar' : ''}`}
-          data-sidebar-position={sidebarLayoutConfig.position}
+          data-sidebar-position={derivedSidebarPosition}
           data-tablet-sidebar={sidebarLayoutConfig.tabletSidebar ?? "left"}
-          data-show-both-sidebars-on-post={sidebarLayoutConfig.showBothSidebarsOnPostPage ? "true" : "false"}
         >
 
-            {/* 渲染左侧边栏 - 根据position和tabletSidebar配置显示 */}
-            {/*
-                如果全局配置为双侧栏(position: both)或仅左侧栏(position: left)，则使用静态容器(不被swup替换)，避免闪烁。
-                如果全局配置为仅右侧栏(position: right)，则使用动态容器(被swup替换)，以便在文章页显示左侧栏。
-                注意：为了满足swup要求所有containers必须存在，我们在所有模式下都必须渲染 #left-sidebar-dynamic。
-            */}
-            {sidebarLayoutConfig.position !== "right" ? (
-                <>
-                    <div
-                        id="left-sidebar-wrapper"
-                        class="contents"
-                        data-sidebar-container
-                        style={pageSidebarEnabled ? "contain: layout style paint;" : "display: none !important; contain: layout style paint;"}
-                    >
-                            {configuredSidebarConfig.hasLeftComponents && (
-                                <SideBar
-                                    side={configuredSidebarConfig.isBothSidebars ? "left" : undefined}
-                                    class={sidebarClass}
-                                    headings={headings}
-                                />
-                            )}
-                    </div>
-                    <div id="left-sidebar-dynamic" class="hidden transition-swup-fade"></div>
-                </>
-            ) : (
-                <div id="left-sidebar-dynamic" class="contents transition-swup-fade" data-sidebar-container>
-                    {effectiveIsBothSidebars && effectiveHasLeftComponents && (
-						<SideBar side="left" class={sidebarClass} headings={headings}></SideBar>
-                    )}
-                </div>
-            )}
+            {/* 左右侧栏由 Swup 替换，确保每个页面只渲染其最终布局引用的组件。 */}
+            <div
+                id="left-sidebar-dynamic"
+                class="contents transition-swup-fade"
+                data-sidebar-container
+                style={pageSidebarEnabled && effectiveHasLeftComponents ? "contain: layout style paint;" : "display: none !important; contain: layout style paint;"}
+            >
+                <SideBar side="left" componentIds={pageSidebarLayout.left} class={sidebarClass} headings={headings} />
+            </div>
                     
             {/* 分类导航栏 - 首页和归档页显示，作为独立 grid item 可跨到右侧栏上方 */}
             {siteConfig.categoryBar && (
@@ -368,6 +307,12 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
                     data-page-banner-enabled={effectiveBackgroundEnabled ? "true" : "false"}
                     data-is-post-page={isPostPage ? "true" : "false"}
                     data-page-sidebar-enabled={pageSidebarEnabled ? "true" : "false"}
+                    data-page-sidebar-has-left={effectiveHasLeftComponents ? "true" : "false"}
+                    data-page-sidebar-has-right={effectiveHasRightComponents ? "true" : "false"}
+                    data-page-sidebar-has-bottom={effectiveHasMobileBottomComponents ? "true" : "false"}
+                    data-page-sidebar-has-toc={hasSidebarToc ? "true" : "false"}
+                    data-left-sidebar-class={sidebarClass}
+                    data-right-sidebar-class={rightSidebarClass}
                     data-main-content-class={staticBarClass}
                     data-category-bar-class={categoryBarClassName}
                     data-page-title={isPostPage ? title : undefined}
@@ -385,41 +330,19 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
             </main>
             </div>
 
-            {/* 右侧边栏 - 双侧边栏模式或仅右侧栏模式 */}
-            {/*
-                如果全局配置为双侧栏(position: both)或仅右侧栏(position: right)，则使用静态容器(不被swup替换)，避免闪烁。
-                如果全局配置为单侧栏(position: left)，则使用动态容器(被swup替换)，以便在文章页显示右侧栏。
-                注意：为了满足swup要求所有containers必须存在，我们在所有模式下都必须渲染 #right-sidebar-dynamic。
-                右侧边栏的显示由CSS类控制。
-            */}
-            {(sidebarLayoutConfig.position === "both" || sidebarLayoutConfig.position === "right") ? (
-                <>
-                    <div
-                        id="right-sidebar-static"
-                        class="contents"
-                        data-sidebar-container
-                        style={pageSidebarEnabled ? undefined : "display: none !important;"}
-                    >
-                            {configuredSidebarConfig.hasRightComponents && (
-								<SideBar side="right" class={rightSidebarClass} headings={headings}></SideBar>
-                            )}
-                    </div>
-                    <div id="right-sidebar-dynamic" class="hidden transition-swup-fade"></div>
-                </>
-            ) : (
-                <div id="right-sidebar-dynamic" class="contents transition-swup-fade" data-sidebar-container>
-                    {effectiveIsBothSidebars && effectiveHasRightComponents && (
-						<SideBar side="right" class={rightSidebarClass} headings={headings}></SideBar>
-                    )}
-                </div>
-            )}
+            <div
+                id="right-sidebar-dynamic"
+                class="contents transition-swup-fade"
+                data-sidebar-container
+                style={pageSidebarEnabled && effectiveHasRightComponents ? undefined : "display: none !important;"}
+            >
+                <SideBar side="right" componentIds={pageSidebarLayout.right} class={rightSidebarClass} headings={headings} />
+            </div>
 
             {/* 移动端底部组件 - 768px及以下显示 */}
-            {sidebarLayoutConfig.mobileBottomComponents && sidebarLayoutConfig.mobileBottomComponents.length > 0 && (
-                <div id="mobile-bottom-sidebar" class="col-span-1 block md:hidden mt-4" data-sidebar-container style={pageSidebarEnabled ? undefined : "display: none !important;"}>
-					<SideBar side="bottom" headings={headings}></SideBar>
-                </div>
-            )}
+            <div id="mobile-bottom-sidebar" class="col-span-1 block md:hidden mt-4" data-sidebar-container style={effectiveHasMobileBottomComponents ? undefined : "display: none !important;"}>
+                <SideBar side="bottom" componentIds={pageSidebarLayout.mobileBottom} headings={headings} />
+            </div>
 
             <div class={footerClassName}>
                 <Footer></Footer>
@@ -429,7 +352,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
     </div>
 </div>
 
-<FloatingControls headings={headings} sidebarEnabled={pageSidebarEnabled} />
+<FloatingControls headings={headings} />
 
 
 </Layout>

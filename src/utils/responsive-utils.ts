@@ -1,4 +1,5 @@
 import { sidebarLayoutConfig } from "@/config";
+import type { SidebarAreaLayout } from "@/types/sidebarConfig";
 
 export interface ResponsiveSidebarConfig {
 	isBothSidebars: boolean;
@@ -7,7 +8,6 @@ export interface ResponsiveSidebarConfig {
 	mobileShowSidebar: boolean;
 	tabletShowSidebar: boolean;
 	desktopShowSidebar: boolean;
-	position: "left" | "right" | "both";
 	tabletSidebar: "left" | "right";
 }
 
@@ -15,29 +15,18 @@ export interface ResponsiveSidebarConfig {
  * 获取响应式侧边栏配置
  *
  * 响应式布局（硬编码）：
- * - 768px及以下: 隐藏侧栏，显示底部mobileBottomComponents
- * - 769px-1279px: 根据position和tabletSidebar配置显示侧栏
- * - 1280px及以上: 根据position配置显示侧栏
+ * - 768px及以下: 隐藏左右侧栏，显示 mobileBottom
+ * - 769px-1279px: 双侧栏时根据 tabletSidebar 显示其中一侧
+ * - 1280px及以上: 显示布局中存在的左右侧栏
  */
 export function getResponsiveSidebarConfig(
-	enable = sidebarLayoutConfig.enable,
+	enable: boolean = sidebarLayoutConfig.enable,
+	layout: SidebarAreaLayout = sidebarLayoutConfig.default,
 ): ResponsiveSidebarConfig {
-	const position = sidebarLayoutConfig.position;
 	const tabletSidebar = sidebarLayoutConfig.tabletSidebar ?? "left";
-
-	const isBothSidebars = enable && position === "both";
-
-	// position为right时，左侧组件不参与布局计算
-	const hasLeftComponents =
-		enable &&
-		position !== "right" &&
-		sidebarLayoutConfig.leftComponents.some((comp) => comp.enable);
-
-	// position为left时，右侧组件不参与布局计算（即使启用也会被CSS隐藏）
-	const hasRightComponents =
-		enable &&
-		position !== "left" &&
-		sidebarLayoutConfig.rightComponents.some((comp) => comp.enable);
+	const hasLeftComponents = enable && layout.left.length > 0;
+	const hasRightComponents = enable && layout.right.length > 0;
+	const isBothSidebars = hasLeftComponents && hasRightComponents;
 
 	// 响应式布局由 CSS 处理，这里仅用于判断是否有组件
 	const mobileShowSidebar = false; // 768px及以下不显示侧边栏
@@ -51,7 +40,6 @@ export function getResponsiveSidebarConfig(
 		mobileShowSidebar,
 		tabletShowSidebar,
 		desktopShowSidebar,
-		position,
 		tabletSidebar,
 	};
 }
@@ -61,8 +49,8 @@ export function getResponsiveSidebarConfig(
  *
  * 响应式设计：
  * - 768px及以下: 单列布局（grid-cols-1），隐藏侧栏，显示底部组件
- * - 769px-1279px: 根据position和tabletSidebar配置决定2列布局方向
- * - 1280px及以上: 根据position配置决定2列或3列布局
+ * - 769px-1279px: 双侧栏时根据 tabletSidebar 决定两列方向
+ * - 1280px及以上: 根据最终布局生成两列或三列
  */
 export function generateGridClasses(config: ResponsiveSidebarConfig): {
 	gridCols: string;
@@ -111,7 +99,15 @@ export function generateSidebarClasses(
 		"onload-animation",
 	];
 
-	if (config.isBothSidebars && config.tabletSidebar === "right") {
+	if (!config.hasLeftComponents) {
+		return classes.join(" ");
+	}
+
+	if (
+		config.isBothSidebars &&
+		config.hasRightComponents &&
+		config.tabletSidebar === "right"
+	) {
 		// 双侧栏+平板端显示右侧栏：左侧栏仅在1280px+显示
 		classes.push("xl:block");
 	} else {
@@ -130,7 +126,15 @@ export function generateRightSidebarClasses(
 ): string {
 	const classes = ["hidden", "onload-animation"];
 
-	if (config.isBothSidebars && config.tabletSidebar === "right") {
+	if (!config.hasRightComponents) {
+		return classes.join(" ");
+	}
+
+	if (
+		config.isBothSidebars &&
+		config.hasLeftComponents &&
+		config.tabletSidebar === "right"
+	) {
 		// 双侧栏+平板端显示右侧栏：769px+显示右侧栏
 		classes.push(
 			"md:block",
@@ -141,7 +145,7 @@ export function generateRightSidebarClasses(
 			"md:col-start-2", // 平板端在第2列
 			"xl:col-start-3", // 桌面端在第3列
 		);
-	} else if (config.isBothSidebars) {
+	} else if (config.isBothSidebars && config.hasLeftComponents) {
 		// 双侧栏+平板端显示左侧栏（默认）：仅1280px+显示
 		classes.push(
 			"xl:block",
@@ -151,8 +155,8 @@ export function generateRightSidebarClasses(
 			"xl:max-w-70",
 			"xl:col-start-3",
 		);
-	} else if (config.position === "right") {
-		// 仅右侧栏模式（非双侧栏）：769px+显示，在第2列
+	} else if (config.hasRightComponents) {
+		// 仅右侧栏：769px+显示，在第2列
 		classes.push(
 			"md:block",
 			"md:row-start-1",

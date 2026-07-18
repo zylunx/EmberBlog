@@ -7,14 +7,13 @@ import FloatingTOC from "./FloatingTOC.astro";
 
 interface Props {
 	headings?: MarkdownHeading[];
-	sidebarEnabled?: boolean;
 }
 
-const { headings, sidebarEnabled } = Astro.props;
+const { headings } = Astro.props;
 ---
 
 <div class="floating-controls-container">
-  <FloatingTOC headings={headings ?? []} sidebarEnabled={sidebarEnabled} />
+  <FloatingTOC headings={headings ?? []} />
   <BackToComment />
   <BackToHome />
   <BackToTop />
