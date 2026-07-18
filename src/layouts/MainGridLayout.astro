@@ -263,9 +263,7 @@ const stickyNavbar = siteConfig.navbar.stickyNavbar ?? false;
 
 <!-- Main content -->
 <div class={`absolute w-full z-30 pointer-events-none ${mobileNonHomeBannerClass ? 'mobile-main-no-banner' : ''} ${mainContentLayoutClass}`} style={isFullscreenMode && effectiveBackgroundEnabled ? 'top: 0;' : `top: ${finalMainPanelTop}`}>
-	    {isPostPageBannerLayout && (
-	      <div id="post-content-sheet" class="post-content-sheet" aria-hidden="true"></div>
-	    )}
+	<div id="post-content-sheet" class="post-content-sheet" aria-hidden="true"></div>
     <!-- The pointer-events-none here prevent blocking the click event of the TOC -->
     <div class="relative z-10 w-full xl:w-[92vw] max-w-(--page-width) mx-auto pointer-events-auto">
         <div id="main-grid"

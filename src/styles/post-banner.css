@@ -92,6 +92,7 @@
 
 /* 文章页全宽内容底板：顶左右大圆角，向上压住 banner 约一个圆角高度 */
 .post-content-sheet {
+	display: none;
 	position: absolute;
 	inset-inline: 0;
 	top: calc(
@@ -105,6 +106,10 @@
 	background-color: var(--page-bg);
 	/* 与 #main-grid 同步：桌面端跟随 banner-height-extend 下移 */
 	transform: translateY(var(--banner-height-extend, 0px));
+}
+
+body.post-page-banner .post-content-sheet {
+	display: block;
 }
 
 @media (max-width: 1023px) {
