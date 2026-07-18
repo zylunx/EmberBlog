@@ -1,5 +1,5 @@
 ---
-import { Picture } from "astro:assets";
+import { Image, Picture } from "astro:assets";
 import * as path from "node:path";
 import type { ImageMetadata } from "astro";
 import { Icon } from "astro-icon/components";
@@ -24,7 +24,8 @@ interface Props {
 const { class: className, pageTitle } = Astro.props;
 
 const effectiveSearchProvider = getEffectiveSearchProvider();
-const loadPagefind = import.meta.env.PROD && effectiveSearchProvider === "pagefind";
+const loadPagefind =
+	import.meta.env.PROD && effectiveSearchProvider === "pagefind";
 
 const navbarTransparentMode = "semi";
 const navbarEnableBlur = false;
@@ -103,16 +104,29 @@ if (isLocalSrcLogo) {
                     {siteConfig.navbar.logo?.type === "icon" ? (
                         <Icon is:inline name={siteConfig.navbar.logo.value || "material-symbols:home-pin-outline"} class="text-[1.75rem] mb-1 mr-2" />
                     ) : siteConfig.navbar.logo?.type === "image" && logoImg ? (
-                        <Picture
-                            src={logoImg}
-                            alt={siteConfig.navbar.logo.alt || siteConfig.title}
-                            class="h-7 w-7 mb-1 mr-2 object-contain"
-                            formats={getImageFormats()}
-                            fallbackFormat={getFallbackFormat()}
-                            widths={[28, 56]}
-                            loading="eager"
-                            fetchpriority="high"
-                        />
+                        logoImg.format === "svg" ? (
+                            <Image
+                                src={logoImg}
+                                alt={siteConfig.navbar.logo.alt || siteConfig.title}
+                                class="h-7 w-7 mb-1 mr-2 object-contain"
+                                format="svg"
+                                width={28}
+                                height={28}
+                                loading="eager"
+                                fetchpriority="high"
+                            />
+                        ) : (
+                            <Picture
+                                src={logoImg}
+                                alt={siteConfig.navbar.logo.alt || siteConfig.title}
+                                class="h-7 w-7 mb-1 mr-2 object-contain"
+                                formats={getImageFormats()}
+                                fallbackFormat={getFallbackFormat()}
+                                widths={[28, 56]}
+                                loading="eager"
+                                fetchpriority="high"
+                            />
+                        )
                     ) : siteConfig.navbar.logo?.type === "image" ? (
                         <img src={url(siteConfig.navbar.logo.value)} alt={siteConfig.navbar.logo.alt || siteConfig.title} class="h-7 w-7 mb-1 mr-2 object-contain" fetchpriority="high" />
                     ) : siteConfig.navbar.logo?.type === "url" ? (

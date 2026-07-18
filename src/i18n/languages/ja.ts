@@ -13,7 +13,8 @@ export const ja: Translation = {
 	[Key.searchContent]: "内容",
 	[Key.aiSummary]: "AI要約",
 	[Key.searchViewMore]: "さらに結果を表示 ({count} 件)",
-	[Key.searchError]: "検索を一時的に利用できません。しばらくしてから再試行してください。",
+	[Key.searchError]:
+		"検索を一時的に利用できません。しばらくしてから再試行してください。",
 	[Key.searchSortRelevance]: "関連度",
 	[Key.searchSortDate]: "新着順",
 	[Key.other]: "その他",
